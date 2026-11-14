@@ -35,7 +35,17 @@ export interface Detalhe {
     localOuLink: string | null;
   }[];
   arquivos: { id: string; nomeOriginal: string; tipo: string; tamanho: number; criadoEm: string }[];
-  notificacoes: unknown[];
+  notificacoes: {
+    id: string;
+    tipo: string;
+    categoria: string;
+    status: 'pendente' | 'enviada' | 'falhou' | 'cancelada';
+    canal: 'whatsapp' | 'email' | null;
+    totalTentativas: number;
+    erro: string | null;
+    criadoEm: string;
+    enviadaEm: string | null;
+  }[];
   acoes: {
     status: AcaoStatus[];
     reabrirFormulario: boolean;
@@ -109,6 +119,7 @@ const ROTULO_ACAO: Readonly<Record<string, string>> = {
   'acesso.concedido': 'Acesso confirmado',
   'acesso.invalidado': 'Acesso marcado como inválido',
   'link.regenerado': 'Link regenerado',
+  'lembretes.desativados': 'Cliente parou de receber lembretes',
   'agendamento.criado': 'Agendamento feito',
   'agendamento.reagendado': 'Agendamento remarcado',
   'agendamento.cancelado': 'Agendamento cancelado',
@@ -165,4 +176,41 @@ export async function mensagemDeErro(resposta: Response): Promise<string> {
   const corpo = (await resposta.json().catch(() => ({}))) as { mensagem?: unknown };
   if (resposta.status === 403) return 'Você não tem permissão para esta ação.';
   return typeof corpo.mensagem === 'string' ? corpo.mensagem : 'Não foi possível concluir.';
+}
+
+const ROTULO_NOTIFICACAO: Readonly<Record<string, string>> = {
+  convite: 'Convite',
+  confirmacao_prazo: 'Confirmação com prazo',
+  lembrete_pendencia: 'Lembrete de pendência',
+  lembrete_compromisso: 'Lembrete de compromisso',
+};
+const ROTULO_STATUS_NOTIFICACAO: Readonly<Record<string, string>> = {
+  pendente: 'Na fila',
+  enviada: 'Enviada',
+  falhou: 'Falhou',
+  cancelada: 'Cancelada',
+};
+const ROTULO_CANAL: Readonly<Record<string, string>> = { whatsapp: 'WhatsApp', email: 'E-mail' };
+
+/** Linha do histórico de notificações (RN-62): o quê, por onde, situação e motivo da falha. */
+export function descreverNotificacao(n: Detalhe['notificacoes'][number]): {
+  titulo: string;
+  situacao: string;
+  detalhe: string | null;
+} {
+  // Na fila, o canal é só o da última tentativa: mostrá-lo confunde.
+  const definitivo = n.status === 'enviada' || n.status === 'falhou';
+  const canal = definitivo && n.canal ? (ROTULO_CANAL[n.canal] ?? n.canal) : null;
+  const situacao = [ROTULO_STATUS_NOTIFICACAO[n.status] ?? n.status, canal]
+    .filter(Boolean)
+    .join(' · ');
+  let detalhe: string | null = null;
+  if (n.erro === 'canal_nao_configurado') detalhe = 'Aguardando as credenciais de envio';
+  else if (n.erro === 'opt_out') detalhe = 'O cliente pediu para não receber lembretes';
+  else if (n.erro === 'sem_contato') detalhe = 'O cliente não tem WhatsApp nem e-mail';
+  else if (n.erro && n.status !== 'enviada') detalhe = `Erro: ${n.erro}`;
+  if (n.totalTentativas > 1) {
+    detalhe = [detalhe, `${String(n.totalTentativas)} tentativas`].filter(Boolean).join(' · ');
+  }
+  return { titulo: ROTULO_NOTIFICACAO[n.tipo] ?? n.tipo, situacao, detalhe };
 }

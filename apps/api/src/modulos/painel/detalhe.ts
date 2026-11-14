@@ -27,6 +27,8 @@ export interface AcoesDoDetalhe {
   readonly excluir: boolean;
 }
 
+const LIMITE_NOTIFICACOES = 50;
+
 const cabe = (verificar: () => void): boolean => {
   try {
     verificar();
@@ -83,7 +85,7 @@ export async function detalharOnboarding(
   if (!o) throw new NaoEncontradoError('Onboarding');
   if (!podeVerOnboarding(usuario, o.responsavelId)) throw new ProibidoError('RN-02');
 
-  const [resposta, acessos, arquivos] = await Promise.all([
+  const [resposta, acessos, arquivos, notificacoes] = await Promise.all([
     prisma.respostaFormulario.findFirst({
       where: { onboardingId },
       select: {
@@ -99,6 +101,23 @@ export async function detalharOnboarding(
       where: { clienteId: o.cliente.id },
       orderBy: { criadoEm: 'asc' },
       select: { id: true, nomeOriginal: true, tipo: true, tamanho: true, criadoEm: true },
+    }),
+    // RN-62: o histórico mostra status, canal, tentativas e erro; o texto fica de fora da lista.
+    prisma.notificacao.findMany({
+      where: { onboardingId },
+      orderBy: { criadoEm: 'desc' },
+      take: LIMITE_NOTIFICACOES,
+      select: {
+        id: true,
+        tipo: true,
+        categoria: true,
+        status: true,
+        canal: true,
+        totalTentativas: true,
+        erro: true,
+        criadoEm: true,
+        enviadaEm: true,
+      },
     }),
   ]);
 
@@ -147,8 +166,7 @@ export async function detalharOnboarding(
     acessos,
     agendamentos: o.agendamentos,
     arquivos,
-    // Chegam com o envio de mensagens (S5); o campo já existe no contrato da tela.
-    notificacoes: [],
+    notificacoes,
     acoes,
   };
 }

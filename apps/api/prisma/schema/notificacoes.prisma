@@ -1,0 +1,58 @@
+// Módulo notificacoes/envio (S5-2, trilha A). Toda mensagem ao cliente fica registrada (RN-62).
+// O destinatário não é gravado: sai do cadastro do cliente na hora de cada tentativa.
+enum StatusNotificacao {
+  pendente
+  enviada
+  falhou
+  cancelada
+}
+
+model Notificacao {
+  id                 String            @id @default(uuid(7))
+  agenciaId          String
+  agencia            Agencia           @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId       String
+  onboarding         Onboarding        @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  tipo               String
+  // "lembrete" obedece ao opt-out (RN-61); "transacional" não.
+  categoria          String
+  // Chave de idempotência dada por quem enfileira: a mesma chave nunca gera duas mensagens.
+  chave              String
+  assunto            String?
+  corpo              String
+  status             StatusNotificacao @default(pendente)
+  // Canal da última tentativa (ou do envio).
+  canal              Canal?
+  canalIndice        Int               @default(0)
+  tentativas         Int               @default(0)
+  totalTentativas    Int               @default(0)
+  semCredencial      Canal[]           @default([])
+  houveFalha         Boolean           @default(false)
+  proximaTentativaEm DateTime?         @db.Timestamptz(3)
+  // Reserva do worker: dois processos não enviam a mesma mensagem ao mesmo tempo.
+  reservadaAte       DateTime?         @db.Timestamptz(3)
+  idExterno          String?
+  erro               String?
+  criadoEm           DateTime          @default(now())
+  enviadaEm          DateTime?
+  atualizadoEm       DateTime          @updatedAt
+
+  @@unique([agenciaId, chave])
+  @@index([status, proximaTentativaEm])
+  @@index([agenciaId, onboardingId, criadoEm])
+  @@map("notificacoes")
+}
+
+// Opt-out de lembretes (RN-61). O token só serve para parar lembretes, então fica em claro: ele
+// precisa entrar em cada lembrete enviado.
+model PreferenciaEnvio {
+  onboardingId           String     @id
+  agenciaId              String
+  agencia                Agencia    @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboarding             Onboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  tokenOptOut            String     @unique
+  lembretesDesativadosEm DateTime?
+
+  @@index([agenciaId])
+  @@map("preferencias_envio")
+}

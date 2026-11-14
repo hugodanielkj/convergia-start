@@ -1,7 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import { relogioSistema } from '@convergia/core/base';
 import { criarCalendarioGoogle } from './adapters/calendario/google.js';
-import { MensageriaEmMemoria } from './adapters/mensageria/em-memoria.js';
+import { criarWhatsappMegaApi } from './adapters/mensageria/megaapi.js';
+import { criarEmailResend } from './adapters/mensageria/resend.js';
+import { criarRoteadorMensageria } from './adapters/mensageria/roteador.js';
 import { ArmazenamentoLocal } from './adapters/storage/local.js';
 import { construirApp } from './app.js';
 import { sessaoDeDesenvolvimento } from './base/auth.js';
@@ -20,7 +22,25 @@ const app = construirApp(env, {
     app.log.error({ err: erro, evento: evento.tipo }, 'falha ao tratar evento');
   }),
   armazenamento: new ArmazenamentoLocal(env.ARMAZENAMENTO_DIR),
-  mensageria: new MensageriaEmMemoria(),
+  // Canal sem credencial: as mensagens ficam pendentes e saem quando configurar (S5-2).
+  mensageria: criarRoteadorMensageria({
+    whatsapp:
+      env.MEGAAPI_HOST && env.MEGAAPI_INSTANCE_KEY && env.MEGAAPI_TOKEN
+        ? criarWhatsappMegaApi({
+            host: env.MEGAAPI_HOST,
+            instanceKey: env.MEGAAPI_INSTANCE_KEY,
+            token: env.MEGAAPI_TOKEN,
+          })
+        : null,
+    email:
+      env.RESEND_API_KEY && env.EMAIL_REMETENTE
+        ? criarEmailResend({
+            apiKey: env.RESEND_API_KEY,
+            remetente: env.EMAIL_REMETENTE,
+            assuntoPadrao: env.EMAIL_ASSUNTO_PADRAO,
+          })
+        : null,
+  }),
   // Sem o token de renovação do Google, os agendamentos ficam pendentes no calendário (RN-67).
   calendario:
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CALENDAR_REFRESH_TOKEN
@@ -54,6 +74,10 @@ const app = construirApp(env, {
 
 if (!env.GOOGLE_CALENDAR_REFRESH_TOKEN) {
   app.log.warn('Google Calendar não configurado: os agendamentos ficam pendentes no calendário');
+}
+
+if (!env.MEGAAPI_TOKEN || !env.RESEND_API_KEY) {
+  app.log.warn('WhatsApp ou e-mail sem credenciais: as mensagens desse canal ficam pendentes');
 }
 
 if (env.AUTH_DEV_USUARIO_EMAIL) {

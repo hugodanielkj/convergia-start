@@ -13,7 +13,23 @@ describe('carregarEnv', () => {
       APP_URL: 'http://localhost:3000',
       SESSAO_DURACAO_HORAS: 168,
       ARMAZENAMENTO_DIR: '.armazenamento',
+      EMAIL_ASSUNTO_PADRAO: 'Seu onboarding',
     });
+  });
+
+  it('credenciais da MegaAPI e do Resend vêm juntas ou não vêm (S5-2)', () => {
+    expect(() => carregarEnv({ DATABASE_URL, MEGAAPI_TOKEN: 't' })).toThrow(/MEGAAPI_HOST/);
+    expect(() => carregarEnv({ DATABASE_URL, RESEND_API_KEY: 'k' })).toThrow(/EMAIL_REMETENTE/);
+    expect(
+      carregarEnv({
+        DATABASE_URL,
+        MEGAAPI_HOST: 'h',
+        MEGAAPI_INSTANCE_KEY: 'i',
+        MEGAAPI_TOKEN: 't',
+        RESEND_API_KEY: 'k',
+        EMAIL_REMETENTE: 'Ag <a@ag.com>',
+      }).MEGAAPI_TOKEN,
+    ).toBe('t');
   });
 
   it('exige SESSAO_SEGREDO em produção', () => {

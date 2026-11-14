@@ -19,6 +19,14 @@ const esquemaEnv = z
     SESSAO_SEGREDO: z.preprocess(vazioParaIndefinido, z.string().min(32).optional()),
     SESSAO_DURACAO_HORAS: z.coerce.number().int().positive().default(168),
     ARMAZENAMENTO_DIR: z.string().min(1).default('.armazenamento'),
+    // WhatsApp pela MegaAPI (D-07); sem as três, o WhatsApp fica pendente (S5-2).
+    MEGAAPI_HOST: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    MEGAAPI_INSTANCE_KEY: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    MEGAAPI_TOKEN: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    // E-mail pelo Resend; sem chave e remetente, o e-mail fica pendente (S5-2).
+    RESEND_API_KEY: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    EMAIL_REMETENTE: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    EMAIL_ASSUNTO_PADRAO: z.string().min(1).default('Seu onboarding'),
   })
   .refine((env) => env.NODE_ENV !== 'production' || env.AUTH_DEV_USUARIO_EMAIL === undefined, {
     message: 'AUTH_DEV_USUARIO_EMAIL é proibido em produção',
@@ -41,7 +49,21 @@ const esquemaEnv = z
       message: 'Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET juntos',
       path: ['GOOGLE_CLIENT_SECRET'],
     },
-  );
+  )
+
+  .refine(
+    (env) =>
+      new Set([env.MEGAAPI_HOST, env.MEGAAPI_INSTANCE_KEY, env.MEGAAPI_TOKEN].map(Boolean)).size ===
+      1,
+    {
+      message: 'Defina MEGAAPI_HOST, MEGAAPI_INSTANCE_KEY e MEGAAPI_TOKEN juntos',
+      path: ['MEGAAPI_TOKEN'],
+    },
+  )
+  .refine((env) => (env.RESEND_API_KEY === undefined) === (env.EMAIL_REMETENTE === undefined), {
+    message: 'Defina RESEND_API_KEY e EMAIL_REMETENTE juntos',
+    path: ['EMAIL_REMETENTE'],
+  });
 
 export type Env = z.infer<typeof esquemaEnv>;
 
