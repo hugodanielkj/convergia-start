@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  esbuild: true
+  simple-git-hooks: true
+  sharp: true
+  unrs-resolver: false
