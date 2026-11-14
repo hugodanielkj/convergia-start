@@ -7,6 +7,8 @@
 .pergunta {
   display: grid;
   gap: 0.3rem;
+  /* Item de grid encolhe até a largura da tela, mesmo com campo largo dentro. */
+  min-width: 0;
 }
 
 .rotulo {
@@ -30,6 +32,25 @@
   background: var(--fundo);
   color: var(--texto);
   font: inherit;
+  font-size: max(1rem, 16px);
+}
+
+.pergunta input[type='file'] {
+  width: 100%;
+  min-height: var(--alvo-toque);
+  font-size: 1rem;
+}
+
+.pergunta input[type='file']::file-selector-button {
+  min-height: var(--alvo-toque);
+  margin-right: 0.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--destaque);
+  font: inherit;
+  font-weight: 600;
 }
 
 .opcoes {
@@ -57,6 +78,8 @@
 }
 
 .botao {
+  width: 100%;
+  min-height: var(--alvo-toque);
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: var(--raio);
@@ -70,4 +93,11 @@
 .botao:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+/* Mobile-first: ação principal larga, fácil de alcançar com o polegar. */
+@media (min-width: 40rem) {
+  .botao {
+    width: auto;
+  }
 }

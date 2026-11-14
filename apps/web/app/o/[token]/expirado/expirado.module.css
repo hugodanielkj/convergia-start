@@ -3,7 +3,7 @@
   gap: 1rem;
   max-width: 32rem;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: calc(2rem + var(--seguro-topo)) var(--gutter) 2rem;
 }
 
 .form {
@@ -12,6 +12,8 @@
 }
 
 .botao {
+  width: 100%;
+  min-height: var(--alvo-toque);
   padding: 0.75rem 1rem;
   border: 1px solid var(--destaque);
   border-radius: var(--raio);
@@ -38,4 +40,11 @@
 .erro {
   margin: 0;
   color: var(--erro);
+}
+
+/* Mobile-first: ação principal larga, fácil de alcançar com o polegar. */
+@media (min-width: 40rem) {
+  .botao {
+    width: auto;
+  }
 }
