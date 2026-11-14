@@ -57,7 +57,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 | A      | [x] S3-3 Painel de onboardings com filtros (RN-63, RN-64)                                               | `modulos/painel`, `app/(painel)/onboardings` |
 | B      | [ ] S3-4 Google Calendar + Meet com retentativa (RN-34, RN-67)                                          | `adapters/calendario`, `modulos/agenda`      |
 | B      | [x] S3-5 Reagendamento, limite e não comparecimento (RN-35 a RN-37)                                     | `modulos/agenda`, `core/agenda`              |
-| B      | [ ] S3-6 Etapa "reunião" na página do cliente                                                           | `_etapas/reuniao`                            |
+| B      | [x] S3-6 Etapa "reunião" na página do cliente                                                           | `_etapas/reuniao`                            |
 
 ## Sprint 4 — Acompanhamento · Captação e prazo
 

@@ -1,0 +1,118 @@
+.seletor,
+.agendado {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fuso {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 24rem;
+}
+
+.fuso label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.fuso select {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+}
+
+.dia {
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+}
+
+.dia legend {
+  padding: 0 0.25rem;
+  font-weight: 600;
+}
+
+/* Só a primeira letra: "terça-feira, 17 de novembro" não vira "De Novembro". */
+.dia legend::first-letter {
+  text-transform: uppercase;
+}
+
+.horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.horario {
+  min-width: 4.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--destaque);
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--destaque);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.horario[aria-pressed='true'] {
+  background: var(--destaque);
+  color: #ffffff;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.botao,
+.botaoSecundario {
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: 0.375rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao {
+  background: var(--destaque);
+  color: #ffffff;
+}
+
+.botaoSecundario {
+  background: transparent;
+  color: var(--destaque);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ajuda {
+  color: var(--suave);
+  font-size: 0.875rem;
+}
+
+.erro,
+.aviso {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.erro {
+  color: #c92a2a;
+}
+
+.aviso {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e67700;
+  border-radius: 0.375rem;
+}
