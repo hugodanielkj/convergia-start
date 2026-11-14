@@ -91,7 +91,7 @@ Entrou depois da conversa do PO com o primeiro cliente (2026-11-14). A trilha B 
 | A      | [x] S6-2 Perguntas personalizadas por cliente, com versões próprias e trava (RN-15)        | `modulos/formulario`, `core/formulario`, `app/(painel)/onboardings/[id]/personalizar`, `app/(painel)/clientes` (mínimo)       |
 | A      | [x] S6-3 Acessos escolhidos por cliente, pelo menos 1, com trava (RN-27)                   | `modulos/acessos`, `core/acessos`, `app/(painel)/onboardings/[id]/personalizar`, `app/(painel)/clientes` (mínimo)             |
 | A      | [x] S6-4 Ordem guiada: liberação sequencial, navegação no topo e avanço automático (RN-79) | `core/liberacao`, `modulos/liberacao`, `app/o/[token]`, `modulos/agenda` e `modulos/captacao` (1 linha), `_etapas/*` (mínimo) |
-| A      | [ ] S6-5 Progresso por ícones em `/onboardings`                                            | `modulos/painel`, `core/painel`, `app/(painel)/onboardings`                                                                   |
+| A      | [x] S6-5 Progresso por ícones em `/onboardings`                                            | `modulos/painel`, `core/painel`, `app/(painel)/onboardings`                                                                   |
 | A      | [ ] S6-6 Novo visual Convergia no painel e na página do cliente                            | `*.module.css` do painel e de `app/o/[token]`                                                                                 |
 
 ## Sprint 7 — Endurecimento (as duas trilhas)

@@ -97,6 +97,7 @@ interface Resposta {
     responsavel: string;
     statusGeral: string;
     progresso: { concluidas: number; total: number };
+    etapas: { tipo: string; status: string; liberada: boolean }[];
     atencao: string[];
   }[];
 }
@@ -174,6 +175,16 @@ describe('RN-63 colunas do painel', () => {
     });
     const gama = lista.find((l) => l.cliente.startsWith('Gama'));
     expect(gama?.atencao).toEqual(['link_expirado', 'parado']);
+  });
+
+  it('cada etapa diz se está liberada, para o cadeado do progresso (RN-79)', async () => {
+    const beta = (await listar(appAdmin)).find((l) => l.cliente.startsWith('Beta'));
+    expect(beta?.etapas.map((e) => [e.tipo, e.liberada])).toEqual([
+      ['formulario', true],
+      ['acessos', false],
+      ['reuniao', false],
+      ['captacao', false],
+    ]);
   });
 
   it('admin vê todos da agência e nada da outra (RN-75)', async () => {

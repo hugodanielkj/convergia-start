@@ -4,7 +4,8 @@ export interface LinhaPainel {
   responsavel: string;
   statusGeral: string;
   progresso: { concluidas: number; total: number };
-  etapas: { tipo: string; status: string }[];
+  /** `liberada` falso = bloqueada pela ordem das etapas (RN-79): ícone de cadeado. */
+  etapas: { tipo: string; status: string; liberada: boolean }[];
   criadoEm: string;
   proximoCompromisso: string | null;
   prazoLiberacao: string | null;

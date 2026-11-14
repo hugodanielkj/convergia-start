@@ -8,7 +8,8 @@ import {
   type SituacaoLiberacao,
 } from '@convergia/core/liberacao';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
-import { situacoesEscolhidas } from '../acessos/acessos.js';
+import { validarEscolha, type SituacaoAcesso } from '@convergia/core/acessos';
+import { plataformasPadrao, situacoesEscolhidas } from '../acessos/acessos.js';
 
 /** Agendamento que conta como "feito" para a liberação (RN-79): marcado, remarcado ou realizado. */
 const VALE = ['agendado', 'reagendado', 'realizado'] as const;
@@ -89,4 +90,53 @@ export async function exigirEtapaLiberada(
     'RN-79',
     `Conclua as etapas anteriores antes de ${etapa === 'acessos' ? 'informar' : 'agendar'} ${NOME[etapa]}`,
   );
+}
+
+/**
+ * Mesma regra (RN-79) para vários onboardings de uma vez, com poucas consultas: usada no painel
+ * para mostrar o cadeado das etapas bloqueadas (S6-5).
+ */
+export async function liberacaoEmLote(
+  prisma: PrismaDaAgencia,
+  onboardingIds: readonly string[],
+): Promise<Map<string, SituacaoLiberacao[]>> {
+  const ids = [...onboardingIds];
+  const [padrao, respostas, escolhas, linhas, agendamentos] = await Promise.all([
+    plataformasPadrao(prisma),
+    prisma.respostaFormulario.findMany({
+      where: { onboardingId: { in: ids }, enviadaEm: { not: null } },
+      select: { onboardingId: true },
+    }),
+    prisma.escolhaAcessos.findMany({ where: { onboardingId: { in: ids } } }),
+    prisma.acessoPlataforma.findMany({
+      where: { onboardingId: { in: ids } },
+      select: { onboardingId: true, plataforma: true, status: true, informadoEm: true },
+    }),
+    prisma.agendamento.findMany({
+      where: { onboardingId: { in: ids }, status: { in: [...VALE] } },
+      select: { onboardingId: true, tipo: true },
+    }),
+  ]);
+  const enviados = new Set(respostas.map((r) => r.onboardingId));
+  const resultado = new Map<string, SituacaoLiberacao[]>();
+  for (const id of ids) {
+    const escolha = escolhas.find((e) => e.onboardingId === id);
+    const valida = escolha ? validarEscolha(escolha.plataformas) : null;
+    const escolhidas = valida?.ok ? valida.plataformas : padrao;
+    const situacoes = escolhidas.map((p): SituacaoAcesso => {
+      const l = linhas.find((x) => x.onboardingId === id && x.plataforma === p);
+      return { status: l?.status ?? 'pendente', informado: (l?.informadoEm ?? null) !== null };
+    });
+    const dele = agendamentos.filter((a) => a.onboardingId === id);
+    resultado.set(
+      id,
+      liberacaoEtapas({
+        formularioEnviado: enviados.has(id),
+        acessosAvisados: acessosAvisados(situacoes),
+        reuniaoAgendada: dele.some((a) => a.tipo === 'reuniao'),
+        captacaoAgendada: dele.some((a) => a.tipo === 'captacao'),
+      }),
+    );
+  }
+  return resultado;
 }

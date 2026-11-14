@@ -11,6 +11,7 @@ import { z } from 'zod';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
 import { prazosDosOnboardings } from '../prazo/consultar.js';
+import { liberacaoEmLote } from '../liberacao/liberacao.js';
 
 const LIMITE = 200;
 const dia = z.iso.date();
@@ -37,7 +38,8 @@ export interface LinhaPainel {
   readonly responsavel: string;
   readonly statusGeral: StatusOnboarding;
   readonly progresso: { concluidas: number; total: number };
-  readonly etapas: { tipo: TipoEtapa; status: string }[];
+  /** `liberada`: falso = etapa bloqueada pela ordem das etapas (RN-79), mostra o cadeado. */
+  readonly etapas: { tipo: TipoEtapa; status: string; liberada: boolean }[];
   readonly criadoEm: Date;
   /** Chega com a agenda (S3-4); a coluna já existe no contrato. */
   readonly proximoCompromisso: null;
@@ -99,6 +101,10 @@ export async function listarOnboardings(
   });
   const comAcessoInvalido = new Set(invalidos.map((a) => a.onboardingId));
   const prazos = await prazosDosOnboardings(prisma, usuario.agenciaId, pagina, agora);
+  const liberacao = await liberacaoEmLote(
+    prisma,
+    pagina.map((o) => o.id),
+  );
   const diasSemAcao = config?.diasSemAcaoParaAlerta ?? 3;
 
   const resultado = pagina.map((o): LinhaPainel => {
@@ -117,6 +123,7 @@ export async function listarOnboardings(
       etapas: ETAPAS_ONBOARDING.map((tipo) => ({
         tipo,
         status: o.etapas.find((e) => e.tipo === tipo)?.status ?? 'pendente',
+        liberada: liberacao.get(o.id)?.find((l) => l.etapa === tipo)?.liberada ?? true,
       })),
       criadoEm: o.criadoEm,
       proximoCompromisso: null,

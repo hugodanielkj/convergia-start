@@ -45,7 +45,7 @@ const lerIdentificadores = (json: unknown): Identificadores =>
   typeof json === 'object' && json !== null ? json : {};
 
 /** Plataformas marcadas por padrão no cadastro: as da config da agência (RN-27, D-06). */
-async function plataformasPadrao(prisma: PrismaDaAgencia): Promise<PlataformaAcesso[]> {
+export async function plataformasPadrao(prisma: PrismaDaAgencia): Promise<PlataformaAcesso[]> {
   const config = await prisma.configAgencia.findFirst({
     select: { plataformasObrigatorias: true },
   });
