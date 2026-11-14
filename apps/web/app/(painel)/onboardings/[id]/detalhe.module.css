@@ -36,19 +36,19 @@
 }
 
 .status[data-status='pausado'] {
-  border-color: #e67700;
-  color: #e67700;
+  border-color: var(--aviso);
+  color: var(--aviso);
 }
 
 .status[data-status='cancelado'] {
-  border-color: #c92a2a;
-  color: #c92a2a;
+  border-color: var(--erro);
+  color: var(--erro);
 }
 
 .status[data-status='concluido'],
 .status[data-status='primeiro_conteudo_entregue'] {
-  border-color: #2f9e44;
-  color: #2f9e44;
+  border-color: var(--sucesso);
+  color: var(--sucesso);
 }
 
 .grade {
@@ -68,7 +68,7 @@
   align-content: start;
   padding: 1rem;
   border: 1px solid var(--borda);
-  border-radius: 0.6rem;
+  border-radius: var(--raio);
   min-width: 0;
 }
 
@@ -93,15 +93,25 @@
 
 .botoes button,
 .botaoLink {
-  padding: 0.5rem 0.9rem;
-  border: 0;
-  border-radius: 0.5rem;
-  background: var(--destaque);
-  color: var(--sobre-destaque);
+  /* Ações rápidas em contorno: nenhuma grita mais que a outra (S6-6). */
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--texto);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.botoes button:hover,
+.botaoLink:hover {
+  border-color: var(--destaque);
+  color: var(--destaque);
 }
 
 .botoes button:disabled {
@@ -112,7 +122,8 @@
 }
 
 .botoes .perigo {
-  background: #c92a2a;
+  border-color: var(--erro);
+  color: var(--erro);
 }
 
 .botoes .secundario {
@@ -131,13 +142,13 @@
   display: grid;
   gap: 0.6rem;
   padding: 0.9rem;
-  border-radius: 0.6rem;
+  border-radius: var(--raio);
   background: var(--superficie);
   border: 1px solid var(--borda);
 }
 
 .confirmacao[data-perigo] {
-  border-color: #c92a2a;
+  border-color: var(--erro);
 }
 
 .confirmacao p {
@@ -155,7 +166,7 @@
 .filtro select {
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: var(--texto);
   font: inherit;
@@ -169,7 +180,7 @@
 
 .erro {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
 }
 
 .vazio {
@@ -192,17 +203,17 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.45rem 0.6rem;
-  border-radius: 0.4rem;
+  border-radius: var(--raio);
   background: var(--superficie);
 }
 
 .etapas li[data-status='concluida'] strong,
 .etapas li[data-status='concedido'] strong {
-  color: #2f9e44;
+  color: var(--sucesso);
 }
 
 .etapas li[data-status='invalido'] strong {
-  color: #c92a2a;
+  color: var(--erro);
 }
 
 .lista li {

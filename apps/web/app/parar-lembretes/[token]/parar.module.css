@@ -14,7 +14,7 @@
 .botao {
   padding: 0.75rem 1rem;
   border: 1px solid var(--destaque);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   background: var(--destaque);
   color: var(--sobre-destaque);
   font: inherit;
@@ -30,12 +30,12 @@
 .sucesso {
   padding: 0.75rem 1rem;
   border: 1px solid var(--borda);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   background: var(--superficie);
   font-weight: 600;
 }
 
 .erro {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
 }

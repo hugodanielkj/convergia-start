@@ -10,7 +10,7 @@
   gap: 0.6rem;
   padding: 0.9rem;
   border: 1px solid var(--borda);
-  border-radius: 0.6rem;
+  border-radius: var(--raio);
 }
 
 .topo {
@@ -28,18 +28,18 @@
 }
 
 .selo[data-status='concedido'] {
-  border-color: #2f9e44;
-  color: #2f9e44;
+  border-color: var(--sucesso);
+  color: var(--sucesso);
 }
 
 .selo[data-status='invalido'] {
-  border-color: #c92a2a;
-  color: #c92a2a;
+  border-color: var(--erro);
+  color: var(--erro);
 }
 
 .motivo {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
 }
 
 .acoes {
@@ -52,7 +52,7 @@
   flex: 1 1 14rem;
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: var(--texto);
   font: inherit;
@@ -61,7 +61,7 @@
 .acoes button {
   padding: 0.5rem 0.9rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--destaque);
   color: var(--sobre-destaque);
   font: inherit;
@@ -75,9 +75,9 @@
 }
 
 .acoes .perigo {
-  background: #c92a2a;
+  background: var(--erro);
 }
 
 .erro {
-  color: #c92a2a;
+  color: var(--erro);
 }

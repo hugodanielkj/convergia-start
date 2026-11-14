@@ -8,14 +8,32 @@
 
 .barra {
   width: 100%;
-  height: 0.6rem;
-  accent-color: var(--destaque);
+  height: 0.4rem;
+  appearance: none;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: var(--borda);
+  overflow: hidden;
+}
+
+.barra::-webkit-progress-bar {
+  background: var(--borda);
+}
+
+.barra::-webkit-progress-value {
+  background: var(--realce);
+  border-radius: var(--raio-pilula);
+}
+
+.barra::-moz-progress-bar {
+  background: var(--realce);
+  border-radius: var(--raio-pilula);
 }
 
 .cartao {
-  padding: 1rem;
+  padding: 1.25rem;
   border: 1px solid var(--borda);
-  border-radius: 0.75rem;
+  border-radius: var(--raio-grande);
   background: var(--superficie);
 }
 
@@ -28,16 +46,26 @@
 
 .titulo {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
 }
 
 .status {
-  font-size: 0.8rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--raio-pilula);
+  background: var(--fundo);
+  font-size: 0.75rem;
   color: var(--suave);
   white-space: nowrap;
 }
 
 .status[data-status='concluida'] {
+  background: color-mix(in srgb, var(--sucesso) 15%, transparent);
+  color: var(--sucesso);
+  font-weight: 700;
+}
+
+.status[data-status='em_andamento'] {
+  background: color-mix(in srgb, var(--realce) 15%, transparent);
   color: var(--destaque);
-  font-weight: 600;
+  font-weight: 700;
 }

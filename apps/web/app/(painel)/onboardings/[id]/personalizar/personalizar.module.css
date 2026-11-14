@@ -12,7 +12,7 @@
 .secao,
 .bloco {
   border: 1px solid var(--borda);
-  border-radius: var(--raio, 14px);
+  border-radius: var(--raio);
   background: var(--superficie);
   padding: 1rem;
 }
@@ -75,7 +75,7 @@
   min-height: 2.75rem;
   padding: 0 1rem;
   border: 1px solid var(--borda);
-  border-radius: var(--raio-pilula, 999px);
+  border-radius: var(--raio-pilula);
   background: transparent;
   color: var(--texto);
   font: inherit;
@@ -121,7 +121,7 @@
   min-height: 2.75rem;
   padding: 0 1rem;
   border: 1px solid var(--borda);
-  border-radius: var(--raio-pilula, 999px);
+  border-radius: var(--raio-pilula);
   cursor: pointer;
 }
 

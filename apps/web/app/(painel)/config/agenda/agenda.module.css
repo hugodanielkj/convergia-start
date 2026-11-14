@@ -27,7 +27,7 @@
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--superficie);
 }
 
@@ -45,7 +45,7 @@
   margin-top: 1rem;
   padding: 1rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
 }
 
 .formulario h3 {
@@ -68,7 +68,7 @@
   width: 100%;
   padding: 0.5rem 0.625rem;
   border: 1px solid var(--borda);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: inherit;
   font: inherit;
@@ -91,7 +91,7 @@
   margin: 0;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--borda);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
 }
 
 .dia {
@@ -102,7 +102,7 @@
 
 .erro {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
   font-size: 0.875rem;
 }
 
@@ -110,7 +110,7 @@
 .botaoSecundario {
   padding: 0.5rem 1rem;
   border: 1px solid var(--destaque);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
