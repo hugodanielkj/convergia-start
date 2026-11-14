@@ -34,7 +34,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 | A      | [x] S1-2 Login com Google e papéis admin/membro (RN-02, RN-03, D-21, D-22)                                                                                                                                                      | `modulos/auth`, `app/(auth)`                                              |
 | B      | [~] S1-3 Cadastro de cliente com validação e alerta de duplicidade (RN-04, RN-05, RN-07, RN-08)                                                                                                                                 | `modulos/clientes`, `app/(painel)/clientes`                               |
 | B      | [~] S1-4 Criação automática do onboarding com 4 etapas (RN-06)                                                                                                                                                                  | `modulos/onboarding`                                                      |
-| B      | [~] S1-5 Link único: geração, expiração, regeneração, isolamento (RN-10 a RN-13)                                                                                                                                                | `modulos/link`, `app/o/[token]/expirado`                                  |
+| B      | [x] S1-5 Link único: geração, expiração, regeneração, isolamento (RN-10 a RN-13)                                                                                                                                                | `modulos/link`, `app/o/[token]/expirado`                                  |
 
 ## Sprint 2 — Formulário do cliente · Disponibilidade e slots
 

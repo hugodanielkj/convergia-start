@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CONFIG_PADRAO, relogioFixo, type UsuarioAutenticado } from '@convergia/core/base';
 import { hashToken } from '@convergia/core/link';
+import { criarBarramentoEmMemoria } from '../../base/eventos.js';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { construirApp } from '../../app.js';
@@ -312,5 +313,116 @@ describe('RN-12 regenerar o link', () => {
 
   it('exige usuário logado', async () => {
     expect((await regenerar(appPublico, 'qualquer')).statusCode).toBe(401);
+  });
+});
+
+describe('RN-11 pedido de novo link pelo cliente', () => {
+  const solicitar = (token: string, app = appPublico) =>
+    app.inject({ method: 'POST', url: `/publico/onboardings/${token}/solicitar-novo-link` });
+
+  /** App público com o relógio no futuro e um barramento que guarda os eventos recebidos. */
+  function appNoFuturo(dias: number) {
+    const recebidos: unknown[] = [];
+    const eventos = criarBarramentoEmMemoria((erro) => {
+      throw erro;
+    });
+    eventos.assinar('onboarding.novo_link_solicitado', (evento) => {
+      recebidos.push(evento);
+      return Promise.resolve();
+    });
+    const deps = dependenciasDeTeste({
+      prisma,
+      eventos,
+      relogio: relogioFixo(new Date(AGORA_TESTE.getTime() + dias * MS_DIA)),
+      resolverSessao: () => Promise.resolve(null),
+    });
+    const app = construirApp({ LOG_LEVEL: 'silent' }, deps);
+    apps.push(app);
+    return { app, recebidos };
+  }
+
+  it('registra o pedido e avisa a agência quando o link expirou', async () => {
+    const { token, onboardingId } = await cadastrar('Loja Pede Link');
+    const { app, recebidos } = appNoFuturo(15);
+    await app.ready();
+
+    const resposta = await solicitar(token, app);
+    expect(resposta.statusCode).toBe(202);
+    expect(resposta.json()).toEqual({ situacao: 'registrada' });
+    expect(resposta.headers['cache-control']).toBe('no-store');
+
+    const auditoria = await prisma.auditoriaLog.findMany({
+      where: { entidadeId: onboardingId, acao: 'link.novo_solicitado' },
+    });
+    expect(auditoria).toHaveLength(1);
+    expect(auditoria[0]).toMatchObject({ ator: `cliente:${onboardingId}`, agenciaId: agenciaA });
+    expect(recebidos).toEqual([
+      expect.objectContaining({
+        tipo: 'onboarding.novo_link_solicitado',
+        agenciaId: agenciaA,
+        dados: { onboardingId },
+      }),
+    ]);
+  });
+
+  it('um segundo pedido para o mesmo link não repete o aviso', async () => {
+    const { token, onboardingId } = await cadastrar('Loja Insiste');
+    const { app, recebidos } = appNoFuturo(15);
+    await app.ready();
+
+    await solicitar(token, app);
+    const segunda = await solicitar(token, app);
+    expect(segunda.statusCode).toBe(202);
+    expect(segunda.json()).toEqual({ situacao: 'ja_solicitada' });
+    expect(recebidos).toHaveLength(1);
+    expect(
+      await prisma.auditoriaLog.count({
+        where: { entidadeId: onboardingId, acao: 'link.novo_solicitado' },
+      }),
+    ).toBe(1);
+  });
+
+  it('depois que a agência gera um link novo, o cliente pode pedir de novo', async () => {
+    const { token, onboardingId } = await cadastrar('Loja Pede Duas Vezes');
+    const futuro = appNoFuturo(15);
+    await futuro.app.ready();
+    await solicitar(token, futuro.app);
+
+    const regerado = construir(
+      usuarioTeste({ agenciaId: agenciaA, id: adminA }),
+      new Date(AGORA_TESTE.getTime() + 16 * MS_DIA),
+    );
+    const { link } = (
+      await regerado.inject({ method: 'POST', url: `/onboardings/${onboardingId}/link/regenerar` })
+    ).json<{ link: { token: string } }>();
+
+    const muitoDepois = appNoFuturo(40);
+    await muitoDepois.app.ready();
+    const resposta = await solicitar(link.token, muitoDepois.app);
+    expect(resposta.json()).toEqual({ situacao: 'registrada' });
+    expect(muitoDepois.recebidos).toHaveLength(1);
+  });
+
+  it('link ainda válido não precisa de pedido', async () => {
+    const { token } = await cadastrar('Loja Link Valido');
+    const resposta = await solicitar(token);
+    expect(resposta.statusCode).toBe(409);
+    expect(resposta.json<{ erro: string }>().erro).toBe('LINK_VALIDO');
+  });
+
+  it('token errado ou onboarding cancelado dão a mesma resposta de link inválido', async () => {
+    const { token, onboardingId } = await cadastrar('Loja Cancelada Pede');
+    await prisma.onboarding.update({
+      where: { id: onboardingId },
+      data: { statusGeral: 'cancelado' },
+    });
+    const { app } = appNoFuturo(15);
+    await app.ready();
+
+    for (const t of ['lixo', token]) {
+      const resposta = await solicitar(t, app);
+      expect(resposta.statusCode).toBe(404);
+      expect(resposta.json()).toEqual({ erro: 'LINK_INVALIDO', mensagem: 'Link inválido' });
+    }
   });
 });
