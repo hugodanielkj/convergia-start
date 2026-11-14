@@ -31,6 +31,7 @@ export function dependenciasDeTeste(parcial: Partial<Dependencias> = {}): Depend
     }),
     armazenamento: new ArmazenamentoEmMemoria(),
     mensageria: new MensageriaEmMemoria(),
+    calendario: null,
     relogio: relogioFixo(AGORA_TESTE),
     resolverSessao: () => Promise.resolve(null),
     auth: {

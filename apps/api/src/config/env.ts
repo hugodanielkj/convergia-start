@@ -14,6 +14,8 @@ const esquemaEnv = z
     APP_URL: z.url().default('http://localhost:3000'),
     GOOGLE_CLIENT_ID: z.preprocess(vazioParaIndefinido, z.string().optional()),
     GOOGLE_CLIENT_SECRET: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    GOOGLE_CALENDAR_REFRESH_TOKEN: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    GOOGLE_CALENDAR_ID: z.preprocess(vazioParaIndefinido, z.string().optional()),
     SESSAO_SEGREDO: z.preprocess(vazioParaIndefinido, z.string().min(32).optional()),
     SESSAO_DURACAO_HORAS: z.coerce.number().int().positive().default(168),
     ARMAZENAMENTO_DIR: z.string().min(1).default('.armazenamento'),
@@ -26,6 +28,13 @@ const esquemaEnv = z
     message: 'SESSAO_SEGREDO é obrigatório em produção',
     path: ['SESSAO_SEGREDO'],
   })
+  .refine(
+    (env) => env.GOOGLE_CALENDAR_REFRESH_TOKEN === undefined || env.GOOGLE_CLIENT_ID !== undefined,
+    {
+      message: 'GOOGLE_CALENDAR_REFRESH_TOKEN precisa de GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET',
+      path: ['GOOGLE_CALENDAR_REFRESH_TOKEN'],
+    },
+  )
   .refine(
     (env) => (env.GOOGLE_CLIENT_ID === undefined) === (env.GOOGLE_CLIENT_SECRET === undefined),
     {

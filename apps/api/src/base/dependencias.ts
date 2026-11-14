@@ -1,4 +1,5 @@
 import type { Mensageria, Relogio } from '@convergia/core/base';
+import type { Calendario } from '@convergia/core/calendario';
 import type { Armazenamento } from '@convergia/core/uploads';
 import type { ConfigAuth, ResolvedorSessao } from './auth.js';
 import type { BarramentoEventos } from './eventos.js';
@@ -10,6 +11,8 @@ export interface Dependencias {
   eventos: BarramentoEventos;
   armazenamento: Armazenamento;
   mensageria: Mensageria;
+  /** Calendário externo da agência (RN-67); `null` quando não há credenciais e os agendamentos ficam pendentes. */
+  calendario: Calendario | null;
   relogio: Relogio;
   resolverSessao: ResolvedorSessao;
   auth: ConfigAuth;

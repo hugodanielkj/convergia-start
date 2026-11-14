@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { relogioSistema } from '@convergia/core/base';
+import { criarCalendarioGoogle } from './adapters/calendario/google.js';
 import { MensageriaEmMemoria } from './adapters/mensageria/em-memoria.js';
 import { ArmazenamentoLocal } from './adapters/storage/local.js';
 import { construirApp } from './app.js';
@@ -20,6 +21,16 @@ const app = construirApp(env, {
   }),
   armazenamento: new ArmazenamentoLocal(env.ARMAZENAMENTO_DIR),
   mensageria: new MensageriaEmMemoria(),
+  // Sem o token de renovação do Google, os agendamentos ficam pendentes no calendário (RN-67).
+  calendario:
+    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CALENDAR_REFRESH_TOKEN
+      ? criarCalendarioGoogle({
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+          refreshToken: env.GOOGLE_CALENDAR_REFRESH_TOKEN,
+          ...(env.GOOGLE_CALENDAR_ID ? { calendarioId: env.GOOGLE_CALENDAR_ID } : {}),
+        })
+      : null,
   relogio: relogioSistema,
   resolverSessao: env.AUTH_DEV_USUARIO_EMAIL
     ? sessaoDeDesenvolvimento(prisma, env.AUTH_DEV_USUARIO_EMAIL)
@@ -40,6 +51,10 @@ const app = construirApp(env, {
         : null,
   },
 });
+
+if (!env.GOOGLE_CALENDAR_REFRESH_TOKEN) {
+  app.log.warn('Google Calendar não configurado: os agendamentos ficam pendentes no calendário');
+}
 
 if (env.AUTH_DEV_USUARIO_EMAIL) {
   app.log.warn(`Sessão de desenvolvimento ativa: todos entram como ${env.AUTH_DEV_USUARIO_EMAIL}`);

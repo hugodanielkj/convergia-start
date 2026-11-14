@@ -23,6 +23,14 @@ declare module '@convergia/core/base' {
   }
 }
 
+/** O calendário externo precisa ser atualizado: o worker de sincronização pega daqui (RN-67). */
+export const PENDENTE_NO_CALENDARIO = {
+  calendarioSituacao: 'pendente',
+  calendarioTentativas: 0,
+  calendarioProximaTentativaEm: null,
+  calendarioErro: null,
+} as const;
+
 export interface AgendamentoVisao {
   readonly id: string;
   readonly tipo: 'reuniao' | 'captacao';
@@ -98,6 +106,7 @@ export async function reagendarAgendamento(
           fim: escolhido.fim,
           status: 'reagendado',
           reagendamentos: { increment: 1 },
+          ...PENDENTE_NO_CALENDARIO,
         },
       });
       if (count === 0) return false;

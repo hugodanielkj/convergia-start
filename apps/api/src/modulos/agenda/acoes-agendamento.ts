@@ -8,6 +8,7 @@ import {
   type UsuarioAutenticado,
 } from '@convergia/core/base';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
+import { PENDENTE_NO_CALENDARIO } from './reagendar.js';
 
 declare module '@convergia/core/base' {
   interface MapaEventos {
@@ -70,6 +71,7 @@ export async function mudarStatusDoAgendamento(
       where: { id: agendamentoId, status: { in: ['agendado', 'reagendado'] } },
       data: {
         status,
+        ...PENDENTE_NO_CALENDARIO,
         ...(acao === 'cancelar' && motivo !== undefined ? { motivoCancelamento: motivo } : {}),
       },
     }),

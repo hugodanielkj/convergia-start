@@ -26,6 +26,22 @@ describe('carregarEnv', () => {
     );
   });
 
+  it('o calendário do Google precisa das credenciais do app e é opcional sem elas', () => {
+    expect(carregarEnv({ DATABASE_URL }).GOOGLE_CALENDAR_REFRESH_TOKEN).toBeUndefined();
+    expect(() => carregarEnv({ DATABASE_URL, GOOGLE_CALENDAR_REFRESH_TOKEN: 'token' })).toThrow(
+      /GOOGLE_CALENDAR_REFRESH_TOKEN precisa/,
+    );
+    const env = carregarEnv({
+      DATABASE_URL,
+      GOOGLE_CLIENT_ID: 'id',
+      GOOGLE_CLIENT_SECRET: 'segredo',
+      GOOGLE_CALENDAR_REFRESH_TOKEN: 'token',
+      GOOGLE_CALENDAR_ID: '',
+    });
+    expect(env.GOOGLE_CALENDAR_REFRESH_TOKEN).toBe('token');
+    expect(env.GOOGLE_CALENDAR_ID).toBeUndefined();
+  });
+
   it('converte a porta para número', () => {
     expect(carregarEnv({ DATABASE_URL, API_PORT: '8080' }).API_PORT).toBe(8080);
   });
