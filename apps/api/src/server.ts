@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { relogioSistema } from '@convergia/core/base';
 import { MensageriaEmMemoria } from './adapters/mensageria/em-memoria.js';
+import { ArmazenamentoLocal } from './adapters/storage/local.js';
 import { construirApp } from './app.js';
 import { sessaoDeDesenvolvimento } from './base/auth.js';
 import { criarBarramentoEmMemoria } from './base/eventos.js';
@@ -17,6 +18,7 @@ const app = construirApp(env, {
   eventos: criarBarramentoEmMemoria((erro, evento) => {
     app.log.error({ err: erro, evento: evento.tipo }, 'falha ao tratar evento');
   }),
+  armazenamento: new ArmazenamentoLocal(env.ARMAZENAMENTO_DIR),
   mensageria: new MensageriaEmMemoria(),
   relogio: relogioSistema,
   resolverSessao: env.AUTH_DEV_USUARIO_EMAIL

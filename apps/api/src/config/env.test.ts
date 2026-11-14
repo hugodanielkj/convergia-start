@@ -12,6 +12,7 @@ describe('carregarEnv', () => {
       DATABASE_URL,
       APP_URL: 'http://localhost:3000',
       SESSAO_DURACAO_HORAS: 168,
+      ARMAZENAMENTO_DIR: '.armazenamento',
     });
   });
 

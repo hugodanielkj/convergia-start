@@ -16,6 +16,7 @@ const esquemaEnv = z
     GOOGLE_CLIENT_SECRET: z.preprocess(vazioParaIndefinido, z.string().optional()),
     SESSAO_SEGREDO: z.preprocess(vazioParaIndefinido, z.string().min(32).optional()),
     SESSAO_DURACAO_HORAS: z.coerce.number().int().positive().default(168),
+    ARMAZENAMENTO_DIR: z.string().min(1).default('.armazenamento'),
   })
   .refine((env) => env.NODE_ENV !== 'production' || env.AUTH_DEV_USUARIO_EMAIL === undefined, {
     message: 'AUTH_DEV_USUARIO_EMAIL é proibido em produção',

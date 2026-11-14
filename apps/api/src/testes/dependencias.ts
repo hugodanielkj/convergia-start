@@ -1,5 +1,6 @@
 import { relogioFixo, type UsuarioAutenticado } from '@convergia/core/base';
 import { MensageriaEmMemoria } from '../adapters/mensageria/em-memoria.js';
+import { ArmazenamentoEmMemoria } from '../adapters/storage/em-memoria.js';
 import type { Dependencias } from '../base/dependencias.js';
 import { criarBarramentoEmMemoria } from '../base/eventos.js';
 import { criarPrisma } from '../base/prisma.js';
@@ -28,6 +29,7 @@ export function dependenciasDeTeste(parcial: Partial<Dependencias> = {}): Depend
     eventos: criarBarramentoEmMemoria((erro) => {
       throw erro;
     }),
+    armazenamento: new ArmazenamentoEmMemoria(),
     mensageria: new MensageriaEmMemoria(),
     relogio: relogioFixo(AGORA_TESTE),
     resolverSessao: () => Promise.resolve(null),
