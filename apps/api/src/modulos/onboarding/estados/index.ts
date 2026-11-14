@@ -56,6 +56,18 @@ export default function estados(app: FastifyInstance): Promise<void> {
   app.deps.eventos.assinar('agendamento.criado', (e) =>
     recalcularPorEvento(e.agenciaId, e.dados.onboardingId, `cliente:${e.dados.onboardingId}`),
   );
+  // Ações da agenda (trilha B): realizado leva à produção (RN-51); cancelar, faltar ou remarcar pode
+  // devolver o onboarding a "aguardando agendamentos". Os eventos não trazem quem agiu.
+  for (const tipo of [
+    'agendamento.realizado',
+    'agendamento.cancelado',
+    'agendamento.nao_compareceu',
+    'agendamento.reagendado',
+  ] as const) {
+    app.deps.eventos.assinar(tipo, (e) =>
+      recalcularPorEvento(e.agenciaId, e.dados.onboardingId, 'sistema'),
+    );
+  }
 
   // Pausar, retomar, cancelar (Admin, RN-53), registrar entrega e encerrar (RN-52).
   app.post('/onboardings/:id/acoes/:acao', { preHandler: exigirUsuario }, async (request) => {
