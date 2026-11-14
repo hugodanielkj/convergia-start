@@ -27,6 +27,14 @@ const esquemaEnv = z
     RESEND_API_KEY: z.preprocess(vazioParaIndefinido, z.string().optional()),
     EMAIL_REMETENTE: z.preprocess(vazioParaIndefinido, z.string().optional()),
     EMAIL_ASSUNTO_PADRAO: z.string().min(1).default('Seu onboarding'),
+    // Proteções do link público (RN-76). CONFIAR_PROXY: de quem aceitar o X-Forwarded-For
+    // (IPs, sub-redes ou loopback/linklocal/uniquelocal; "nenhum" desliga).
+    CONFIAR_PROXY: z.string().min(1).default('loopback,linklocal,uniquelocal'),
+    LIMITE_JANELA_SEGUNDOS: z.coerce.number().int().positive().default(60),
+    LIMITE_PUBLICO_POR_IP: z.coerce.number().int().nonnegative().default(300),
+    LIMITE_PUBLICO_POR_TOKEN: z.coerce.number().int().nonnegative().default(300),
+    LIMITE_TOKENS_INVALIDOS_POR_IP: z.coerce.number().int().nonnegative().default(20),
+    LIMITE_BLOQUEIO_MINUTOS: z.coerce.number().int().positive().default(15),
   })
   .refine((env) => env.NODE_ENV !== 'production' || env.AUTH_DEV_USUARIO_EMAIL === undefined, {
     message: 'AUTH_DEV_USUARIO_EMAIL é proibido em produção',

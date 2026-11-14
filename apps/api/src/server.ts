@@ -8,6 +8,7 @@ import { ArmazenamentoLocal } from './adapters/storage/local.js';
 import { construirApp } from './app.js';
 import { sessaoDeDesenvolvimento } from './base/auth.js';
 import { criarBarramentoEmMemoria } from './base/eventos.js';
+import { configHttpDoEnv } from './base/http/index.js';
 import { criarPrisma } from './base/prisma.js';
 import { carregarEnv } from './config/env.js';
 import { criarProvedorGoogle } from './modulos/auth/provedor-google.js';
@@ -70,6 +71,7 @@ const app = construirApp(env, {
           })
         : null,
   },
+  http: configHttpDoEnv(env),
 });
 
 if (!env.GOOGLE_CALENDAR_REFRESH_TOKEN) {
