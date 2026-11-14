@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { agruparPorDia, gerarSlots, MAX_DIAS_CONSULTA, type EntradaSlots } from './slots.js';
+import {
+  agruparPorDia,
+  gerarSlots,
+  MAX_DIAS_CONSULTA,
+  periodoValido,
+  type EntradaSlots,
+} from './slots.js';
 
 const SP = 'America/Sao_Paulo';
 // Segunda-feira 16/11/2026, 09:00 em São Paulo.
@@ -237,6 +243,17 @@ describe('validação da consulta', () => {
   it('aceita o período máximo', () => {
     const ate = new Date(Date.UTC(2026, 10, 16 + MAX_DIAS_CONSULTA - 1)).toISOString().slice(0, 10);
     expect(() => gerarSlots({ ...base, ate })).not.toThrow();
+  });
+});
+
+describe('período da consulta', () => {
+  it('aceita um dia, o máximo de dias e recusa o resto', () => {
+    expect(periodoValido('2026-11-16', '2026-11-16')).toBe(true);
+    expect(periodoValido('2026-11-16', '2027-01-16')).toBe(true);
+    expect(periodoValido('2026-11-16', '2027-01-17')).toBe(false);
+    expect(periodoValido('2026-11-17', '2026-11-16')).toBe(false);
+    expect(periodoValido('2026-02-30', '2026-03-01')).toBe(false);
+    expect(periodoValido('hoje', 'amanhã')).toBe(false);
   });
 });
 

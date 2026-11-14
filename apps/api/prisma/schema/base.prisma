@@ -36,6 +36,7 @@ model Agencia {
 
   // Relações reversas (ordem alfabética)
   auditoria         AuditoriaLog[]
+  agendamentos      Agendamento[]
   arquivos          Arquivo[]
   bloqueios         Bloqueio[]
   clientes          Cliente[]
@@ -66,6 +67,7 @@ model Usuario {
   criadoEm  DateTime @default(now())
 
   // Relações reversas (ordem alfabética)
+  agendamentos     Agendamento[]
   disponibilidades Disponibilidade[]
   onboardings      Onboarding[]
   sessoes          Sessao[]

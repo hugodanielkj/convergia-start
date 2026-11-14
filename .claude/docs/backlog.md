@@ -45,8 +45,8 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 | A      | [x] S2-3 Preenchimento com rascunho automático e conclusão (RN-17, RN-18, RN-21)                                                    | `modulos/formulario`, `_etapas/formulario`                                              |
 | A      | [x] S2-4 Upload de arquivos com validação no servidor (RN-20); escolher storage S3 local, pois a imagem do MinIO saiu do Docker Hub | `modulos/uploads`, `adapters/storage`                                                   |
 | B      | [x] S2-5 Disponibilidade, bloqueios e feriados (RN-30, RN-44)                                                                       | `modulos/agenda`, `core/agenda`, `app/(painel)/config/agenda`                           |
-| B      | [ ] S2-6 Geração de slots com antecedência mínima e fuso (RN-30 a RN-32)                                                            | `core/agenda`                                                                           |
-| B      | [ ] S2-7 Reserva atômica sem overbooking (RN-33)                                                                                    | `modulos/agenda`                                                                        |
+| B      | [x] S2-6 Geração de slots com antecedência mínima e fuso (RN-30 a RN-32)                                                            | `core/agenda`                                                                           |
+| B      | [x] S2-7 Reserva atômica sem overbooking (RN-33)                                                                                    | `modulos/agenda`                                                                        |
 
 ## Sprint 3 — Acessos e painel · Reunião
 

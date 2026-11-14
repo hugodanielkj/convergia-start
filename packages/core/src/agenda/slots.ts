@@ -47,6 +47,16 @@ function diasDoPeriodo(de: string, ate: string): string[] {
   return dias;
 }
 
+/** O período da consulta é aceito por `gerarSlots`: datas reais, fim depois do início, até o limite. */
+export function periodoValido(de: string, ate: string): boolean {
+  try {
+    diasDoPeriodo(de, ate);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function horaTexto(minutos: number): string {
   const hh = String(Math.floor(minutos / 60)).padStart(2, '0');
   const mm = String(minutos % 60).padStart(2, '0');

@@ -1,4 +1,5 @@
-import { feriadosNacionais } from '@convergia/core/agenda';
+import { dataValida, feriadosNacionais, periodoValido } from '@convergia/core/agenda';
+import { fusoValido } from '@convergia/core/base';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import {
@@ -7,6 +8,9 @@ import {
   prismaDaRequisicao,
   usuarioDaRequisicao,
 } from '../../base/auth.js';
+import { localizarLink } from '../link/localizar-link.js';
+import { reservarSlot } from './reservar.js';
+import { carregarContexto, listarSlots } from './slots-publicos.js';
 import { criarBloqueio, listarBloqueios, removerBloqueio } from './bloqueios.js';
 import {
   criarDisponibilidade,
@@ -30,6 +34,29 @@ const corpoBloqueio = z.object({
   dataInicio: z.string().max(10),
   dataFim: z.string().max(10),
   motivo: z.string().max(1000),
+});
+
+const tipoDeAtendimento = z.enum(['reuniao', 'captacao']);
+const fusoDoCliente = z.string().max(64).refine(fusoValido, 'Fuso inválido');
+const tokenDaRota = z.object({ token: z.string().min(1).max(100) });
+
+const consultaSlots = z
+  .object({
+    tipo: tipoDeAtendimento,
+    de: z.string().max(10).refine(dataValida, 'Data inválida').optional(),
+    ate: z.string().max(10).refine(dataValida, 'Data inválida').optional(),
+    fuso: fusoDoCliente.optional(),
+  })
+  .refine((c) => c.ate === undefined || c.de !== undefined, 'Informe `de` junto com `ate`')
+  .refine(
+    (c) => c.de === undefined || c.ate === undefined || periodoValido(c.de, c.ate),
+    'Período inválido',
+  );
+
+const corpoReserva = z.object({
+  tipo: tipoDeAtendimento,
+  inicio: z.iso.datetime(),
+  fuso: fusoDoCliente.optional(),
 });
 
 const consultaFeriados = z.object({ ano: z.coerce.number().int().min(1900).max(2200).optional() });
@@ -111,6 +138,62 @@ export default function agenda(app: FastifyInstance): Promise<void> {
       select: { fusoHorario: true },
     });
     return { feriados: feriadosNacionais(ano ?? anoNoFuso(app.deps.relogio.agora(), fusoHorario)) };
+  });
+
+  // Rotas públicas do cliente (RN-01): o token do link é a única credencial. Servem à etapa
+  // "reunião" da página do cliente (S3-6) e nunca devolvem dados de outro onboarding (RN-13).
+  app.get('/publico/onboardings/:token/slots', async (request, reply) => {
+    const { token } = tokenDaRota.parse(request.params);
+    const consulta = consultaSlots.parse(request.query);
+    void reply.header('cache-control', 'no-store');
+
+    const link = await localizarLink(app.deps.prisma, token, app.deps.relogio.agora());
+    if (link.situacao === 'invalido') {
+      return reply.status(404).send({ erro: 'LINK_INVALIDO', mensagem: 'Link inválido' });
+    }
+    if (link.situacao === 'expirado') {
+      return reply.status(410).send({ erro: 'LINK_EXPIRADO', mensagem: 'Este link expirou' });
+    }
+    const contexto = await carregarContexto(app.deps.prisma, link.link.agenciaId);
+    return listarSlots(contexto, consulta, app.deps.relogio.agora());
+  });
+
+  app.post('/publico/onboardings/:token/agendamentos', async (request, reply) => {
+    const { token } = tokenDaRota.parse(request.params);
+    const corpo = corpoReserva.parse(request.body);
+    void reply.header('cache-control', 'no-store');
+
+    const agora = app.deps.relogio.agora();
+    const link = await localizarLink(app.deps.prisma, token, agora);
+    if (link.situacao === 'invalido') {
+      return reply.status(404).send({ erro: 'LINK_INVALIDO', mensagem: 'Link inválido' });
+    }
+    if (link.situacao === 'expirado') {
+      return reply.status(410).send({ erro: 'LINK_EXPIRADO', mensagem: 'Este link expirou' });
+    }
+
+    const resultado = await reservarSlot(
+      app.deps.prisma,
+      app.deps.eventos,
+      link.link,
+      { tipo: corpo.tipo, inicio: new Date(corpo.inicio), fuso: corpo.fuso },
+      agora,
+    );
+    switch (resultado.tipo) {
+      case 'criado':
+        return reply.status(201).send({ agendamento: resultado.agendamento });
+      case 'indisponivel':
+        return reply.status(409).send({
+          erro: 'SLOT_INDISPONIVEL',
+          mensagem: 'Este horário acabou de ser reservado. Escolha outro.',
+          ...resultado.lista,
+        });
+      case 'ja_agendado':
+        return reply.status(409).send({
+          erro: 'JA_AGENDADO',
+          mensagem: 'Já existe um agendamento ativo deste tipo para o seu onboarding.',
+        });
+    }
   });
 
   return Promise.resolve();

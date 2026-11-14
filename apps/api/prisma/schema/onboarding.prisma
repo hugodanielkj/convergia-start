@@ -40,6 +40,7 @@ model Onboarding {
   statusGeral   StatusOnboarding  @default(criado)
   criadoEm      DateTime          @default(now())
   atualizadoEm  DateTime          @updatedAt
+  agendamentos  Agendamento[]
   etapas        EtapaOnboarding[]
   link          LinkOnboarding?
 
