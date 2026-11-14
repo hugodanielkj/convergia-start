@@ -17,6 +17,7 @@ import {
 } from '@convergia/core/estados';
 import type { StatusOnboarding } from '@convergia/core/onboarding';
 import type { PrismaDaAgencia } from '../../../base/escopo-agencia.js';
+import { PENDENTE_NO_CALENDARIO } from '../../agenda/reagendar.js';
 import { dataDaEntrega, lerFatos, type TransacaoDaAgencia } from './fatos.js';
 
 declare module '@convergia/core/base' {
@@ -86,11 +87,20 @@ async function gravarTransicao(tx: TransacaoDaAgencia, t: Transicao): Promise<bo
   return true;
 }
 
-/** RN-53: cancelar o onboarding cancela os agendamentos que ainda não aconteceram. */
+interface AgendamentoCancelado {
+  readonly id: string;
+  readonly tipo: 'reuniao' | 'captacao';
+}
+
+/**
+ * RN-53: cancelar o onboarding cancela os agendamentos que ainda não aconteceram. Como no
+ * cancelamento pela agenda, cada um fica pendente no calendário, para o worker remover o evento do
+ * Google (RN-67), e guarda o motivo do cancelamento do onboarding.
+ */
 async function cancelarAgendamentosFuturos(
   tx: TransacaoDaAgencia,
   t: Transicao,
-): Promise<string[]> {
+): Promise<AgendamentoCancelado[]> {
   const futuros = await tx.agendamento.findMany({
     where: {
       onboardingId: t.onboardingId,
@@ -100,8 +110,10 @@ async function cancelarAgendamentosFuturos(
     select: { id: true, tipo: true },
   });
   if (futuros.length === 0) return [];
-  const ids = futuros.map((a) => a.id);
-  await tx.agendamento.updateMany({ where: { id: { in: ids } }, data: { status: 'cancelado' } });
+  await tx.agendamento.updateMany({
+    where: { id: { in: futuros.map((a) => a.id) }, status: { in: ['agendado', 'reagendado'] } },
+    data: { status: 'cancelado', motivoCancelamento: t.motivo, ...PENDENTE_NO_CALENDARIO },
+  });
   await tx.auditoriaLog.createMany({
     data: futuros.map((a) => ({
       agenciaId: t.agenciaId,
@@ -113,7 +125,7 @@ async function cancelarAgendamentosFuturos(
       em: t.agora,
     })),
   });
-  return ids;
+  return futuros;
 }
 
 function publicar(
@@ -234,10 +246,23 @@ export async function executarAcao(
     if (!(await gravarTransicao(tx, transicao))) {
       throw new RegraVioladaError('RN-49', 'O status mudou enquanto você agia; atualize a página');
     }
-    const ids = para === 'cancelado' ? await cancelarAgendamentosFuturos(tx, transicao) : [];
-    return { t: transicao, cancelados: ids };
+    const cancelados = para === 'cancelado' ? await cancelarAgendamentosFuturos(tx, transicao) : [];
+    return { t: transicao, cancelados };
   });
-  await publicar(eventos, t, cancelados);
+  await publicar(
+    eventos,
+    t,
+    cancelados.map((a) => a.id),
+  );
+  // O mesmo evento do cancelamento pela agenda: o calendário remove o evento na hora (RN-67).
+  for (const a of cancelados) {
+    await eventos.publicar({
+      tipo: 'agendamento.cancelado',
+      agenciaId: t.agenciaId,
+      ocorridoEm: agora,
+      dados: { agendamentoId: a.id, onboardingId, tipo: a.tipo },
+    });
+  }
   return t.para;
 }
 

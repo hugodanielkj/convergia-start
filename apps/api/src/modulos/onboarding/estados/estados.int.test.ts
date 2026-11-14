@@ -29,6 +29,7 @@ let appResponsavel: FastifyInstance;
 let appOutro: FastifyInstance;
 let appOutraAgencia: FastifyInstance;
 const statusPublicados: { onboardingId: string; para: string; cancelados: string[] }[] = [];
+const agendamentosCanceladosPublicados: string[] = [];
 
 function construir(usuario: UsuarioAutenticado | null): FastifyInstance {
   const app = construirApp(
@@ -45,6 +46,10 @@ function construir(usuario: UsuarioAutenticado | null): FastifyInstance {
       para: e.dados.para,
       cancelados: e.dados.agendamentosCancelados,
     });
+    return Promise.resolve();
+  });
+  app.deps.eventos.assinar('agendamento.cancelado', (e) => {
+    agendamentosCanceladosPublicados.push(e.dados.agendamentoId);
     return Promise.resolve();
   });
   return app;
@@ -226,6 +231,42 @@ describe('RN-49 a RN-51 status automático', () => {
     expect(await statusDe(id)).toBe('aguardando_agendamentos');
   });
 
+  it('marcar reunião e captação como realizadas pela agenda avança o status (RN-51)', async () => {
+    const { id } = await criarOnboarding('agenda-realizado', 'em_andamento');
+    await concluirEtapas(id, ['formulario', 'acessos']);
+    const reuniao = await agendar(id, 'reuniao', 'agendado', -3);
+    const captacao = await agendar(id, 'captacao', 'agendado', -2);
+    await avisar(id);
+    expect(await statusDe(id)).toBe('aguardando_reuniao');
+
+    const marcar = (agId: string, caminho: string, payload?: object) =>
+      appAdmin.inject({
+        method: 'POST',
+        url: `/agendamentos/${agId}/${caminho}`,
+        payload: payload ?? {},
+      });
+    expect((await marcar(reuniao.id, 'realizado')).statusCode).toBe(200);
+    expect(await statusDe(id)).toBe('aguardando_captacao');
+    expect((await marcar(captacao.id, 'realizado')).statusCode).toBe(200);
+    expect(await statusDe(id)).toBe('em_producao');
+  });
+
+  it('cancelar um agendamento pela agenda volta a aguardar agendamento', async () => {
+    const { id } = await criarOnboarding('agenda-cancela', 'em_andamento');
+    await concluirEtapas(id, ['formulario', 'acessos']);
+    await agendar(id, 'reuniao', 'agendado', 4);
+    const captacao = await agendar(id, 'captacao', 'agendado', 6);
+    await avisar(id);
+    expect(await statusDe(id)).toBe('aguardando_reuniao');
+    const r = await appAdmin.inject({
+      method: 'POST',
+      url: `/agendamentos/${captacao.id}/cancelar`,
+      payload: { motivo: 'cliente pediu outra data' },
+    });
+    expect(r.statusCode).toBe(200);
+    expect(await statusDe(id)).toBe('aguardando_agendamentos');
+  });
+
   it('a agência marcar o último acesso obrigatório recalcula o status', async () => {
     const { id } = await criarOnboarding('acessos', 'em_andamento');
     await concluirEtapas(id, ['formulario']);
@@ -333,6 +374,15 @@ describe('RN-53 pausar, retomar e cancelar', () => {
       (await prisma.agendamento.findUniqueOrThrow({ where: { id: agId } })).status;
     expect(await status(futuro.id)).toBe('cancelado');
     expect(await status(passado.id)).toBe('agendado');
+    // O calendário (RN-67) remove o evento do Google: fica pendente e recebe o evento de cancelamento.
+    const cancelado = await prisma.agendamento.findUniqueOrThrow({ where: { id: futuro.id } });
+    expect(cancelado).toMatchObject({
+      calendarioSituacao: 'pendente',
+      calendarioTentativas: 0,
+      motivoCancelamento: 'cliente desistiu',
+    });
+    expect(agendamentosCanceladosPublicados).toContain(futuro.id);
+    expect(agendamentosCanceladosPublicados).not.toContain(passado.id);
     expect(statusPublicados).toContainEqual({
       onboardingId: id,
       para: 'cancelado',
