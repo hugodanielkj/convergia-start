@@ -1,5 +1,7 @@
-import { aceiteValido, statusAposPrimeiroAcesso } from '@convergia/core/consentimento';
+import type { PublicadorEventos } from '@convergia/core/base';
+import { aceiteValido } from '@convergia/core/consentimento';
 import type { PrismaClient } from '../../base/prisma.js';
+import { avisarEtapasMudaram } from '../onboarding/estados/status.js';
 import { localizarLink, type LinkLocalizado } from '../link/localizar-link.js';
 
 export type ResultadoLink<T> =
@@ -22,32 +24,22 @@ export async function comLinkValido<T>(
 const atorCliente = (onboardingId: string): string => `cliente:${onboardingId}`;
 
 /**
- * Registra a primeira abertura do link e inicia o andamento (RN-50). A chave única de
- * `primeiros_acessos` garante que, mesmo com várias abertas ao mesmo tempo, só uma conta.
+ * Registra a primeira abertura do link (RN-50). A chave única de `primeiros_acessos` garante que,
+ * mesmo com várias aberturas ao mesmo tempo, só uma conta. O status geral passa a `em_andamento`
+ * pela máquina de estados, que reage ao evento `onboarding.etapas_mudaram`.
  */
 export async function registrarPrimeiroAcesso(
   prisma: PrismaClient,
+  eventos: PublicadorEventos,
   link: LinkLocalizado,
   agora: Date,
 ): Promise<boolean> {
-  return prisma.$transaction(async (tx) => {
+  const primeiro = await prisma.$transaction(async (tx) => {
     const { count } = await tx.primeiroAcesso.createMany({
       data: [{ onboardingId: link.onboardingId, agenciaId: link.agenciaId, em: agora }],
       skipDuplicates: true,
     });
     if (count === 0) return false;
-
-    const onboarding = await tx.onboarding.findUniqueOrThrow({
-      where: { id: link.onboardingId },
-      select: { statusGeral: true },
-    });
-    const novo = statusAposPrimeiroAcesso(onboarding.statusGeral);
-    if (novo !== onboarding.statusGeral) {
-      await tx.onboarding.updateMany({
-        where: { id: link.onboardingId, statusGeral: onboarding.statusGeral },
-        data: { statusGeral: novo },
-      });
-    }
     await tx.auditoriaLog.create({
       data: {
         agenciaId: link.agenciaId,
@@ -55,11 +47,15 @@ export async function registrarPrimeiroAcesso(
         acao: 'onboarding.primeiro_acesso',
         entidade: 'Onboarding',
         entidadeId: link.onboardingId,
-        dados: { de: onboarding.statusGeral, para: novo },
       },
     });
     return true;
   });
+  if (primeiro) {
+    const ator = atorCliente(link.onboardingId);
+    await avisarEtapasMudaram(eventos, link.agenciaId, link.onboardingId, ator, agora);
+  }
+  return primeiro;
 }
 
 /** Quando o cliente aceitou a versão vigente do termo, ou `null` se ainda não aceitou. */

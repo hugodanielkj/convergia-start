@@ -1,0 +1,18 @@
+// Módulo onboarding/estados (S4-1, trilha A). Histórico das mudanças do status geral (RN-49 a RN-53).
+// A entrega dos primeiros conteúdos é a transição para `primeiro_conteudo_entregue` (RN-52).
+// `ator`: "usuario:<id>", "cliente:<onboardingId>" ou "sistema", como na auditoria.
+model TransicaoStatus {
+  id           String           @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia          @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId String
+  onboarding   Onboarding       @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  de           StatusOnboarding
+  para         StatusOnboarding
+  motivo       String?
+  ator         String
+  em           DateTime         @default(now())
+
+  @@index([agenciaId, onboardingId, em])
+  @@map("transicoes_status")
+}

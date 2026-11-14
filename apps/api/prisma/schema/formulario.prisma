@@ -38,6 +38,8 @@ model RespostaFormulario {
   respostas    Json
   enviadaEm    DateTime?
   fechadaEm    DateTime?
+  // Reabertura pela agência (RN-54): libera a edição até o próximo envio, mesmo após a reunião.
+  reabertaEm   DateTime?
   criadoEm     DateTime         @default(now())
   atualizadoEm DateTime         @updatedAt
 

@@ -35,7 +35,8 @@ export default function consentimento(app: FastifyInstance): Promise<void> {
       app.deps.prisma,
       token,
       app.deps.relogio.agora(),
-      (link) => registrarPrimeiroAcesso(app.deps.prisma, link, app.deps.relogio.agora()),
+      (link) =>
+        registrarPrimeiroAcesso(app.deps.prisma, app.deps.eventos, link, app.deps.relogio.agora()),
     );
     if (resultado.tipo !== 'ok') return recusarLink(reply, resultado.tipo);
     return { primeiroAcesso: resultado.valor };

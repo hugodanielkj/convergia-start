@@ -1,6 +1,7 @@
 import type { Respostas } from '@convergia/core/formulario';
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { avisarEtapasMudaram } from '../onboarding/estados/status.js';
 import {
   exigirAdmin,
   exigirUsuario,
@@ -122,14 +123,15 @@ export default function formulario(app: FastifyInstance): Promise<void> {
   app.post('/publico/onboardings/:token/formulario/enviar', async (request, reply) => {
     const { token } = parametrosToken.parse(request.params);
     const { respostas } = corpoRespostas.parse(request.body);
-    const r = await comLinkValido(app.deps.prisma, token, app.deps.relogio.agora(), (link) =>
-      enviarFormularioDoCliente(
-        app.deps.prisma,
-        link,
-        respostas as Respostas,
-        app.deps.relogio.agora(),
-      ),
-    );
+    const agora = app.deps.relogio.agora();
+    const r = await comLinkValido(app.deps.prisma, token, agora, async (link) => {
+      const g = await enviarFormularioDoCliente(app.deps.prisma, link, respostas, agora);
+      if (g.tipo === 'ok' && g.valor.tipo === 'gravado') {
+        const ator = `cliente:${link.onboardingId}`;
+        await avisarEtapasMudaram(app.deps.eventos, link.agenciaId, link.onboardingId, ator, agora);
+      }
+      return g;
+    });
     if (r.tipo !== 'ok') return recusarLink(reply, r.tipo);
     return responderGravacao(reply, r.valor);
   });
