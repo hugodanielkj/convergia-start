@@ -52,3 +52,28 @@ export async function buscarSituacaoCaptacao(
     return { tipo: 'falha', mensagem: 'Não foi possível falar com o servidor.' };
   }
 }
+
+const esquemaPrazo = z.union([
+  z.object({ definido: z.literal(true), data: z.string() }),
+  z.object({ definido: z.literal(false) }),
+]);
+
+export type PrazoDoCliente = z.infer<typeof esquemaPrazo>;
+
+/** Prazo de liberação dos primeiros conteúdos (RN-45). Falha vira "a definir": não trava a etapa. */
+export async function buscarPrazo(
+  baseUrl: string,
+  token: string,
+  fetcher: typeof fetch,
+): Promise<PrazoDoCliente> {
+  try {
+    const resposta = await fetcher(
+      `${baseUrl}/publico/onboardings/${encodeURIComponent(token)}/prazo`,
+      { cache: 'no-store' },
+    );
+    const corpo = esquemaPrazo.safeParse(await resposta.json().catch(() => null));
+    return resposta.status === 200 && corpo.success ? corpo.data : { definido: false };
+  } catch {
+    return { definido: false };
+  }
+}

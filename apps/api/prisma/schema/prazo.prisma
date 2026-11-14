@@ -1,0 +1,27 @@
+// Módulo prazo (S4-5, S4-6, trilha B). Data de liberação dos primeiros conteúdos (RN-43 a RN-48).
+// Só existe depois que a captação foi agendada (RN-45). A data fica gravada porque é a que o
+// cliente recebeu: um bloqueio ou feriado cadastrado depois não muda o prazo sozinho.
+// `agenciaId` é só uma coluna (sem relação), para não alterar a `Agencia` no schema base (RN-75).
+enum OrigemPrazo {
+  calculado
+  manual
+}
+
+model PrazoLiberacao {
+  id            String      @id @default(uuid(7))
+  agenciaId     String
+  onboardingId  String      @unique
+  onboarding    Onboarding  @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  data          DateTime    @db.Date
+  origem        OrigemPrazo @default(calculado)
+  /// Captação usada no cálculo: dia (no fuso da agência) e prazo de produção da época.
+  captacaoData  DateTime    @db.Date
+  diasUteis     Int
+  /// Motivo do ajuste manual (RN-47).
+  justificativa String?
+  criadoEm      DateTime    @default(now())
+  atualizadoEm  DateTime    @updatedAt
+
+  @@index([agenciaId, data])
+  @@map("prazos_liberacao")
+}

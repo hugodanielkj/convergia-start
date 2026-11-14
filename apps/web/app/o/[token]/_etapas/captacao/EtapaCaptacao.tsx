@@ -2,15 +2,19 @@ import { notFound, redirect } from 'next/navigation';
 import { URL_API } from '../../../../_lib/url-api';
 import { CartaoEtapa } from '../../_componentes/CartaoEtapa';
 import { criarApiReuniao } from '../reuniao/api';
-import { buscarSituacaoCaptacao } from './api';
+import { buscarPrazo, buscarSituacaoCaptacao } from './api';
 import { CaptacaoMarcada, NovaCaptacao } from './CaptacaoCliente';
+import { Prazo } from './Prazo';
 
 /**
  * Etapa D: captação presencial. Fica bloqueada até a reunião ser agendada (RN-39); depois o
  * cliente informa o local (RN-40) e escolhe o dia, com as mesmas regras da reunião (RN-41).
  */
 export async function EtapaCaptacao({ token }: { token: string }) {
-  const resultado = await buscarSituacaoCaptacao(URL_API, token, fetch);
+  const [resultado, prazo] = await Promise.all([
+    buscarSituacaoCaptacao(URL_API, token, fetch),
+    buscarPrazo(URL_API, token, fetch),
+  ]);
   if (resultado.tipo === 'expirado') redirect(`/o/${encodeURIComponent(token)}/expirado`);
   if (resultado.tipo === 'invalido') notFound();
   if (resultado.tipo === 'falha') throw new Error(resultado.mensagem);
@@ -20,6 +24,7 @@ export async function EtapaCaptacao({ token }: { token: string }) {
     return (
       <CartaoEtapa titulo="Primeira captação" status="bloqueada">
         <p>{motivoBloqueio}</p>
+        <Prazo prazo={prazo} />
       </CartaoEtapa>
     );
   }
@@ -27,6 +32,7 @@ export async function EtapaCaptacao({ token }: { token: string }) {
     return (
       <CartaoEtapa titulo="Primeira captação" status="concluida">
         <p>Captação realizada. Obrigado!</p>
+        <Prazo prazo={prazo} />
       </CartaoEtapa>
     );
   }
@@ -40,6 +46,7 @@ export async function EtapaCaptacao({ token }: { token: string }) {
       return (
         <CartaoEtapa titulo="Primeira captação" status="concluida">
           <CaptacaoMarcada token={token} agendamento={doCliente} dados={agendamento.dados} />
+          <Prazo prazo={prazo} />
         </CartaoEtapa>
       );
     }
@@ -47,6 +54,7 @@ export async function EtapaCaptacao({ token }: { token: string }) {
   return (
     <CartaoEtapa titulo="Primeira captação" status="pendente">
       <NovaCaptacao token={token} />
+      <Prazo prazo={prazo} />
     </CartaoEtapa>
   );
 }
