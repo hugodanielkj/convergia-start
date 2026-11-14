@@ -1,6 +1,6 @@
 # Sprint 1 — Base compartilhada, login e cadastro
 
-**Status:** aprovada pelo PO em 2026-11-13, reorganizada em duas trilhas (D-24).
+**Status:** concluída em 2026-11-14 (trilhas A e B na `hml`). Aprovada pelo PO em 2026-11-13, reorganizada em duas trilhas (D-24).
 
 **Objetivo:** a agência entra no sistema, cadastra um cliente novo e recebe o link único de onboarding dele, com segurança e isolamento de dados.
 
@@ -44,8 +44,18 @@ As rotas da trilha B usam o contrato `exigirUsuario` da S1-1; nos testes, um usu
 
 ### Trilha B
 
+- **Cadastro de cliente (S1-3):** a agência cadastra empresa e contato com WhatsApp ou e-mail; o telefone vira o padrão internacional e o e-mail vai para minúsculas. Se o e-mail ou o WhatsApp já existirem, o sistema avisa antes de criar e só grava se a agência confirmar. Lista de clientes com status e etapas.
+- **Onboarding automático (S1-4):** cada cliente novo nasce com o onboarding e as quatro etapas pendentes, tendo o Admin como responsável. Um cliente nunca tem dois onboardings ativos, nem com dois cliques ao mesmo tempo.
+- **Link único (S1-5):** cada onboarding tem um link que só o cliente conhece, com validade configurável. A agência gera um novo link a qualquer momento e o anterior deixa de funcionar na hora. Link expirado mostra uma página amigável e o cliente pode pedir um novo.
+
+**Não entregue:** nada da trilha B ficou para trás. O envio automático do convite continua para a S5-4 (D-23).
+
 ## Retro
 
 ### Trilha A
 
 ### Trilha B
+
+- **Manter:** (1) regras puras em `core` primeiro, antes de existir banco, com testes citando a RN; (2) testes de integração com banco real, incluindo isolamento entre duas agências; (3) conferir a tela no navegador contra a API de verdade antes de abrir o PR.
+- **Melhorar:** (1) `base.prisma` e `backlog.md` geram conflito quando as duas trilhas mesclam no mesmo dia, então avisar a outra trilha antes de mexer neles; (2) as imagens Docker da CI levam mais que o resto, o que atrasa o merge; (3) um arquivo do projeto (`.claude/launch.json`) já existia e foi sobrescrito por engano uma vez, então conferir `git status` antes de criar arquivos em `.claude/`.
+- **Achados para a trilha A:** o botão "Sair" do painel responde 415 (formulário comum não é aceito pela API) e a página do cliente precisa mandar para `/o/<token>/expirado` ao receber 410.
