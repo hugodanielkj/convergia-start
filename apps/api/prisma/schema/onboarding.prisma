@@ -43,6 +43,8 @@ model Onboarding {
   agendamentos  Agendamento[]
   etapas        EtapaOnboarding[]
   link          LinkOnboarding?
+  notificacoes  Notificacao[]
+  preferencia   PreferenciaEnvio?
   transicoes    TransicaoStatus[]
 
   @@index([agenciaId, clienteId])

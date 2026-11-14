@@ -48,7 +48,9 @@ model Agencia {
   etapasOnboarding    EtapaOnboarding[]
   linksOnboarding     LinkOnboarding[]
   modeloFormulario    ModeloFormulario?
+  notificacoes        Notificacao[]
   onboardings         Onboarding[]
+  preferenciasEnvio   PreferenciaEnvio[]
   primeirosAcessos    PrimeiroAcesso[]
   respostasFormulario RespostaFormulario[]
   sessoes             Sessao[]

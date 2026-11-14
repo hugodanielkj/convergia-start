@@ -49,6 +49,19 @@ export async function exportarDadosDoCliente(
         orderBy: { em: 'asc' },
         select: { de: true, para: true, motivo: true, ator: true, em: true },
       },
+      notificacoes: {
+        orderBy: { criadoEm: 'asc' },
+        select: {
+          tipo: true,
+          categoria: true,
+          corpo: true,
+          status: true,
+          canal: true,
+          criadoEm: true,
+          enviadaEm: true,
+        },
+      },
+      preferencia: { select: { lembretesDesativadosEm: true } },
       agendamentos: {
         orderBy: { inicio: 'asc' },
         select: { id: true, tipo: true, inicio: true, fim: true, status: true, localOuLink: true },

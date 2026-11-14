@@ -76,8 +76,8 @@ Os dois lados usam o contrato de mensageria criado na S1-1, então avançam em p
 
 | Trilha | História                                                                                          | Pastas                                               |
 | ------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| A      | [~] S5-1 Templates editáveis com variáveis (RN-55, seção 8)                                       | `modulos/templates`, `app/(painel)/config/templates` |
-| A      | [ ] S5-2 Envio por e-mail e WhatsApp (MegaAPI), fallback, log e retentativa (RN-60 a RN-62, D-07) | `adapters/mensageria`, `modulos/notificacoes/envio`  |
+| A      | [x] S5-1 Templates editáveis com variáveis (RN-55, seção 8)                                       | `modulos/templates`, `app/(painel)/config/templates` |
+| A      | [x] S5-2 Envio por e-mail e WhatsApp (MegaAPI), fallback, log e retentativa (RN-60 a RN-62, D-07) | `adapters/mensageria`, `modulos/notificacoes/envio`  |
 | B      | [ ] S5-3 Lembretes de pendência e de compromisso, janela de envio (RN-56, RN-57, RN-59)           | `modulos/notificacoes/lembretes`, `core/lembretes`   |
 | B      | [ ] S5-4 Alertas internos e convite automático (RN-09, RN-58)                                     | `modulos/notificacoes/alertas`                       |
 

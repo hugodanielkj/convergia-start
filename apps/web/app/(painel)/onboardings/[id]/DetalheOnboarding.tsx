@@ -5,7 +5,7 @@ import { rotuloAcesso } from './acessos/tipos';
 import { AcoesRapidas } from './AcoesRapidas';
 import estilos from './detalhe.module.css';
 import { LinhaDoTempo } from './LinhaDoTempo';
-import { textoDaResposta, type Detalhe, type ItemAuditoria } from './tipos';
+import { descreverNotificacao, textoDaResposta, type Detalhe, type ItemAuditoria } from './tipos';
 
 const ROTULO_AGENDAMENTO: Readonly<Record<string, string>> = {
   agendado: 'Agendado',
@@ -141,10 +141,23 @@ export function DetalheOnboarding({
       </div>
 
       <section className={estilos.secao} aria-labelledby="titulo-notificacoes">
-        <h2 id="titulo-notificacoes">Notificações enviadas</h2>
-        <p className={estilos.vazio}>
-          O histórico de mensagens chega na Sprint 5, com o envio automático.
-        </p>
+        <h2 id="titulo-notificacoes">Notificações</h2>
+        {detalhe.notificacoes.length === 0 ? (
+          <p className={estilos.vazio}>Nenhuma mensagem enviada a este cliente ainda.</p>
+        ) : (
+          <ul className={estilos.lista}>
+            {detalhe.notificacoes.map((n) => {
+              const d = descreverNotificacao(n);
+              return (
+                <li key={n.id}>
+                  <strong>{d.titulo}</strong> · {formatarDataHora(n.enviadaEm ?? n.criadoEm)} ·{' '}
+                  {d.situacao}
+                  {d.detalhe && <small>{d.detalhe}</small>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <LinhaDoTempo onboardingId={detalhe.id} inicial={linhaDoTempo} />

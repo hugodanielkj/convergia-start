@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { detalheDoItem, nomeDoAtor, rotuloAcaoAuditoria, textoDaResposta } from './tipos';
+import {
+  descreverNotificacao,
+  detalheDoItem,
+  nomeDoAtor,
+  rotuloAcaoAuditoria,
+  textoDaResposta,
+} from './tipos';
 
 describe('linha do tempo do detalhe (RN-65)', () => {
   it('descreve mudança de status com motivo', () => {
@@ -35,5 +41,60 @@ describe('respostas do formulário no detalhe', () => {
       'logo.png, arquivo removido',
     );
     expect(textoDaResposta({ tipo: 'numero', valor: null }, arquivos)).toBe('—');
+  });
+});
+
+describe('histórico de notificações no detalhe (RN-62)', () => {
+  const base = {
+    id: 'n1',
+    tipo: 'convite',
+    categoria: 'transacional',
+    status: 'enviada' as const,
+    canal: 'email' as const,
+    totalTentativas: 2,
+    erro: null,
+    criadoEm: '2026-11-16T12:00:00Z',
+    enviadaEm: '2026-11-16T12:01:00Z',
+  };
+
+  it('mostra o canal e quantas tentativas levou', () => {
+    expect(descreverNotificacao(base)).toEqual({
+      titulo: 'Convite',
+      situacao: 'Enviada · E-mail',
+      detalhe: '2 tentativas',
+    });
+  });
+
+  it('explica pendência sem credencial, opt-out e erro', () => {
+    const pendente = {
+      ...base,
+      status: 'pendente' as const,
+      canal: 'email' as const,
+      totalTentativas: 0,
+    };
+    expect(descreverNotificacao({ ...pendente, erro: 'canal_nao_configurado' })).toEqual({
+      titulo: 'Convite',
+      situacao: 'Na fila',
+      detalhe: 'Aguardando as credenciais de envio',
+    });
+    expect(
+      descreverNotificacao({
+        ...pendente,
+        status: 'cancelada',
+        erro: 'opt_out',
+        tipo: 'lembrete_pendencia',
+      }),
+    ).toMatchObject({
+      titulo: 'Lembrete de pendência',
+      detalhe: 'O cliente pediu para não receber lembretes',
+    });
+    expect(
+      descreverNotificacao({
+        ...base,
+        status: 'falhou',
+        erro: 'numero invalido',
+        totalTentativas: 1,
+      }).detalhe,
+    ).toBe('Erro: numero invalido');
   });
 });
