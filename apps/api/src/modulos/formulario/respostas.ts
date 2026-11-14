@@ -6,6 +6,7 @@ import {
   type UsuarioAutenticado,
 } from '@convergia/core/base';
 import { TERMO_ATUAL } from '@convergia/core/consentimento';
+import { garantirReabertura, motivoObrigatorio } from '@convergia/core/estados';
 import {
   validarRespostas,
   type CampoFormulario,
@@ -43,13 +44,23 @@ export type ResultadoGravacao =
 const lerRespostas = (json: unknown): Respostas => (json ?? {}) as Respostas;
 const ator = (onboardingId: string): string => `cliente:${onboardingId}`;
 
-/** Edição trancada pela agência ou porque a reunião já ocorreu (RN-21). */
+interface SituacaoResposta {
+  readonly enviadaEm: Date | null;
+  readonly fechadaEm: Date | null;
+  readonly reabertaEm: Date | null;
+}
+
+/**
+ * Edição trancada pela agência ou porque a reunião já ocorreu (RN-21). Reaberto pela agência e ainda
+ * não reenviado, o formulário fica livre mesmo depois da reunião (RN-54).
+ */
 async function motivoBloqueio(
   prisma: PrismaDaAgencia,
   onboardingId: string,
-  fechadaEm: Date | null,
+  resposta: SituacaoResposta | null,
 ): Promise<'fechado' | 'reuniao_realizada' | null> {
-  if (fechadaEm) return 'fechado';
+  if (resposta?.fechadaEm) return 'fechado';
+  if (resposta?.reabertaEm && !resposta.enviadaEm) return null;
   const reuniao = await prisma.etapaOnboarding.findFirst({
     where: { onboardingId, tipo: 'reuniao', status: 'concluida' },
   });
@@ -81,7 +92,7 @@ export function lerFormularioDoCliente(prisma: PrismaClient, link: LinkLocalizad
       where: { onboardingId: link.onboardingId },
     });
     const versao = await versaoDoCliente(escopo, resposta?.versaoId ?? null);
-    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, resposta?.fechadaEm ?? null);
+    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, resposta);
     const situacao: SituacaoFormulario =
       bloqueio === 'fechado' ? 'fechado' : resposta?.enviadaEm ? 'enviado' : 'rascunho';
     return {
@@ -116,6 +127,7 @@ interface Gravacao {
     id: string;
     enviadaEm: Date | null;
     fechadaEm: Date | null;
+    reabertaEm: Date | null;
     versaoId: string;
     respostas: unknown;
   } | null;
@@ -150,7 +162,7 @@ export function salvarRascunhoDoCliente(
   return comConsentimento(prisma, link, async (escopo): Promise<ResultadoGravacao> => {
     const g = await prepararGravacao(escopo, link.onboardingId);
     if (g.resposta?.enviadaEm) return { tipo: 'ja_enviado' };
-    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta?.fechadaEm ?? null);
+    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta);
     if (bloqueio) return { tipo: 'bloqueado', motivo: bloqueio };
 
     const erros = [
@@ -199,7 +211,7 @@ export function enviarFormularioDoCliente(
 ) {
   return comConsentimento(prisma, link, async (escopo): Promise<ResultadoGravacao> => {
     const g = await prepararGravacao(escopo, link.onboardingId);
-    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta?.fechadaEm ?? null);
+    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta);
     if (bloqueio) return { tipo: 'bloqueado', motivo: bloqueio };
 
     const erros = [
@@ -283,6 +295,57 @@ export async function fecharFormulario(
         acao: 'formulario.fechado',
         entidade: 'Onboarding',
         entidadeId: onboardingId,
+      },
+    }),
+  ]);
+}
+
+/**
+ * A agência reabre o formulário concluído, com motivo (RN-54): a etapa volta a pendente, as respostas
+ * viram rascunho e o cliente pode editar e reenviar, mesmo depois da reunião. Só Admin ou responsável.
+ */
+export async function reabrirFormulario(
+  prisma: PrismaDaAgencia,
+  usuario: UsuarioAutenticado,
+  onboardingId: string,
+  motivoInformado: string,
+  agora: Date,
+): Promise<void> {
+  const onboarding = await prisma.onboarding.findFirst({
+    where: { id: onboardingId },
+    select: {
+      responsavelId: true,
+      statusGeral: true,
+      etapas: { where: { tipo: 'formulario' }, select: { status: true } },
+    },
+  });
+  if (!onboarding) throw new NaoEncontradoError('Onboarding');
+  if (!podeVerOnboarding(usuario, onboarding.responsavelId)) throw new ProibidoError('RN-02');
+  const motivo = motivoObrigatorio('RN-54', motivoInformado);
+  garantirReabertura(
+    'formulario',
+    onboarding.etapas[0]?.status ?? 'pendente',
+    onboarding.statusGeral,
+  );
+
+  await prisma.$transaction([
+    prisma.respostaFormulario.updateMany({
+      where: { onboardingId },
+      data: { enviadaEm: null, fechadaEm: null, reabertaEm: agora },
+    }),
+    prisma.etapaOnboarding.updateMany({
+      where: { onboardingId, tipo: 'formulario', status: 'concluida' },
+      data: { status: 'pendente' },
+    }),
+    prisma.auditoriaLog.create({
+      data: {
+        agenciaId: usuario.agenciaId,
+        ator: `usuario:${usuario.id}`,
+        acao: 'etapa.reaberta',
+        entidade: 'Onboarding',
+        entidadeId: onboardingId,
+        dados: { etapa: 'formulario', motivo },
+        em: agora,
       },
     }),
   ]);

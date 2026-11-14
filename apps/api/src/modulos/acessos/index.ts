@@ -1,6 +1,7 @@
 import { ehPlataformaAcesso, PLATAFORMAS_ACESSO } from '@convergia/core/acessos';
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { avisarEtapasMudaram } from '../onboarding/estados/status.js';
 import {
   exigirAdmin,
   exigirUsuario,
@@ -71,15 +72,19 @@ export default function acessos(app: FastifyInstance): Promise<void> {
     const { token, plataforma: alvo } = parametrosToken.parse(request.params);
     if (!alvo || !ehPlataformaAcesso(alvo))
       return reply.status(404).send({ erro: 'NAO_ENCONTRADO' });
-    const r = await comLinkValido(app.deps.prisma, token, app.deps.relogio.agora(), (link) =>
-      informarAcessoDoCliente(
+    const agora = app.deps.relogio.agora();
+    const r = await comLinkValido(app.deps.prisma, token, agora, async (link) => {
+      const informado = await informarAcessoDoCliente(
         escopoAgencia(app.deps.prisma, link.agenciaId),
         link.agenciaId,
         link.onboardingId,
         alvo,
-        app.deps.relogio.agora(),
-      ),
-    );
+        agora,
+      );
+      const ator = `cliente:${link.onboardingId}`;
+      await avisarEtapasMudaram(app.deps.eventos, link.agenciaId, link.onboardingId, ator, agora);
+      return informado;
+    });
     if (r.tipo !== 'ok') return recusarLink(reply, r.tipo);
     return r.valor.estado;
   });
@@ -97,7 +102,7 @@ export default function acessos(app: FastifyInstance): Promise<void> {
   app.put(
     '/onboardings/:onboardingId/acessos/:plataforma',
     { preHandler: exigirUsuario },
-    (request, reply) => {
+    async (request, reply) => {
       const { onboardingId, plataforma: alvo } = parametrosOnboarding.parse(request.params);
       if (!alvo || !ehPlataformaAcesso(alvo)) {
         return reply
@@ -105,14 +110,23 @@ export default function acessos(app: FastifyInstance): Promise<void> {
           .send({ erro: 'NAO_ENCONTRADO', mensagem: 'Plataforma desconhecida' });
       }
       const { status, motivo } = corpoMarcacao.parse(request.body);
-      return marcarAcesso(
+      const usuario = usuarioDaRequisicao(request);
+      const estado = await marcarAcesso(
         prismaDaRequisicao(app, request),
-        usuarioDaRequisicao(request),
+        usuario,
         onboardingId,
         alvo,
         status,
         motivo,
       );
+      await avisarEtapasMudaram(
+        app.deps.eventos,
+        usuario.agenciaId,
+        onboardingId,
+        `usuario:${usuario.id}`,
+        app.deps.relogio.agora(),
+      );
+      return estado;
     },
   );
 

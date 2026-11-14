@@ -1,5 +1,3 @@
-import type { StatusOnboarding } from '../onboarding/index.js';
-
 /** Termo de consentimento do cliente (RN-72). Mudou o texto? Mude a versão. */
 export const TERMO_ATUAL = {
   versao: '2026-11-14',
@@ -12,9 +10,4 @@ export const TERMO_ATUAL = {
 /** O aceite só vale para a versão do termo que está em vigor (RN-72). */
 export function aceiteValido(versao: string): boolean {
   return versao === TERMO_ATUAL.versao;
-}
-
-/** Status depois de o cliente abrir o link: a primeira abertura inicia o andamento (RN-50). */
-export function statusAposPrimeiroAcesso(status: StatusOnboarding): StatusOnboarding {
-  return status === 'criado' || status === 'convite_enviado' ? 'em_andamento' : status;
 }
