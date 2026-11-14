@@ -10,6 +10,7 @@ const corpoCadastro = z.object({
   whatsapp: z.string().max(40).nullish(),
   email: z.string().max(320).nullish(),
   confirmarDuplicidade: z.boolean().default(false),
+  responsavelId: z.string().min(1).max(64).optional(),
 });
 
 /** Módulo clientes (S1-3): cadastro com validação e alerta de duplicidade, e lista. */
@@ -25,6 +26,7 @@ export default function clientes(app: FastifyInstance): Promise<void> {
         whatsapp: corpo.whatsapp ?? undefined,
         email: corpo.email ?? undefined,
         confirmarDuplicidade: corpo.confirmarDuplicidade,
+        responsavelId: corpo.responsavelId,
       },
     );
 

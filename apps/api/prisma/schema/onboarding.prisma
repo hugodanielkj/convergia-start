@@ -1,0 +1,64 @@
+// Módulo onboarding (S1-4). Os valores dos enums espelham packages/core/src/onboarding.
+// A regra "um onboarding ativo por cliente" (RN-07) tem um índice único parcial, escrito à mão
+// na migração (o Prisma não declara índice parcial): ver 'onboardings_um_ativo_por_cliente'.
+enum StatusOnboarding {
+  criado
+  convite_enviado
+  em_andamento
+  aguardando_agendamentos
+  aguardando_reuniao
+  aguardando_captacao
+  em_producao
+  primeiro_conteudo_entregue
+  concluido
+  pausado
+  cancelado
+}
+
+enum TipoEtapa {
+  formulario
+  acessos
+  reuniao
+  captacao
+}
+
+enum StatusEtapa {
+  pendente
+  em_andamento
+  concluida
+  bloqueada
+}
+
+model Onboarding {
+  id            String            @id @default(uuid(7))
+  agenciaId     String
+  agencia       Agencia           @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  clienteId     String
+  cliente       Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  responsavelId String
+  responsavel   Usuario           @relation(fields: [responsavelId], references: [id])
+  statusGeral   StatusOnboarding  @default(criado)
+  criadoEm      DateTime          @default(now())
+  atualizadoEm  DateTime          @updatedAt
+  etapas        EtapaOnboarding[]
+
+  @@index([agenciaId, clienteId])
+  @@index([agenciaId, responsavelId])
+  @@map("onboardings")
+}
+
+model EtapaOnboarding {
+  id           String      @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia     @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId String
+  onboarding   Onboarding  @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  tipo         TipoEtapa
+  status       StatusEtapa @default(pendente)
+  criadoEm     DateTime    @default(now())
+  atualizadoEm DateTime    @updatedAt
+
+  @@unique([onboardingId, tipo])
+  @@index([agenciaId, onboardingId])
+  @@map("etapas_onboarding")
+}
