@@ -8,6 +8,7 @@ export interface LinhaPainel {
   criadoEm: string;
   proximoCompromisso: string | null;
   prazoLiberacao: string | null;
+  indicadorPrazo: string | null;
   atencao: string[];
 }
 
@@ -24,6 +25,7 @@ export const FILTROS = [
   'de',
   'ate',
   'atencao',
+  'prazo',
 ] as const;
 export type Filtros = Partial<Record<(typeof FILTROS)[number], string>>;
 
@@ -32,6 +34,25 @@ export const ROTULO_ATENCAO: Record<string, string> = {
   link_expirado: 'Link expirado',
   parado: 'Sem movimento',
 };
+
+/** Indicadores do prazo de liberação (RN-48). */
+export const ROTULO_PRAZO: Record<string, string> = {
+  no_prazo: 'No prazo',
+  atencao: 'Atenção',
+  atrasado: 'Atrasado',
+};
+
+const DATA_CURTA = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'UTC',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+/** `2026-11-26` vira "26/11/2026". A data do prazo já é do calendário da agência, sem fuso. */
+export function formatarDataDoPrazo(data: string): string {
+  return DATA_CURTA.format(new Date(`${data}T12:00:00Z`));
+}
 
 /** Só repassa à API os filtros conhecidos e preenchidos. */
 export function consultaDosFiltros(entrada: Record<string, string | string[] | undefined>): {

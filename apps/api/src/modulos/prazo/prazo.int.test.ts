@@ -11,6 +11,8 @@ import {
   dependenciasDeTeste,
   usuarioTeste,
 } from '../../testes/dependencias.js';
+import { escopoAgencia } from '../../base/escopo-agencia.js';
+import { prazosDosOnboardings } from './consultar.js';
 import { recalcularPrazo } from './recalcular.js';
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
@@ -27,6 +29,8 @@ const SEGUNDA_9H = '2026-11-23T12:00:00.000Z';
 interface Cenario {
   agenciaId: string;
   admin: FastifyInstance;
+  /** Membro que não é responsável pelos onboardings do cenário (RN-02). */
+  membro: FastifyInstance;
   publico: FastifyInstance;
   alterados: EventoDominio<'prazo.alterado'>[];
 }
@@ -52,7 +56,15 @@ async function cenario(): Promise<Cenario> {
     alterados.push(e);
     return Promise.resolve();
   });
-  const construir = (comUsuario: boolean) => {
+  const outro = await prisma.usuario.create({
+    data: {
+      agenciaId,
+      nome: 'Membro',
+      email: `mem-${randomUUID().slice(0, 8)}@prazo.com`,
+      papel: 'membro',
+    },
+  });
+  const construir = (quem: 'admin' | 'membro' | null) => {
     const app = construirApp(
       { LOG_LEVEL: 'silent' },
       dependenciasDeTeste({
@@ -60,15 +72,24 @@ async function cenario(): Promise<Cenario> {
         eventos,
         relogio: relogioFixo(AGORA_TESTE),
         resolverSessao: () =>
-          Promise.resolve(comUsuario ? usuarioTeste({ agenciaId, id: adm.id }) : null),
+          Promise.resolve(
+            quem === null
+              ? null
+              : usuarioTeste({
+                  agenciaId,
+                  id: quem === 'admin' ? adm.id : outro.id,
+                  papel: quem,
+                }),
+          ),
       }),
     );
     apps.push(app);
     return app;
   };
-  const admin = construir(true);
-  const publico = construir(false);
-  await Promise.all([admin.ready(), publico.ready()]);
+  const admin = construir('admin');
+  const membro = construir('membro');
+  const publico = construir(null);
+  await Promise.all([admin.ready(), membro.ready(), publico.ready()]);
   for (const tipo of ['reuniao', 'captacao']) {
     for (const diaSemana of [1, 2, 3, 4, 5]) {
       await admin.inject({
@@ -78,7 +99,7 @@ async function cenario(): Promise<Cenario> {
       });
     }
   }
-  return { agenciaId, admin, publico, alterados };
+  return { agenciaId, admin, membro, publico, alterados };
 }
 
 afterAll(async () => {
@@ -87,7 +108,7 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-async function clienteComReuniao(c: Cenario) {
+async function clienteComReuniao(c: Cenario, reuniao = REUNIAO) {
   const r = await c.admin.inject({
     method: 'POST',
     url: '/clientes',
@@ -99,7 +120,7 @@ async function clienteComReuniao(c: Cenario) {
   });
   const corpo = r.json<{ cliente: { onboarding: { id: string } }; link: { token: string } }>();
   const token = corpo.link.token;
-  expect((await reservar(c, token, 'reuniao', REUNIAO)).statusCode).toBe(201);
+  expect((await reservar(c, token, 'reuniao', reuniao)).statusCode).toBe(201);
   return { token, onboardingId: corpo.cliente.onboarding.id };
 }
 
@@ -291,5 +312,151 @@ describe('RN-46 recálculo quando a captação muda', () => {
       ),
     ]);
     expect(await prisma.prazoLiberacao.count({ where: { onboardingId } })).toBe(1);
+  });
+});
+
+const ajustar = (c: Cenario, onboardingId: string, corpo: object, app = c.admin) =>
+  app.inject({ method: 'POST', url: `/onboardings/${onboardingId}/prazo/ajuste`, payload: corpo });
+
+async function comCaptacao(c: Cenario) {
+  const cliente = await clienteComReuniao(c);
+  expect((await reservar(c, cliente.token, 'captacao', QUARTA_9H)).statusCode).toBe(201);
+  return cliente;
+}
+
+describe('RN-47 ajuste manual do prazo', () => {
+  it('o responsável ajusta com justificativa; fica auditado e avisa o cliente', async () => {
+    const c = await cenario();
+    const { token, onboardingId } = await comCaptacao(c);
+    const r = await ajustar(c, onboardingId, { data: '2026-12-02', justificativa: ' Mais fotos ' });
+    expect(r.statusCode).toBe(200);
+    expect(r.json()).toEqual({ data: '2026-12-02', anterior: '2026-11-26' });
+
+    expect(await prazo(c, token)).toEqual({ definido: true, data: '2026-12-02' });
+    expect(c.alterados.at(-1)?.dados).toEqual({
+      onboardingId,
+      data: '2026-12-02',
+      anterior: '2026-11-26',
+      origem: 'manual',
+    });
+    const auditoria = await prisma.auditoriaLog.findFirst({
+      where: { entidadeId: onboardingId, acao: 'prazo.ajustado' },
+    });
+    expect(auditoria?.ator).toMatch(/^usuario:/);
+    expect(auditoria?.dados).toEqual({
+      anterior: '2026-11-26',
+      data: '2026-12-02',
+      justificativa: 'Mais fotos',
+    });
+  });
+
+  it('sem justificativa ou com data passada é recusado', async () => {
+    const c = await cenario();
+    const { onboardingId } = await comCaptacao(c);
+    const sem = await ajustar(c, onboardingId, { data: '2026-12-02', justificativa: ' ' });
+    expect(sem.statusCode).toBe(422);
+    expect(sem.json()).toMatchObject({ erro: 'RN-47' });
+    const passado = await ajustar(c, onboardingId, { data: '2026-11-13', justificativa: 'x' });
+    expect(passado.statusCode).toBe(422);
+  });
+
+  it('não há o que ajustar antes da captação agendada', async () => {
+    const c = await cenario();
+    const { onboardingId } = await clienteComReuniao(c);
+    const r = await ajustar(c, onboardingId, { data: '2026-12-02', justificativa: 'x' });
+    expect(r.statusCode).toBe(422);
+    expect(r.json()).toMatchObject({ erro: 'RN-45' });
+  });
+
+  it('membro que não é o responsável não ajusta nem vê', async () => {
+    const c = await cenario();
+    const { onboardingId } = await comCaptacao(c);
+    const r = await ajustar(c, onboardingId, { data: '2026-12-02', justificativa: 'x' }, c.membro);
+    expect(r.statusCode).toBe(403);
+    const ver = await c.membro.inject({ method: 'GET', url: `/onboardings/${onboardingId}/prazo` });
+    expect(ver.statusCode).toBe(404);
+  });
+
+  it('trocar o horário no mesmo dia mantém o ajuste; mudar de dia recalcula (RN-46)', async () => {
+    const c = await cenario();
+    const { token, onboardingId } = await comCaptacao(c);
+    await ajustar(c, onboardingId, { data: '2026-12-02', justificativa: 'Mais fotos' });
+
+    await reagendar(c, token, '2026-11-18T16:00:00.000Z');
+    expect(await prazo(c, token)).toEqual({ definido: true, data: '2026-12-02' });
+
+    await reagendar(c, token, SEGUNDA_9H);
+    expect(await prazo(c, token)).toEqual({ definido: true, data: '2026-11-30' });
+    const detalhe = await c.admin.inject({
+      method: 'GET',
+      url: `/onboardings/${onboardingId}/prazo`,
+    });
+    expect(detalhe.json()).toMatchObject({ origem: 'calculado', justificativa: null });
+  });
+});
+
+describe('RN-48 indicadores do prazo no painel', () => {
+  it('mostra a data e o indicador e filtra por ele', async () => {
+    const c = await cenario();
+    const comPrazo = await comCaptacao(c);
+    const semPrazo = await clienteComReuniao(c, '2026-11-17T13:00:00.000Z');
+
+    const detalhe = await c.admin.inject({
+      method: 'GET',
+      url: `/onboardings/${comPrazo.onboardingId}/prazo`,
+    });
+    // Hoje é 16/11; o prazo de 26/11 está a mais de 2 dias úteis.
+    expect(detalhe.json()).toEqual({
+      definido: true,
+      data: '2026-11-26',
+      origem: 'calculado',
+      justificativa: null,
+      indicador: 'no_prazo',
+    });
+
+    const painel = await c.admin.inject({ method: 'GET', url: '/painel/onboardings' });
+    const linhas = painel.json<{
+      onboardings: { id: string; prazoLiberacao: string | null; indicadorPrazo: string | null }[];
+    }>().onboardings;
+    expect(linhas.find((l) => l.id === comPrazo.onboardingId)).toMatchObject({
+      prazoLiberacao: '2026-11-26',
+      indicadorPrazo: 'no_prazo',
+    });
+    expect(linhas.find((l) => l.id === semPrazo.onboardingId)).toMatchObject({
+      prazoLiberacao: null,
+      indicadorPrazo: null,
+    });
+
+    const filtrado = await c.admin.inject({
+      method: 'GET',
+      url: '/painel/onboardings?prazo=atrasado',
+    });
+    expect(filtrado.json<{ onboardings: unknown[] }>().onboardings).toEqual([]);
+    const noPrazo = await c.admin.inject({
+      method: 'GET',
+      url: '/painel/onboardings?prazo=no_prazo',
+    });
+    expect(noPrazo.json<{ onboardings: { id: string }[] }>().onboardings.map((o) => o.id)).toEqual([
+      comPrazo.onboardingId,
+    ]);
+  });
+
+  it('com o relógio adiantado o mesmo prazo fica em atenção e depois atrasado', async () => {
+    const c = await cenario();
+    const { onboardingId } = await comCaptacao(c);
+    const banco = escopoAgencia(prisma, c.agenciaId);
+    const linha = [{ id: onboardingId, statusGeral: 'aguardando_reuniao' }];
+    const em = async (iso: string) =>
+      (await prazosDosOnboardings(banco, c.agenciaId, linha, new Date(iso))).get(onboardingId)
+        ?.indicador;
+    expect(await em('2026-11-24T12:00:00Z')).toBe('atencao');
+    expect(await em('2026-11-27T12:00:00Z')).toBe('atrasado');
+    const entregue = await prazosDosOnboardings(
+      banco,
+      c.agenciaId,
+      [{ id: onboardingId, statusGeral: 'primeiro_conteudo_entregue' }],
+      new Date('2026-11-27T12:00:00Z'),
+    );
+    expect(entregue.get(onboardingId)?.indicador).toBeNull();
   });
 });

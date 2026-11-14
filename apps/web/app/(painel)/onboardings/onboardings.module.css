@@ -75,3 +75,24 @@
   color: #c92a2a;
   font-size: 0.8rem;
 }
+
+/* Indicador do prazo (RN-48), ao lado da data. */
+.prazo {
+  display: inline-block;
+  margin-left: 0.375rem;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  color: var(--suave);
+  font-size: 0.8rem;
+}
+
+.prazo[data-indicador='atencao'] {
+  border-color: #e67700;
+  color: #e67700;
+}
+
+.prazo[data-indicador='atrasado'] {
+  border-color: #c92a2a;
+  color: #c92a2a;
+}

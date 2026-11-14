@@ -54,4 +54,30 @@ As 3 histórias mergeadas na `hml`, com CI verde:
 
 ## Trilha B — colaborador
 
-(a trilha B preenche a sua seção)
+**Objetivo:** o cliente agenda a captação só depois da reunião, informa o local, e recebe a previsão de liberação dos primeiros conteúdos em dias úteis, recalculada quando a captação muda; a agência vê o prazo com indicador no painel e pode ajustá-lo com justificativa.
+
+**Ordem:** S4-4 → S4-5 → S4-6.
+
+| ID   | História                                  | Critérios de aceite                                                                                                                                                                                                                                                                     | Modelo         |
+| ---- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| S4-4 | Captação dependente da reunião, com local | Sem reunião agendada a etapa fica bloqueada com explicação; horários só a partir do intervalo mínimo após a reunião, também ao reagendar (RN-39); local obrigatório se presencial, contato e observações (RN-40); regras de reserva da reunião (RN-41).                                 | Sonnet / médio |
+| S4-5 | Prazo em dias úteis e recálculo           | Prazo = dia da captação + N dias úteis, sem fim de semana, feriado nacional e bloqueios (RN-43, RN-44); só aparece depois da captação agendada (RN-45); recalcula quando a captação muda de dia, desfaz se cancelada ou falta, auditado, com evento para a S5 avisar o cliente (RN-46). | Opus / alto    |
+| S4-6 | Ajuste manual do prazo e indicadores      | Responsável ou Admin ajusta com justificativa, auditado e com evento para avisar o cliente (RN-47); painel mostra data e indicador `no_prazo`/`atencao`/`atrasado` e filtra por ele (RN-48, RN-64).                                                                                     | Opus / alto    |
+
+### Decisões (trilha B)
+
+- Captação bloqueada até a reunião; intervalo aplicado na geração dos horários; dados do local em tabela própria. `decisoes/2026-11-14-b-captacao-dependente-da-reuniao.md`.
+- Prazo contado a partir do dia seguinte à captação e gravado (um bloqueio novo não muda um prazo já comunicado). `decisoes/2026-11-14-b-prazo-liberacao.md`.
+- Ajuste manual substituído se a captação mudar de dia (aprovado pelo PO); atenção com até 2 dias úteis; mudança mínima no painel da trilha A (aprovada pelo PO). `decisoes/2026-11-14-b-ajuste-e-indicador-prazo.md`.
+
+### Entregue
+
+- S4-4 Captação dependente da reunião (#38).
+- S4-5 Prazo em dias úteis e recálculo (#41), com a correção do worker do calendário que derrubava um teste de vez em quando.
+- S4-6 Ajuste manual e indicadores (este PR).
+
+### Retro
+
+- **Funcionou:** recálculo idempotente disparado pelos eventos da agenda; a agenda não sabe que o prazo existe.
+- **Atenção:** as notificações ao cliente (prazo comunicado, recalculado, ajustado) dependem da S5 consumir `prazo.alterado`. Testes de integração que varrem dados de todas as agências (worker do calendário) podem pegar linhas de outros arquivos: preferir agência própria por teste.
+- **Pendências:** RN-42 (profissional de captação diferente, depende de agenda por profissional); local da captação no detalhe do onboarding; alerta interno de prazo em atenção/atrasado (RN-58, S5).

@@ -5,6 +5,7 @@ import { rotuloAcesso } from './acessos/tipos';
 import { AcoesRapidas } from './AcoesRapidas';
 import estilos from './detalhe.module.css';
 import { LinhaDoTempo } from './LinhaDoTempo';
+import { PrazoDoOnboarding, type PrazoDoDetalhe } from './PrazoDoOnboarding';
 import { descreverNotificacao, textoDaResposta, type Detalhe, type ItemAuditoria } from './tipos';
 
 const ROTULO_AGENDAMENTO: Readonly<Record<string, string>> = {
@@ -19,9 +20,11 @@ const ROTULO_AGENDAMENTO: Readonly<Record<string, string>> = {
 export function DetalheOnboarding({
   detalhe,
   linhaDoTempo,
+  prazo,
 }: {
   detalhe: Detalhe;
   linhaDoTempo: ItemAuditoria[];
+  prazo: PrazoDoDetalhe;
 }) {
   const { cliente, formulario, acessos, agendamentos, arquivos } = detalhe;
   const contato = [cliente.nomeContato, cliente.whatsapp, cliente.email]
@@ -49,6 +52,7 @@ export function DetalheOnboarding({
       <AcoesRapidas detalhe={detalhe} />
 
       <div className={estilos.grade}>
+        <PrazoDoOnboarding id={detalhe.id} prazo={prazo} />
         <section className={estilos.secao} aria-labelledby="titulo-etapas">
           <h2 id="titulo-etapas">Etapas</h2>
           <ul className={estilos.etapas}>

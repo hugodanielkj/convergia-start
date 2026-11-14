@@ -5,15 +5,17 @@ import {
   type StatusOnboarding,
   type TipoEtapa,
 } from '@convergia/core/onboarding';
+import type { IndicadorPrazo } from '@convergia/core/prazo';
 import { indicadoresAtencao, progressoEtapas, type IndicadorAtencao } from '@convergia/core/painel';
 import { z } from 'zod';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
+import { prazosDosOnboardings } from '../prazo/consultar.js';
 
 const LIMITE = 200;
 const dia = z.iso.date();
 
-/** Filtros da RN-64. O de "indicador de prazo" entra com o prazo (S4-5); por ora vale a atenção. */
+/** Filtros da RN-64; o indicador de prazo vem do módulo prazo (S4-6, RN-48). */
 export const filtrosDoPainel = z.object({
   status: z
     .enum(STATUS_ONBOARDING as unknown as [StatusOnboarding, ...StatusOnboarding[]])
@@ -23,6 +25,7 @@ export const filtrosDoPainel = z.object({
   de: dia.optional(),
   ate: dia.optional(),
   atencao: z.enum(['qualquer', 'acesso_invalido', 'link_expirado', 'parado']).optional(),
+  prazo: z.enum(['no_prazo', 'atencao', 'atrasado']).optional(),
 });
 export type FiltrosDoPainel = z.infer<typeof filtrosDoPainel>;
 
@@ -36,9 +39,11 @@ export interface LinhaPainel {
   readonly progresso: { concluidas: number; total: number };
   readonly etapas: { tipo: TipoEtapa; status: string }[];
   readonly criadoEm: Date;
-  /** Chegam com a agenda (S3-4) e o prazo (S4-5); a coluna já existe no contrato. */
+  /** Chega com a agenda (S3-4); a coluna já existe no contrato. */
   readonly proximoCompromisso: null;
-  readonly prazoLiberacao: null;
+  /** Data `YYYY-MM-DD` do prazo; nula antes da captação agendada (RN-45). */
+  readonly prazoLiberacao: string | null;
+  readonly indicadorPrazo: IndicadorPrazo | null;
   readonly atencao: IndicadorAtencao[];
 }
 
@@ -93,6 +98,7 @@ export async function listarOnboardings(
     select: { onboardingId: true },
   });
   const comAcessoInvalido = new Set(invalidos.map((a) => a.onboardingId));
+  const prazos = await prazosDosOnboardings(prisma, usuario.agenciaId, pagina, agora);
   const diasSemAcao = config?.diasSemAcaoParaAlerta ?? 3;
 
   const resultado = pagina.map((o): LinhaPainel => {
@@ -114,7 +120,8 @@ export async function listarOnboardings(
       })),
       criadoEm: o.criadoEm,
       proximoCompromisso: null,
-      prazoLiberacao: null,
+      prazoLiberacao: prazos.get(o.id)?.data ?? null,
+      indicadorPrazo: prazos.get(o.id)?.indicador ?? null,
       atencao: indicadoresAtencao({
         statusGeral: o.statusGeral,
         acessoInvalido: comAcessoInvalido.has(o.id),
@@ -127,11 +134,11 @@ export async function listarOnboardings(
   });
 
   const filtro = filtros.atencao;
-  const filtrados = !filtro
-    ? resultado
-    : resultado.filter((l) =>
-        filtro === 'qualquer' ? l.atencao.length > 0 : l.atencao.includes(filtro),
-      );
+  const filtrados = resultado.filter(
+    (l) =>
+      (!filtro || (filtro === 'qualquer' ? l.atencao.length > 0 : l.atencao.includes(filtro))) &&
+      (!filtros.prazo || l.indicadorPrazo === filtros.prazo),
+  );
   // Para o filtro "responsável": só o admin escolhe; o membro só enxerga a si mesmo (RN-02).
   const responsaveis = await prisma.usuario.findMany({
     where: usuario.papel === 'admin' ? {} : { id: usuario.id },

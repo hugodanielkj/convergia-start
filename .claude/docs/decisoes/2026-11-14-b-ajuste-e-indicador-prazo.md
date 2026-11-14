@@ -1,0 +1,6 @@
+# Ajuste manual do prazo e indicadores
+
+- **Data / trilha:** 2026-11-14 / B
+- **Decisão:** o responsável pelo onboarding ou o Admin ajusta o prazo com justificativa obrigatória (até 500 caracteres) e data de hoje em diante; só existe ajuste depois da captação agendada (RN-45) e nunca em onboarding entregue, concluído ou cancelado. O ajuste é auditado (`prazo.ajustado`, com data anterior, nova e justificativa) e publica `prazo.alterado` com `origem: manual` para a S5 avisar o cliente. Aprovado pelo PO: se a captação depois mudar de **dia**, o prazo é recalculado e o ajuste é substituído (RN-46); trocar só o horário mantém o ajuste. Indicador (RN-48): `atrasado` depois do dia do prazo; `atencao` quando faltam 2 dias úteis ou menos (contando de amanhã até o dia do prazo, inclusive, no fuso da agência); `no_prazo` no resto; sem indicador depois da entrega, conclusão ou cancelamento. O limite de 2 dias é fixo porque a spec não o marca como configurável.
+- **Painel (trilha A):** com aprovação do PO, mudança mínima no painel: coluna do prazo com indicador, filtro `prazo` (RN-64) e a seção "Prazo de liberação" com o botão de ajuste no detalhe. A regra fica em `core/prazo` e `modulos/prazo` (`prazosDosOnboardings`).
+- **Substitui:** —
