@@ -17,15 +17,18 @@ Duas pessoas, cada uma com sua sessão do Claude, trabalham em paralelo na `hml`
 Mudanças nestes arquivos vão em commits pequenos e isolados, e o PR entra na `hml` no mesmo dia:
 
 - `package.json` e `pnpm-lock.yaml`: nunca resolva conflito do lockfile à mão. Pegue a versão da `hml` (`git checkout --theirs pnpm-lock.yaml` durante o rebase) e rode `pnpm install`.
-- `prisma/schema/base.prisma`: só a S1-1 e PRs de contrato. Cada módulo tem seu próprio `prisma/schema/<modulo>.prisma`.
-- `prisma/migrations/`: gere a migração **só na hora de abrir o PR**, depois de `git rebase hml`. Se a `hml` ganhou migração nova, apague a sua, rebase e gere de novo.
-- `.github/`, `eslint.config.mjs`, `tsconfig*.json`, `docker-compose.yml`: alterações em PR `chore/` próprio.
+- `apps/api/prisma/schema/base.prisma`: só PRs de contrato. Cada módulo tem seu próprio `apps/api/prisma/schema/<modulo>.prisma`. Exceção permitida: uma linha de relação reversa em `Agencia`/`Usuario`, no bloco marcado e em ordem alfabética.
+- `apps/api/prisma/migrations/`: gere a migração **só na hora de abrir o PR**, depois de `git rebase hml`. Se a `hml` ganhou migração nova, apague a sua, rebase e gere de novo. A CI falha se schema e migrações divergirem.
+- `packages/core/src/base/config.ts` + `ConfigAgencia` no schema: já têm os campos de todas as RN do MVP. Campo novo = PR de contrato.
+- `.github/`, `eslint.config.mjs`, `tsconfig*.json`, `docker-compose.yml`, `app/globals.css`: alterações em PR `chore/` próprio.
 
 ## Para não conflitar no código
 
-- **API:** cada módulo em `apps/api/src/modulos/<modulo>/` e registrado por autoload. Não há arquivo central de rotas para editar.
-- **core:** cada domínio em `packages/core/src/<dominio>/`, importado por subcaminho (`@convergia/core/prazo`). Não há barrel central.
-- **Web:** cada área em sua pasta do App Router; cada etapa do cliente em `app/o/[token]/_etapas/<etapa>/`. A casca da página (S1-1) já importa as 4 etapas.
+- **API:** cada módulo em `apps/api/src/modulos/<modulo>/index.ts` exportando um plugin Fastify; `src/base/modulos.ts` registra todos sozinho. Não há arquivo central de rotas.
+- **Banco no módulo:** use `prismaDaRequisicao(app, request)` (escopo da agência, RN-75). O `app.deps.prisma` cru só para seed, testes e rotas públicas do link (que resolvem a agência pelo token).
+- **Eventos:** declare os eventos do módulo no próprio arquivo com `declare module '@convergia/core/base' { interface MapaEventos { ... } }` e publique por `app.deps.eventos`. Não edite `eventos.ts`.
+- **core:** cada domínio em `packages/core/src/<dominio>/index.ts`, importado por subcaminho (`@convergia/core/prazo`). Não há barrel central.
+- **Web:** cada área em sua pasta do App Router; cada etapa do cliente em `app/o/[token]/_etapas/<etapa>/`. A casca da página já importa as 4 etapas. Estilos em `*.module.css` ao lado do componente.
 
 ## Documentação
 

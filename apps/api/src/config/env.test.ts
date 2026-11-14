@@ -1,16 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { carregarEnv } from './env.js';
 
+const DATABASE_URL = 'postgresql://u:s@localhost:5432/db';
+
 describe('carregarEnv', () => {
   it('aplica valores padrão', () => {
-    expect(carregarEnv({})).toEqual({ NODE_ENV: 'development', API_PORT: 3333, LOG_LEVEL: 'info' });
+    expect(carregarEnv({ DATABASE_URL })).toEqual({
+      NODE_ENV: 'development',
+      API_PORT: 3333,
+      LOG_LEVEL: 'info',
+      DATABASE_URL,
+    });
   });
 
   it('converte a porta para número', () => {
-    expect(carregarEnv({ API_PORT: '8080' }).API_PORT).toBe(8080);
+    expect(carregarEnv({ DATABASE_URL, API_PORT: '8080' }).API_PORT).toBe(8080);
   });
 
-  it('falha com valor inválido', () => {
-    expect(() => carregarEnv({ NODE_ENV: 'qualquer' })).toThrow(/Variáveis de ambiente inválidas/);
+  it('trata AUTH_DEV_USUARIO_EMAIL vazio como ausente', () => {
+    expect(carregarEnv({ DATABASE_URL, AUTH_DEV_USUARIO_EMAIL: '' }).AUTH_DEV_USUARIO_EMAIL).toBe(
+      undefined,
+    );
+  });
+
+  it('exige DATABASE_URL', () => {
+    expect(() => carregarEnv({})).toThrow(/DATABASE_URL/);
+  });
+
+  it('proíbe usuário de desenvolvimento em produção', () => {
+    expect(() =>
+      carregarEnv({ DATABASE_URL, NODE_ENV: 'production', AUTH_DEV_USUARIO_EMAIL: 'a@b.com' }),
+    ).toThrow(/proibido em produção/);
   });
 });

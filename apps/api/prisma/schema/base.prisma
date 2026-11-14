@@ -1,0 +1,106 @@
+// Schema base, compartilhado pelas duas trilhas (D-24).
+// Cada módulo tem seu próprio arquivo nesta pasta (ex.: clientes.prisma).
+// Toda tabela de negócio tem `agenciaId` (RN-75); o escopo é aplicado em src/base/escopo-agencia.ts.
+//
+// Relações reversas: módulos adicionam UMA linha por relação nos blocos marcados abaixo,
+// em ordem alfabética, para reduzir conflitos de merge.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Papel {
+  admin
+  membro
+}
+
+enum Canal {
+  whatsapp
+  email
+}
+
+model Agencia {
+  id          String   @id @default(uuid(7))
+  nome        String
+  fusoHorario String   @default("America/Sao_Paulo")
+  logoUrl     String?
+  corPrimaria String?
+  criadoEm    DateTime @default(now())
+
+  // Relações reversas (ordem alfabética)
+  auditoria AuditoriaLog[]
+  config    ConfigAgencia?
+  usuarios  Usuario[]
+
+  @@map("agencias")
+}
+
+model Usuario {
+  id        String   @id @default(uuid(7))
+  agenciaId String
+  agencia   Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  nome      String
+  email     String
+  papel     Papel    @default(membro)
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
+
+  // Relações reversas (ordem alfabética)
+
+  @@unique([agenciaId, email])
+  @@map("usuarios")
+}
+
+// Espelha ConfigAgencia em packages/core/src/base/config.ts. Valores iniciais vêm do seed (D-09).
+model ConfigAgencia {
+  agenciaId                       String   @id
+  agencia                         Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  prazoProducaoDiasUteis          Int
+  validadeLinkDias                Int
+  antecedenciaMinimaHoras         Int
+  intervaloReuniaoCaptacaoDiasMin Int
+  limiteReagendamentos            Int
+  antecedenciaReagendamentoHoras  Int
+  duracaoReuniaoMinutos           Int
+  duracaoCaptacaoMinutos          Int
+  lembretesPendenciaDias          Int[]
+  maxLembretesPendencia           Int
+  lembretesCompromissoHoras       Int[]
+  janelaEnvioInicio               String
+  janelaEnvioFim                  String
+  diasEnvioPermitidos             Int[]
+  canalNotificacaoPadrao          Canal
+  intervaloMinimoReenvioHoras     Int
+  diasSemAcaoParaAlerta           Int
+  diasConclusaoAutomatica         Int
+  plataformasObrigatorias         String[]
+  uploadTamanhoMaxMb              Int
+  uploadTiposPermitidos           String[]
+  permitirCredenciais             Boolean
+  atualizadoEm                    DateTime @updatedAt
+
+  @@map("config_agencia")
+}
+
+// RN-77. `ator`: "usuario:<id>", "cliente:<onboardingId>" ou "sistema".
+model AuditoriaLog {
+  id         String   @id @default(uuid(7))
+  agenciaId  String
+  agencia    Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  ator       String
+  acao       String
+  entidade   String
+  entidadeId String
+  dados      Json?
+  em         DateTime @default(now())
+
+  @@index([agenciaId, entidade, entidadeId])
+  @@map("auditoria_log")
+}
