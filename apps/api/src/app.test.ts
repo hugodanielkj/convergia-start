@@ -1,8 +1,9 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { construirApp } from './app.js';
+import { dependenciasDeTeste } from './testes/dependencias.js';
 
-describe('GET /health', () => {
-  const app = construirApp({ LOG_LEVEL: 'silent' });
+describe('GET /health (módulo carregado por autoload)', () => {
+  const app = construirApp({ LOG_LEVEL: 'silent' }, dependenciasDeTeste());
   afterAll(() => app.close());
 
   it('responde ok com o fuso padrão', async () => {

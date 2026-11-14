@@ -2,7 +2,7 @@
 paths:
   - 'apps/api/**'
   - 'apps/web/app/o/**'
-  - 'prisma/**'
+  - 'apps/api/prisma/**'
 ---
 
 # Segurança e LGPD

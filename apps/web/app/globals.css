@@ -1,14 +1,33 @@
+/* Estilos globais mínimos. Estilos de tela ficam em *.module.css ao lado do componente (D-24). */
 :root {
   color-scheme: light dark;
   font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  --fundo: #ffffff;
+  --texto: #1a1a1a;
+  --suave: #5f6368;
+  --borda: #e2e4e8;
+  --destaque: #3b5bdb;
+  --superficie: #f6f7f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #121417;
+    --texto: #eceef1;
+    --suave: #a3a8b0;
+    --borda: #2c3036;
+    --destaque: #7c94f5;
+    --superficie: #1b1e22;
+  }
 }
 
 body {
   margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
 }
 
-.container {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
+a {
+  color: var(--destaque);
 }

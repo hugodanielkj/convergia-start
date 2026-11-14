@@ -6,3 +6,5 @@ allowBuilds:
   simple-git-hooks: true
   sharp: true
   unrs-resolver: false
+  '@prisma/engines': true
+  prisma: true

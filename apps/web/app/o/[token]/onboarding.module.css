@@ -1,0 +1,17 @@
+.pagina {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.subtitulo {
+  color: var(--suave);
+}
+
+.etapas {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}

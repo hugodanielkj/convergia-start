@@ -21,9 +21,11 @@ Monorepo pnpm · Node 24 · TypeScript estrito · `packages/core` (regras puras)
 
 ```bash
 pnpm install            # dependências
-pnpm infra:up           # Postgres, Redis, MinIO via docker compose
-pnpm check              # format:check + lint + typecheck + test (o mesmo que a CI)
-pnpm test               # testes de todos os pacotes
+pnpm infra:up           # Postgres (porta 55432) e Redis via docker compose
+pnpm check              # format:check + lint + typecheck + testes unitários
+pnpm test:int           # testes de integração (precisa do infra:up)
+pnpm --filter @convergia/api db:migrate   # cria migração (só na hora do PR)
+pnpm --filter @convergia/api db:seed      # agência + admin (SEED_ADMIN_EMAIL)
 pnpm --filter @convergia/api dev
 ```
 

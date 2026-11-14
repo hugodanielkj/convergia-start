@@ -12,10 +12,11 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "test:int": "pnpm -r --if-present test:int",
     "test:coverage": "pnpm -r test:coverage",
     "build": "pnpm -r build",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
-    "infra:up": "docker compose up -d postgres redis minio",
+    "infra:up": "docker compose up -d postgres redis",
     "infra:down": "docker compose down",
     "prepare": "simple-git-hooks"
   },

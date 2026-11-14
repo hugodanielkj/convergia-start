@@ -1,10 +1,21 @@
 import { z } from 'zod';
 
-const esquemaEnv = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  API_PORT: z.coerce.number().int().positive().default(3333),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
-});
+const vazioParaIndefinido = (valor: unknown) => (valor === '' ? undefined : valor);
+
+const esquemaEnv = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    API_PORT: z.coerce.number().int().positive().default(3333),
+    LOG_LEVEL: z
+      .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+      .default('info'),
+    DATABASE_URL: z.url(),
+    AUTH_DEV_USUARIO_EMAIL: z.preprocess(vazioParaIndefinido, z.email().optional()),
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || env.AUTH_DEV_USUARIO_EMAIL === undefined, {
+    message: 'AUTH_DEV_USUARIO_EMAIL é proibido em produção',
+    path: ['AUTH_DEV_USUARIO_EMAIL'],
+  });
 
 export type Env = z.infer<typeof esquemaEnv>;
 

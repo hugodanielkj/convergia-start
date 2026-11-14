@@ -30,7 +30,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 
 | Trilha | História                                                                                                                                                                                                                        | Pastas                                                                    |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| A      | [ ] **S1-1 Base compartilhada:** schema base (agência, usuário, config, auditoria), seed, Postgres na CI, esqueleto dos módulos, contratos de auth, eventos e mensageria, cascas do painel e da página do cliente (RN-75, D-01) | `prisma/`, `packages/core/src/base`, `apps/api/src/base`, `apps/web/app/` |
+| A      | [x] **S1-1 Base compartilhada:** schema base (agência, usuário, config, auditoria), seed, Postgres na CI, esqueleto dos módulos, contratos de auth, eventos e mensageria, cascas do painel e da página do cliente (RN-75, D-01) | `prisma/`, `packages/core/src/base`, `apps/api/src/base`, `apps/web/app/` |
 | A      | [ ] S1-2 Login com Google e papéis admin/membro (RN-02, RN-03, D-21, D-22)                                                                                                                                                      | `modulos/auth`, `app/(auth)`                                              |
 | B      | [~] S1-3 Cadastro de cliente com validação e alerta de duplicidade (RN-04, RN-05, RN-07, RN-08)                                                                                                                                 | `modulos/clientes`, `app/(painel)/clientes`                               |
 | B      | [ ] S1-4 Criação automática do onboarding com 4 etapas (RN-06)                                                                                                                                                                  | `modulos/onboarding`                                                      |
@@ -38,15 +38,15 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 
 ## Sprint 2 — Formulário do cliente · Disponibilidade e slots
 
-| Trilha | História                                                                              | Pastas                                                                                  |
-| ------ | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| A      | [ ] S2-1 Página do cliente: boas-vindas, consentimento LGPD, progresso (RN-50, RN-72) | `app/o/[token]` (exceto `_etapas/reuniao`, `_etapas/captacao`), `modulos/consentimento` |
-| A      | [ ] S2-2 Modelo de formulário versionado e editável (RN-15, RN-16, RN-19)             | `modulos/formulario`, `app/(painel)/config/formulario`                                  |
-| A      | [ ] S2-3 Preenchimento com rascunho automático e conclusão (RN-17, RN-18, RN-21)      | `modulos/formulario`, `_etapas/formulario`                                              |
-| A      | [ ] S2-4 Upload de arquivos com validação no servidor (RN-20)                         | `modulos/uploads`, `adapters/storage`                                                   |
-| B      | [ ] S2-5 Disponibilidade, bloqueios e feriados (RN-30, RN-44)                         | `modulos/agenda`, `core/agenda`, `app/(painel)/config/agenda`                           |
-| B      | [ ] S2-6 Geração de slots com antecedência mínima e fuso (RN-30 a RN-32)              | `core/agenda`                                                                           |
-| B      | [ ] S2-7 Reserva atômica sem overbooking (RN-33)                                      | `modulos/agenda`                                                                        |
+| Trilha | História                                                                                                                            | Pastas                                                                                  |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| A      | [ ] S2-1 Página do cliente: boas-vindas, consentimento LGPD, progresso (RN-50, RN-72)                                               | `app/o/[token]` (exceto `_etapas/reuniao`, `_etapas/captacao`), `modulos/consentimento` |
+| A      | [ ] S2-2 Modelo de formulário versionado e editável (RN-15, RN-16, RN-19)                                                           | `modulos/formulario`, `app/(painel)/config/formulario`                                  |
+| A      | [ ] S2-3 Preenchimento com rascunho automático e conclusão (RN-17, RN-18, RN-21)                                                    | `modulos/formulario`, `_etapas/formulario`                                              |
+| A      | [ ] S2-4 Upload de arquivos com validação no servidor (RN-20); escolher storage S3 local, pois a imagem do MinIO saiu do Docker Hub | `modulos/uploads`, `adapters/storage`                                                   |
+| B      | [ ] S2-5 Disponibilidade, bloqueios e feriados (RN-30, RN-44)                                                                       | `modulos/agenda`, `core/agenda`, `app/(painel)/config/agenda`                           |
+| B      | [ ] S2-6 Geração de slots com antecedência mínima e fuso (RN-30 a RN-32)                                                            | `core/agenda`                                                                           |
+| B      | [ ] S2-7 Reserva atômica sem overbooking (RN-33)                                                                                    | `modulos/agenda`                                                                        |
 
 ## Sprint 3 — Acessos e painel · Reunião
 

@@ -1,0 +1,43 @@
+.progresso {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  color: var(--suave);
+  font-size: 0.9rem;
+}
+
+.barra {
+  width: 100%;
+  height: 0.6rem;
+  accent-color: var(--destaque);
+}
+
+.cartao {
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.status {
+  font-size: 0.8rem;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+.status[data-status='concluida'] {
+  color: var(--destaque);
+  font-weight: 600;
+}
