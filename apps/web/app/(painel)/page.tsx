@@ -1,8 +1,6 @@
-export default function Inicio() {
-  return (
-    <>
-      <h1>Onboardings</h1>
-      <p>O painel de onboardings chega na Sprint 3. Por enquanto, use o menu para navegar.</p>
-    </>
-  );
+import { redirect } from 'next/navigation';
+
+/** A tela inicial do painel é a lista de onboardings (S3). */
+export default function Inicio(): never {
+  redirect('/onboardings');
 }
