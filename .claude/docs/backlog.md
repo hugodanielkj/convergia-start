@@ -81,11 +81,24 @@ Os dois lados usam o contrato de mensageria criado na S1-1, então avançam em p
 | B      | [ ] S5-3 Lembretes de pendência e de compromisso, janela de envio (RN-56, RN-57, RN-59)           | `modulos/notificacoes/lembretes`, `core/lembretes`   |
 | B      | [ ] S5-4 Alertas internos e convite automático (RN-09, RN-58)                                     | `modulos/notificacoes/alertas`                       |
 
-## Sprint 6 — Endurecimento (as duas trilhas)
+## Sprint 6 — Personalização por cliente · Ordem guiada · Visual Convergia (trilha A)
+
+Entrou depois da conversa do PO com o primeiro cliente (2026-11-14). A trilha B segue com S5-3 e S5-4.
+
+| Trilha | História                                                                                   | Pastas                                                                                                                        |
+| ------ | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| A      | [ ] S6-1 Tokens visuais da Convergia e fontes (PR `chore/`)                                | `app/globals.css`, `app/layout.tsx`                                                                                           |
+| A      | [ ] S6-2 Perguntas personalizadas por cliente, com versões próprias e trava (RN-15)        | `modulos/formulario`, `core/formulario`, `app/(painel)/onboardings/[id]/personalizar`, `app/(painel)/clientes` (mínimo)       |
+| A      | [ ] S6-3 Acessos escolhidos por cliente, pelo menos 1, com trava (RN-27)                   | `modulos/acessos`, `core/acessos`, `app/(painel)/onboardings/[id]/personalizar`, `app/(painel)/clientes` (mínimo)             |
+| A      | [ ] S6-4 Ordem guiada: liberação sequencial, navegação no topo e avanço automático (RN-79) | `core/liberacao`, `modulos/liberacao`, `app/o/[token]`, `modulos/agenda` e `modulos/captacao` (1 linha), `_etapas/*` (mínimo) |
+| A      | [ ] S6-5 Progresso por ícones em `/onboardings`                                            | `modulos/painel`, `core/painel`, `app/(painel)/onboardings`                                                                   |
+| A      | [ ] S6-6 Novo visual Convergia no painel e na página do cliente                            | `*.module.css` do painel e de `app/o/[token]`                                                                                 |
+
+## Sprint 7 — Endurecimento (as duas trilhas)
 
 | Trilha | História                                                              | Pastas                   |
 | ------ | --------------------------------------------------------------------- | ------------------------ |
-| A      | [ ] S6-1 Proteções do link público: rate limit, headers, CSRF (RN-76) | `apps/api/src/base/http` |
-| A      | [ ] S6-2 Tela de resumo após a conclusão (RN-14)                      | `app/o/[token]/resumo`   |
-| B      | [ ] S6-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12)   | `e2e/`                   |
-| B      | [ ] S6-4 Correções da homologação final                               | conforme o bug           |
+| A      | [ ] S7-1 Proteções do link público: rate limit, headers, CSRF (RN-76) | `apps/api/src/base/http` |
+| A      | [ ] S7-2 Tela de resumo após a conclusão (RN-14)                      | `app/o/[token]/resumo`   |
+| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12)   | `e2e/`                   |
+| B      | [ ] S7-4 Correções da homologação final                               | conforme o bug           |
