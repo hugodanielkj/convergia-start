@@ -47,7 +47,7 @@ export type ResultadoPublicacao =
   | { tipo: 'sem_alteracoes' }
   | { tipo: 'invalido'; erros: readonly ErroModelo[] };
 
-const lerCampos = (json: unknown): CampoFormulario[] => z.array(campoSalvo).parse(json);
+export const lerCampos = (json: unknown): CampoFormulario[] => z.array(campoSalvo).parse(json);
 const igual = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const ator = (u: UsuarioAutenticado): string => `usuario:${u.id}`;
 
@@ -56,7 +56,10 @@ function jaExiste(erro: unknown): boolean {
 }
 
 /** Garante a versão 1 (modelo padrão, RN-19). Concorrência: o índice único evita duplicar. */
-async function garantirModeloPadrao(prisma: PrismaDaAgencia, agenciaId: string): Promise<void> {
+export async function garantirModeloPadrao(
+  prisma: PrismaDaAgencia,
+  agenciaId: string,
+): Promise<void> {
   if ((await prisma.versaoFormulario.count()) > 0) return;
   try {
     await prisma.$transaction([

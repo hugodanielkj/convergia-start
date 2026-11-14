@@ -45,6 +45,7 @@ model Agencia {
   modeloFormulario  ModeloFormulario?
   onboardings       Onboarding[]
   primeirosAcessos  PrimeiroAcesso[]
+  respostasFormulario RespostaFormulario[]
   sessoes           Sessao[]
   usuarios          Usuario[]
   versoesFormulario VersaoFormulario[]

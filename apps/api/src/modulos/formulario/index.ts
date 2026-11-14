@@ -1,7 +1,59 @@
-import type { FastifyInstance } from 'fastify';
+import type { Respostas } from '@convergia/core/formulario';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { exigirAdmin, prismaDaRequisicao, usuarioDaRequisicao } from '../../base/auth.js';
+import {
+  exigirAdmin,
+  exigirUsuario,
+  prismaDaRequisicao,
+  usuarioDaRequisicao,
+} from '../../base/auth.js';
+import { comLinkValido } from '../consentimento/consentimento.js';
 import { campoDeEntrada, obterModelo, publicarVersao, salvarRascunho } from './modelo.js';
+import {
+  enviarFormularioDoCliente,
+  fecharFormulario,
+  lerFormularioDoCliente,
+  salvarRascunhoDoCliente,
+  type ResultadoFormulario,
+  type ResultadoGravacao,
+} from './respostas.js';
+
+const parametrosToken = z.object({ token: z.string().min(1).max(100) });
+const parametrosOnboarding = z.object({ onboardingId: z.string().min(1).max(64) });
+const valorResposta = z.union([z.string(), z.number(), z.array(z.string())]);
+const corpoRespostas = z.object({ respostas: z.record(z.string().max(60), valorResposta) });
+
+const semConsentimento = {
+  erro: 'CONSENTIMENTO_PENDENTE',
+  mensagem: 'Aceite o termo de consentimento antes de preencher o formulário',
+};
+
+function recusarLink(reply: FastifyReply, tipo: 'invalido' | 'expirado') {
+  return tipo === 'invalido'
+    ? reply.status(404).send({ erro: 'LINK_INVALIDO', mensagem: 'Link inválido' })
+    : reply.status(410).send({ erro: 'LINK_EXPIRADO', mensagem: 'Este link expirou' });
+}
+
+function responderGravacao(reply: FastifyReply, resultado: ResultadoFormulario<ResultadoGravacao>) {
+  if (resultado.tipo === 'sem_consentimento') return reply.status(409).send(semConsentimento);
+  const gravacao = resultado.valor;
+  switch (gravacao.tipo) {
+    case 'invalido':
+      return reply.status(422).send({ erro: 'RESPOSTAS_INVALIDAS', erros: gravacao.erros });
+    case 'ja_enviado':
+      return reply.status(409).send({
+        erro: 'FORMULARIO_JA_ENVIADO',
+        mensagem: 'O formulário já foi enviado; use o envio para editar',
+      });
+    case 'bloqueado':
+      return reply.status(409).send({
+        erro: gravacao.motivo === 'fechado' ? 'FORMULARIO_FECHADO' : 'REUNIAO_REALIZADA',
+        mensagem: 'As respostas não podem mais ser editadas (RN-21)',
+      });
+    case 'gravado':
+      return reply.status(200).send({ ok: true });
+  }
+}
 
 const corpoRascunho = z.object({ campos: z.array(campoDeEntrada).max(100) });
 
@@ -40,6 +92,63 @@ export default function formulario(app: FastifyInstance): Promise<void> {
         return reply.status(201).send({ numero: resultado.numero });
     }
   });
+
+  // Rotas públicas (S2-3): o token da URL é a única credencial (RN-01).
+  app.addHook('onSend', (request, reply, payload, feito) => {
+    if (request.url.startsWith('/publico/')) void reply.header('cache-control', 'no-store');
+    feito(null, payload);
+  });
+
+  app.get('/publico/onboardings/:token/formulario', async (request, reply) => {
+    const { token } = parametrosToken.parse(request.params);
+    const r = await comLinkValido(app.deps.prisma, token, app.deps.relogio.agora(), (link) =>
+      lerFormularioDoCliente(app.deps.prisma, link),
+    );
+    if (r.tipo !== 'ok') return recusarLink(reply, r.tipo);
+    if (r.valor.tipo === 'sem_consentimento') return reply.status(409).send(semConsentimento);
+    return r.valor.valor;
+  });
+
+  app.put('/publico/onboardings/:token/formulario/rascunho', async (request, reply) => {
+    const { token } = parametrosToken.parse(request.params);
+    const { respostas } = corpoRespostas.parse(request.body);
+    const r = await comLinkValido(app.deps.prisma, token, app.deps.relogio.agora(), (link) =>
+      salvarRascunhoDoCliente(app.deps.prisma, link, respostas as Respostas),
+    );
+    if (r.tipo !== 'ok') return recusarLink(reply, r.tipo);
+    return responderGravacao(reply, r.valor);
+  });
+
+  app.post('/publico/onboardings/:token/formulario/enviar', async (request, reply) => {
+    const { token } = parametrosToken.parse(request.params);
+    const { respostas } = corpoRespostas.parse(request.body);
+    const r = await comLinkValido(app.deps.prisma, token, app.deps.relogio.agora(), (link) =>
+      enviarFormularioDoCliente(
+        app.deps.prisma,
+        link,
+        respostas as Respostas,
+        app.deps.relogio.agora(),
+      ),
+    );
+    if (r.tipo !== 'ok') return recusarLink(reply, r.tipo);
+    return responderGravacao(reply, r.valor);
+  });
+
+  // A agência trava as edições do cliente (RN-21).
+  app.post(
+    '/onboardings/:onboardingId/formulario/fechar',
+    { preHandler: exigirUsuario },
+    async (request) => {
+      const { onboardingId } = parametrosOnboarding.parse(request.params);
+      await fecharFormulario(
+        prismaDaRequisicao(app, request),
+        usuarioDaRequisicao(request),
+        onboardingId,
+        app.deps.relogio.agora(),
+      );
+      return { ok: true };
+    },
+  );
 
   return Promise.resolve();
 }
