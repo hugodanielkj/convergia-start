@@ -36,6 +36,7 @@ model Agencia {
 
   // Relações reversas (ordem alfabética)
   auditoria         AuditoriaLog[]
+  arquivos          Arquivo[]
   clientes          Cliente[]
   config            ConfigAgencia?
   etapasOnboarding  EtapaOnboarding[]
