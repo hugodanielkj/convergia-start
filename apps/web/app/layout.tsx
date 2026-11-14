@@ -22,10 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   // A página ocupa a tela toda no iPhone; as cascas recuam com env(safe-area-inset-*).
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f8ebdd' },
-    { media: '(prefers-color-scheme: dark)', color: '#0e2b31' },
-  ],
+  themeColor: '#f8ebdd',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
