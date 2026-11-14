@@ -50,21 +50,24 @@ enum StatusAgendamento {
 // à mão na migração porque o Prisma não as declara: um horário não pode ser reservado por duas
 // pessoas (exclusão por intervalo, D-11) e um onboarding tem no máximo um agendamento ativo por tipo.
 model Agendamento {
-  id              String            @id @default(uuid(7))
-  agenciaId       String
-  agencia         Agencia           @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
-  onboardingId    String
-  onboarding      Onboarding        @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
-  tipo            TipoAtendimento
-  inicio          DateTime          @db.Timestamptz(3)
-  fim             DateTime          @db.Timestamptz(3)
-  status          StatusAgendamento @default(agendado)
-  responsavelId   String?
-  responsavel     Usuario?          @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
-  localOuLink     String?
-  eventoExternoId String?
-  criadoEm        DateTime          @default(now())
-  atualizadoEm    DateTime          @updatedAt
+  id                 String            @id @default(uuid(7))
+  agenciaId          String
+  agencia            Agencia           @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId       String
+  onboarding         Onboarding        @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  tipo               TipoAtendimento
+  inicio             DateTime          @db.Timestamptz(3)
+  fim                DateTime          @db.Timestamptz(3)
+  status             StatusAgendamento @default(agendado)
+  responsavelId      String?
+  responsavel        Usuario?          @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+  localOuLink        String?
+  eventoExternoId    String?
+  /// Quantas vezes o cliente trocou o horário deste agendamento (RN-35).
+  reagendamentos     Int               @default(0)
+  motivoCancelamento String?
+  criadoEm           DateTime          @default(now())
+  atualizadoEm       DateTime          @updatedAt
 
   @@index([agenciaId, inicio])
   @@index([onboardingId, tipo])
