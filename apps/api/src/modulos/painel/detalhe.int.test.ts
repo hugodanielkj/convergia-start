@@ -144,6 +144,20 @@ describe('RN-65 detalhe do onboarding', () => {
       },
     });
 
+    await prisma.notificacao.create({
+      data: {
+        agenciaId,
+        onboardingId: id,
+        tipo: 'convite',
+        categoria: 'transacional',
+        chave: `convite:${id}`,
+        corpo: 'Olá',
+        status: 'enviada',
+        canal: 'whatsapp',
+        totalTentativas: 1,
+      },
+    });
+
     const r = await detalhe(appAdmin, id);
     expect(r.statusCode).toBe(200);
     expect(r.json()).toMatchObject({
@@ -170,8 +184,9 @@ describe('RN-65 detalhe do onboarding', () => {
         { tipo: 'reuniao', status: 'agendado', localOuLink: 'https://meet.example/abc' },
       ],
       arquivos: [{ id: arquivo.id, nomeOriginal: 'logo.png' }],
-      notificacoes: [],
+      notificacoes: [{ tipo: 'convite', status: 'enviada', canal: 'whatsapp', totalTentativas: 1 }],
     });
+    expect(JSON.stringify(r.json())).not.toContain('Olá');
   });
 
   it('Admin vê pausar, cancelar, reabrir, fechar, regenerar e exportar num onboarding ativo', async () => {

@@ -1,6 +1,6 @@
 # Sprint 5 — Envio de mensagens · Lembretes e alertas
 
-**Status:** trilha A aprovada pelo PO e em andamento (2026-11-14).
+**Status:** trilha A concluída (2026-11-14).
 
 ## Trilha A — PO
 
@@ -22,13 +22,18 @@
 
 ### Trilha A
 
-(vazio)
+As 2 histórias mergeadas na `hml`, com CI verde:
+
+- S5-1 Templates (#40): `/config/templates` com os 4 textos da spec, pré-visualização, restaurar padrão; recusa variável desconhecida e pedido de senha.
+- S5-2 Envio (este PR): fila `notificacoes` com WhatsApp (MegaAPI) e e-mail (Resend), canal alternativo, 3 tentativas por canal e pendência sem credenciais; opt-out em `/parar-lembretes/<token>`; histórico no detalhe do onboarding. Decisões do PO: Resend e canal padrão da agência.
 
 ## Retro
 
 ### Trilha A
 
-(vazio)
+- **Funcionou:** regra de retentativa pura no `core`, testada sem banco; o mesmo desenho do calendário (estado no banco + reserva) evitou montar fila agora.
+- **Atenção:** o teste do worker do calendário (trilha B) falha às vezes com os testes rodando em paralelo; passa sozinho. O link do onboarding não pode ir nos lembretes, porque o token só é guardado como hash (D-13): a trilha B precisa decidir isso na S5-3/S5-4.
+- **Pendências:** credenciais do Resend e da MegaAPI (PO); `.env.example` não foi atualizado (leitura bloqueada nas configurações); página `/config` segue 404.
 
 ## Trilha B — colaborador
 
