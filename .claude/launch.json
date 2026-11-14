@@ -9,8 +9,14 @@
     },
     {
       "name": "api",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@convergia/api", "dev"],
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=postgresql://convergia:convergia@localhost:55432/convergia",
+        "pnpm",
+        "--filter",
+        "@convergia/api",
+        "dev"
+      ],
       "port": 3333
     }
   ]

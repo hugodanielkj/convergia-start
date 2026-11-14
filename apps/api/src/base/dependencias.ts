@@ -1,5 +1,5 @@
 import type { Mensageria, Relogio } from '@convergia/core/base';
-import type { ResolvedorSessao } from './auth.js';
+import type { ConfigAuth, ResolvedorSessao } from './auth.js';
 import type { BarramentoEventos } from './eventos.js';
 import type { PrismaClient } from './prisma.js';
 
@@ -10,6 +10,7 @@ export interface Dependencias {
   mensageria: Mensageria;
   relogio: Relogio;
   resolverSessao: ResolvedorSessao;
+  auth: ConfigAuth;
 }
 
 declare module 'fastify' {

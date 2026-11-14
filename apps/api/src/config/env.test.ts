@@ -10,7 +10,19 @@ describe('carregarEnv', () => {
       API_PORT: 3333,
       LOG_LEVEL: 'info',
       DATABASE_URL,
+      APP_URL: 'http://localhost:3000',
+      SESSAO_DURACAO_HORAS: 168,
     });
+  });
+
+  it('exige SESSAO_SEGREDO em produção', () => {
+    expect(() => carregarEnv({ DATABASE_URL, NODE_ENV: 'production' })).toThrow(/SESSAO_SEGREDO/);
+  });
+
+  it('exige as duas credenciais do Google juntas', () => {
+    expect(() => carregarEnv({ DATABASE_URL, GOOGLE_CLIENT_ID: 'id' })).toThrow(
+      /GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET/,
+    );
   });
 
   it('converte a porta para número', () => {
