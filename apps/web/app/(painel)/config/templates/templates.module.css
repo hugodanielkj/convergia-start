@@ -1,0 +1,83 @@
+.pagina {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+.cartao {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.6rem;
+}
+
+.cartao h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cartao textarea {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+  resize: vertical;
+}
+
+.dica {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.botoes button {
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--destaque);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botoes button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.botoes .secundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+}
+
+.erros {
+  margin: 0;
+  color: #c92a2a;
+}
+
+.ok {
+  margin: 0;
+  color: #2f9e44;
+}
+
+.previa {
+  margin: 0;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
