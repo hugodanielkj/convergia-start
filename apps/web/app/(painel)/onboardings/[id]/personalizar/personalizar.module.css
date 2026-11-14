@@ -107,3 +107,36 @@
 .ok {
   color: var(--sucesso, #2b7a3d);
 }
+
+.plataformas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.plataforma {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula, 999px);
+  cursor: pointer;
+}
+
+.plataforma:has(input:checked) {
+  border-color: var(--destaque);
+  background: color-mix(in srgb, var(--realce, #e8491e) 12%, transparent);
+  font-weight: 700;
+}
+
+.plataforma input {
+  accent-color: var(--destaque);
+}
+
+.dica {
+  margin: 0.75rem 0 0;
+  color: var(--suave);
+  font-size: 0.9rem;
+}

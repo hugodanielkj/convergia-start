@@ -33,3 +33,16 @@ model ConfigAcessos {
 
   @@map("config_acessos")
 }
+
+// Plataformas que a agência pediu a este cliente (S6-3, RN-27 revisada). Sem linha, valem as
+// `plataformasObrigatorias` da config. Trava quando a etapa começa.
+model EscolhaAcessos {
+  onboardingId String   @id
+  agenciaId    String
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  plataformas  String[]
+  atualizadoEm DateTime @updatedAt
+
+  @@index([agenciaId])
+  @@map("escolhas_acessos")
+}
