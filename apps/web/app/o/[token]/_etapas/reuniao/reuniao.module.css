@@ -61,7 +61,7 @@
 
 .horario[aria-pressed='true'] {
   background: var(--destaque);
-  color: #ffffff;
+  color: var(--sobre-destaque);
 }
 
 .acoes {
@@ -83,7 +83,7 @@
 
 .botao {
   background: var(--destaque);
-  color: #ffffff;
+  color: var(--sobre-destaque);
 }
 
 .botaoSecundario {

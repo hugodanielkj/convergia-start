@@ -1,24 +1,59 @@
-/* Estilos globais mínimos. Estilos de tela ficam em *.module.css ao lado do componente (D-24). */
+/* Estilos globais: tokens da marca Convergia (convergiadigital.com) e base tipográfica.
+   Estilos de tela ficam em *.module.css ao lado do componente (D-24). */
 :root {
   color-scheme: light dark;
-  font-family: system-ui, sans-serif;
+
+  /* Marca (não mudam com o tema). */
+  --cream: #f8ebdd;
+  --orange: #e8491e;
+  --orange-text: #b33513;
+  --peach: #ffb48a;
+  --petrol: #12464f;
+  --ink: #0e2b31;
+  --muted: #506165;
+  --line: rgba(14, 43, 49, 0.2);
+
+  --serif: var(--fonte-titulo, 'Fraunces'), Georgia, serif;
+  --sans: Arial, Helvetica, sans-serif;
+  --raio: 14px;
+  --raio-grande: 18px;
+  --raio-pilula: 999px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Papéis (mudam com o tema). Telas usam estes nomes. */
+  --fundo: var(--cream);
+  --superficie: #fdf6ee;
+  --texto: var(--ink);
+  --suave: var(--muted);
+  --borda: var(--line);
+  /* Texto e botões de destaque: --orange-text passa AA sobre o creme (5,2:1). */
+  --destaque: var(--orange-text);
+  --sobre-destaque: var(--cream);
+  /* Laranja vivo só em superfícies grandes, ícones e foco (3,3:1 sobre o creme). */
+  --realce: var(--orange);
+  --sucesso: #2b7a3d;
+  --erro: #b42318;
+  --aviso: #8a4b00;
+  --pendente: #8a9699;
+
+  font-family: var(--sans);
   line-height: 1.5;
-  --fundo: #ffffff;
-  --texto: #1a1a1a;
-  --suave: #5f6368;
-  --borda: #e2e4e8;
-  --destaque: #3b5bdb;
-  --superficie: #f6f7f9;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --fundo: #121417;
-    --texto: #eceef1;
-    --suave: #a3a8b0;
-    --borda: #2c3036;
-    --destaque: #7c94f5;
-    --superficie: #1b1e22;
+    --fundo: var(--ink);
+    --superficie: #143a41;
+    --texto: var(--cream);
+    --suave: #c9cfc9;
+    --borda: rgba(248, 235, 221, 0.22);
+    --destaque: var(--peach);
+    --sobre-destaque: var(--ink);
+    --realce: var(--orange);
+    --sucesso: #7fd18f;
+    --erro: #ff9b8f;
+    --aviso: #ffc46b;
+    --pendente: #9fb0b3;
   }
 }
 
@@ -28,6 +63,27 @@ body {
   color: var(--texto);
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
 a {
   color: var(--destaque);
+}
+
+:focus-visible {
+  outline: 3px solid var(--realce);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
