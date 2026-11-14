@@ -30,7 +30,7 @@
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
   background: var(--destaque);
-  color: #fff;
+  color: var(--sobre-destaque);
   font-weight: 600;
   text-decoration: none;
 }

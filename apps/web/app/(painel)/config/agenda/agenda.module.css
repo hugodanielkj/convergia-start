@@ -119,7 +119,7 @@
 .botao {
   justify-self: start;
   background: var(--destaque);
-  color: #ffffff;
+  color: var(--sobre-destaque);
 }
 
 .botaoSecundario {
