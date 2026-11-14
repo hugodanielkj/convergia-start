@@ -52,6 +52,7 @@ model Agencia {
   primeirosAcessos    PrimeiroAcesso[]
   respostasFormulario RespostaFormulario[]
   sessoes             Sessao[]
+  templatesMensagem   TemplateMensagem[]
   transicoes          TransicaoStatus[]
   usuarios            Usuario[]
   versoesFormulario   VersaoFormulario[]

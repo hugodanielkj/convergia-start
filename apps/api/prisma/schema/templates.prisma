@@ -1,0 +1,13 @@
+// Módulo templates (S5-1, trilha A). Texto editado por agência; sem linha vale o padrão da spec
+// (seção 8), que fica em packages/core/src/templates. `tipo` espelha TIPOS_TEMPLATE.
+model TemplateMensagem {
+  id           String   @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  tipo         String
+  texto        String
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([agenciaId, tipo])
+  @@map("templates_mensagem")
+}
