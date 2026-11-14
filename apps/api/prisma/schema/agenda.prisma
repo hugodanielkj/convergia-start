@@ -1,0 +1,39 @@
+// Módulo agenda (S2-5, S2-6, S2-7). Horários "HH:mm" e dias da semana valem no fuso da agência
+// (D-14); só os instantes dos agendamentos ficam em UTC. Travas extras (CHECK) estão escritas à
+// mão na migração: o Prisma não as declara.
+enum TipoAtendimento {
+  reuniao
+  captacao
+}
+
+// Janela semanal em que a agência atende (RN-30). Sem `usuarioId` vale para a agência toda (D-02).
+model Disponibilidade {
+  id             String          @id @default(uuid(7))
+  agenciaId      String
+  agencia        Agencia         @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  usuarioId      String?
+  usuario        Usuario?        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tipo           TipoAtendimento
+  diaSemana      Int // 0 = domingo ... 6 = sábado
+  horaInicio     String // "HH:mm"
+  horaFim        String // "HH:mm"
+  duracaoMinutos Int? // sem valor, vale a duração da ConfigAgencia
+  criadoEm       DateTime        @default(now())
+
+  @@index([agenciaId, tipo, diaSemana])
+  @@map("disponibilidades")
+}
+
+// Período sem atendimento: folga, recesso, feriado estadual ou municipal (RN-44).
+model Bloqueio {
+  id         String   @id @default(uuid(7))
+  agenciaId  String
+  agencia    Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  dataInicio DateTime @db.Date
+  dataFim    DateTime @db.Date // inclusive
+  motivo     String
+  criadoEm   DateTime @default(now())
+
+  @@index([agenciaId, dataInicio, dataFim])
+  @@map("bloqueios")
+}
