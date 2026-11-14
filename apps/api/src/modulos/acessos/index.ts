@@ -15,8 +15,11 @@ import {
   lerAcessosDaAgencia,
   lerAcessosDoCliente,
   lerConfigAcessos,
+  lerEscolha,
+  lerEscolhaPadrao,
   marcarAcesso,
   salvarConfigAcessos,
+  salvarEscolha,
 } from './acessos.js';
 
 const plataforma = z.string().refine(ehPlataformaAcesso, 'Plataforma desconhecida');
@@ -32,6 +35,7 @@ const corpoMarcacao = z.object({
   status: z.enum(['concedido', 'invalido']),
   motivo: z.string().max(2000).optional(),
 });
+const corpoEscolha = z.object({ plataformas: z.array(z.string().max(40)).max(10) });
 const corpoConfig = z.object({
   identificadores: z.object(
     Object.fromEntries(PLATAFORMAS_ACESSO.map((p) => [p, z.string().max(200).optional()])),
@@ -127,6 +131,55 @@ export default function acessos(app: FastifyInstance): Promise<void> {
         app.deps.relogio.agora(),
       );
       return estado;
+    },
+  );
+
+  // Plataformas pedidas a cada cliente (S6-3, RN-27). Qualquer usuário cadastra cliente, então o
+  // padrão não exige admin; mudar a escolha exige admin ou responsável (RN-02).
+  app.get('/acessos/padrao', { preHandler: exigirUsuario }, (request) =>
+    lerEscolhaPadrao(prismaDaRequisicao(app, request)),
+  );
+
+  app.get(
+    '/onboardings/:onboardingId/acessos/escolha',
+    { preHandler: exigirUsuario },
+    (request) => {
+      const { onboardingId } = parametrosOnboarding.parse(request.params);
+      return lerEscolha(
+        prismaDaRequisicao(app, request),
+        usuarioDaRequisicao(request),
+        onboardingId,
+      );
+    },
+  );
+
+  app.put(
+    '/onboardings/:onboardingId/acessos/escolha',
+    { preHandler: exigirUsuario },
+    async (request, reply) => {
+      const { onboardingId } = parametrosOnboarding.parse(request.params);
+      const { plataformas } = corpoEscolha.parse(request.body);
+      const usuario = usuarioDaRequisicao(request);
+      const r = await salvarEscolha(
+        prismaDaRequisicao(app, request),
+        usuario,
+        onboardingId,
+        plataformas,
+      );
+      if (r.tipo === 'travada') {
+        return reply.status(409).send({
+          erro: 'ESCOLHA_TRAVADA',
+          mensagem: 'A etapa de acessos já começou; as plataformas não mudam mais (RN-27)',
+        });
+      }
+      await avisarEtapasMudaram(
+        app.deps.eventos,
+        usuario.agenciaId,
+        onboardingId,
+        `usuario:${usuario.id}`,
+        app.deps.relogio.agora(),
+      );
+      return r.estado;
     },
   );
 

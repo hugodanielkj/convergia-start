@@ -1,27 +1,35 @@
 import { cookies } from 'next/headers';
 import { URL_API } from '../../../_lib/url-api';
 import type { Campo } from '../../config/formulario/tipos';
+import { SecaoAcessosCadastro } from '../../onboardings/[id]/personalizar/SecaoAcessosCadastro';
 import { SecaoPerguntasCadastro } from '../../onboardings/[id]/personalizar/SecaoPerguntasCadastro';
+import type { EstadoAcessos } from '../../onboardings/[id]/personalizar/tipos';
 import { FormularioCliente } from '../FormularioCliente';
 
 export const dynamic = 'force-dynamic';
 
-/** Perguntas do modelo padrão, ponto de partida da personalização (S6-2). Falha = sem a seção. */
-async function camposPadrao(): Promise<Campo[] | null> {
-  const resposta = await fetch(`${URL_API}/formulario/padrao`, {
+/** Pontos de partida da personalização (S6-2, S6-3). Se a API falhar, a seção não aparece. */
+async function buscar<T>(caminho: string): Promise<T | null> {
+  const resposta = await fetch(`${URL_API}${caminho}`, {
     headers: { cookie: (await cookies()).toString() },
     cache: 'no-store',
   }).catch(() => null);
   if (!resposta?.ok) return null;
-  return ((await resposta.json()) as { campos: Campo[] }).campos;
+  return (await resposta.json()) as T;
 }
 
 export default async function PaginaNovoCliente() {
-  const padrao = await camposPadrao();
+  const [perguntas, acessos] = await Promise.all([
+    buscar<{ campos: Campo[] }>('/formulario/padrao'),
+    buscar<EstadoAcessos>('/acessos/padrao'),
+  ]);
   return (
     <>
       <h1>Novo cliente</h1>
-      <FormularioCliente>{padrao && <SecaoPerguntasCadastro padrao={padrao} />}</FormularioCliente>
+      <FormularioCliente>
+        {perguntas && <SecaoPerguntasCadastro padrao={perguntas.campos} />}
+        {acessos && <SecaoAcessosCadastro padrao={acessos} />}
+      </FormularioCliente>
     </>
   );
 }

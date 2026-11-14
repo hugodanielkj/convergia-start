@@ -1,22 +1,8 @@
 import type { Plataforma } from '../base/config.js';
+import { LIMITE_MOTIVO, type PlataformaAcesso, type SituacaoAcesso } from './plataformas.js';
 
-/** Plataformas da etapa de acessos (D-05, D-06). "outro" fica fora do MVP. */
-export const PLATAFORMAS_ACESSO = ['instagram', 'facebook', 'tiktok', 'google'] as const;
-export type PlataformaAcesso = (typeof PLATAFORMAS_ACESSO)[number];
-
-export const STATUS_ACESSO = ['pendente', 'concedido', 'invalido'] as const;
-export type StatusAcesso = (typeof STATUS_ACESSO)[number];
-
-export const LIMITE_MOTIVO = 500;
-
-export const ehPlataformaAcesso = (valor: string): valor is PlataformaAcesso =>
-  (PLATAFORMAS_ACESSO as readonly string[]).includes(valor);
-
-export interface SituacaoAcesso {
-  readonly status: StatusAcesso;
-  /** O cliente avisou que já adicionou a agência (ainda falta a agência confirmar). */
-  readonly informado: boolean;
-}
+export * from './plataformas.js';
+export * from './escolha.js';
 
 export type StatusEtapaAcessos = 'pendente' | 'em_andamento' | 'concluida';
 
