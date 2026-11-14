@@ -1,0 +1,16 @@
+// Módulo captação (S4-4, trilha B). Dados adicionais do agendamento de captação (RN-40).
+// `agenciaId` é só uma coluna (sem relação), para não alterar a `Agencia` no schema base (RN-75).
+model DadosCaptacao {
+  id            String      @id @default(uuid(7))
+  agenciaId     String
+  agendamentoId String      @unique
+  agendamento   Agendamento @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+  presencial    Boolean     @default(true)
+  local         String?
+  contatoLocal  String?
+  observacoes   String?
+  criadoEm      DateTime    @default(now())
+
+  @@index([agenciaId])
+  @@map("dados_captacao")
+}

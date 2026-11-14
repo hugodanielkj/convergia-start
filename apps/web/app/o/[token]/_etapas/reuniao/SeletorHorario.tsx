@@ -2,7 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { criarApiReuniao, type ListaDeHorarios } from './api';
+import {
+  criarApiReuniao,
+  type DadosCaptacaoEnviados,
+  type ListaDeHorarios,
+  type TipoAtendimento,
+} from './api';
 import { formatarDia, fusoDoNavegador, fusosDisponiveis } from './formatar';
 import estilos from './reuniao.module.css';
 
@@ -17,6 +22,11 @@ interface Mensagem {
 interface Props {
   readonly token: string;
   readonly modo: ModoSeletor;
+  /** Reunião (padrão) ou captação, que leva os dados do local (RN-40). */
+  readonly tipo?: TipoAtendimento;
+  readonly dadosCaptacao?: DadosCaptacaoEnviados;
+  /** Impede confirmar enquanto os dados do local estão incompletos. */
+  readonly confirmarBloqueado?: boolean;
   /** Chamado ao fechar sem escolher, só no modo reagendar. */
   readonly aoCancelar?: () => void;
   /** Chamado quando o horário foi confirmado, antes de a página recarregar. */
@@ -28,7 +38,15 @@ interface Props {
  * navegador, que o cliente pode trocar (RN-32). Se alguém reservar o horário antes, a lista
  * é substituída pela atualizada que a API devolve junto com o aviso.
  */
-export function SeletorHorario({ token, modo, aoCancelar, aoConcluir }: Props) {
+export function SeletorHorario({
+  token,
+  modo,
+  tipo = 'reuniao',
+  dadosCaptacao,
+  confirmarBloqueado = false,
+  aoCancelar,
+  aoConcluir,
+}: Props) {
   const roteador = useRouter();
   const api = useMemo(
     () => criarApiReuniao({ baseUrl: '/api', fetcher: (...args) => fetch(...args) }),
@@ -54,7 +72,7 @@ export function SeletorHorario({ token, modo, aoCancelar, aoConcluir }: Props) {
     let cancelado = false;
     setCarregando(true);
     setEscolhido(null);
-    void api.listarHorarios(token, fuso).then((resultado) => {
+    void api.listarHorarios(token, fuso, tipo).then((resultado) => {
       if (cancelado) return;
       setCarregando(false);
       if (resultado.tipo === 'ok') {
@@ -73,7 +91,7 @@ export function SeletorHorario({ token, modo, aoCancelar, aoConcluir }: Props) {
       cancelado = true;
     };
     // `irParaLinkExpirado` só usa o token, que já está na lista de dependências.
-  }, [api, token, fuso]);
+  }, [api, token, fuso, tipo]);
 
   async function confirmar() {
     if (escolhido === null || fuso === null) return;
@@ -81,7 +99,7 @@ export function SeletorHorario({ token, modo, aoCancelar, aoConcluir }: Props) {
     setMensagem(null);
     const resultado =
       modo.tipo === 'novo'
-        ? await api.reservar(token, escolhido, fuso)
+        ? await api.reservar(token, escolhido, fuso, tipo, dadosCaptacao)
         : await api.reagendar(token, modo.agendamentoId, escolhido, fuso);
     setEnviando(false);
 
@@ -179,7 +197,7 @@ export function SeletorHorario({ token, modo, aoCancelar, aoConcluir }: Props) {
         <button
           type="button"
           className={estilos.botao}
-          disabled={escolhido === null || enviando}
+          disabled={escolhido === null || enviando || confirmarBloqueado}
           onClick={() => void confirmar()}
         >
           {enviando ? 'Confirmando…' : rotuloBotao}

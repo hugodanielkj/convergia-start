@@ -19,6 +19,16 @@ const esquemaAgendamento = z.object({
 });
 const esquemaNegado = z.object({ mensagem: z.string() });
 
+export type TipoAtendimento = 'reuniao' | 'captacao';
+
+/** Dados do local enviados junto com a reserva da captação (RN-40). */
+export interface DadosCaptacaoEnviados {
+  readonly presencial: boolean;
+  readonly local?: string;
+  readonly contatoLocal?: string;
+  readonly observacoes?: string;
+}
+
 export type ListaDeHorarios = z.infer<typeof esquemaLista>;
 export type AgendamentoDoCliente = z.infer<typeof esquemaAgendamento>;
 
@@ -38,9 +48,15 @@ export type ResultadoEscolha =
   | Falha;
 
 export interface ApiReuniao {
-  listarHorarios(token: string, fuso: string): Promise<ResultadoHorarios>;
+  listarHorarios(token: string, fuso: string, tipo?: TipoAtendimento): Promise<ResultadoHorarios>;
   listarAgendamentos(token: string): Promise<ResultadoAgendamentos>;
-  reservar(token: string, inicio: string, fuso: string): Promise<ResultadoEscolha>;
+  reservar(
+    token: string,
+    inicio: string,
+    fuso: string,
+    tipo?: TipoAtendimento,
+    captacao?: DadosCaptacaoEnviados,
+  ): Promise<ResultadoEscolha>;
   reagendar(
     token: string,
     agendamentoId: string,
@@ -104,8 +120,8 @@ export function criarApiReuniao({ baseUrl, fetcher }: OpcoesApiReuniao): ApiReun
   }
 
   return {
-    async listarHorarios(token, fuso) {
-      const consulta = new URLSearchParams({ tipo: 'reuniao', fuso });
+    async listarHorarios(token, fuso, tipo = 'reuniao') {
+      const consulta = new URLSearchParams({ tipo, fuso });
       const resposta = await chamar(`${base(token)}/slots?${consulta.toString()}`);
       if (resposta === null) return { tipo: 'falha', mensagem: FALHA_DE_REDE };
       const link = doLink(resposta.status);
@@ -127,14 +143,15 @@ export function criarApiReuniao({ baseUrl, fetcher }: OpcoesApiReuniao): ApiReun
         : FALHA;
     },
 
-    async reservar(token, inicio, fuso) {
+    async reservar(token, inicio, fuso, tipo = 'reuniao', captacao) {
       const resposta = await chamar(`${base(token)}/agendamentos`, {
-        tipo: 'reuniao',
+        tipo,
         inicio,
         fuso,
+        ...(captacao === undefined ? {} : { captacao }),
       });
       const link = resposta === null ? null : doLink(resposta.status);
-      return link ?? desfecho(resposta, false);
+      return link ?? desfecho(resposta, captacao !== undefined);
     },
 
     async reagendar(token, agendamentoId, inicio, fuso) {

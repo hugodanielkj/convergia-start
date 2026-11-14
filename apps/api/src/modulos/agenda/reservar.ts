@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { dataLocal } from '@convergia/core/agenda';
+import { validarDadosCaptacao, type EntradaDadosCaptacao } from '@convergia/core/captacao';
 import type { PublicadorEventos } from '@convergia/core/base';
 import type { PrismaClient } from '../../base/prisma.js';
 import type { LinkLocalizado } from '../link/localizar-link.js';
@@ -29,6 +30,8 @@ export interface EntradaReserva {
   readonly inicio: Date;
   /** Fuso do cliente, só para a lista atualizada devolvida quando o horário foi perdido. */
   readonly fuso?: string | undefined;
+  /** Dados do local; obrigatório para a captação (RN-40), ignorado na reunião. */
+  readonly captacao?: EntradaDadosCaptacao | undefined;
 }
 
 export type ResultadoReserva =
@@ -43,7 +46,8 @@ export type ResultadoReserva =
       };
     }
   | { readonly tipo: 'indisponivel'; readonly lista: ListaDeSlots }
-  | { readonly tipo: 'ja_agendado' };
+  | { readonly tipo: 'ja_agendado' }
+  | { readonly tipo: 'dados_invalidos'; readonly erro: 'local_obrigatorio' | 'dados_ausentes' };
 
 const RESTRICAO_SOBREPOSICAO = 'agendamentos_sem_sobreposicao';
 const RESTRICAO_UM_POR_TIPO = 'agendamentos_um_ativo_por_tipo';
@@ -74,8 +78,19 @@ export async function reservarSlot(
   const { prisma, fusoAgencia } = contexto;
   const indisponivel = async (): Promise<ResultadoReserva> => ({
     tipo: 'indisponivel',
-    lista: await listarSlots(contexto, { tipo: entrada.tipo, fuso: entrada.fuso }, agora),
+    lista: await listarSlots(
+      contexto,
+      { tipo: entrada.tipo, fuso: entrada.fuso, onboardingId: link.onboardingId },
+      agora,
+    ),
   });
+
+  let dadosCaptacao: ReturnType<typeof validarDadosCaptacao> | null = null;
+  if (entrada.tipo === 'captacao') {
+    if (entrada.captacao === undefined) return { tipo: 'dados_invalidos', erro: 'dados_ausentes' };
+    dadosCaptacao = validarDadosCaptacao(entrada.captacao);
+    if (!dadosCaptacao.ok) return { tipo: 'dados_invalidos', erro: dadosCaptacao.erro };
+  }
 
   const jaTem = await prisma.agendamento.findFirst({
     where: {
@@ -88,7 +103,15 @@ export async function reservarSlot(
   if (jaTem) return { tipo: 'ja_agendado' };
 
   const dia = dataLocal(entrada.inicio, fusoAgencia);
-  const livres = await slotsLivres(contexto, entrada.tipo, dia, dia, agora);
+  const livres = await slotsLivres(
+    contexto,
+    entrada.tipo,
+    dia,
+    dia,
+    agora,
+    undefined,
+    link.onboardingId,
+  );
   const escolhido = livres.find((s) => s.inicio.getTime() === entrada.inicio.getTime());
   if (!escolhido) return indisponivel();
 
@@ -110,6 +133,11 @@ export async function reservarSlot(
           fim: escolhido.fim,
         },
       });
+      if (dadosCaptacao?.ok) {
+        await tx.dadosCaptacao.create({
+          data: { agenciaId: link.agenciaId, agendamentoId: id, ...dadosCaptacao.dados },
+        });
+      }
       await tx.auditoriaLog.create({
         data: {
           agenciaId: link.agenciaId,

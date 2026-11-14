@@ -59,6 +59,14 @@ const corpoReserva = z.object({
   tipo: tipoDeAtendimento,
   inicio: z.iso.datetime(),
   fuso: fusoDoCliente.optional(),
+  captacao: z
+    .object({
+      presencial: z.boolean(),
+      local: z.string().max(300).optional(),
+      contatoLocal: z.string().max(200).optional(),
+      observacoes: z.string().max(1000).optional(),
+    })
+    .optional(),
 });
 
 const consultaFeriados = z.object({ ano: z.coerce.number().int().min(1900).max(2200).optional() });
@@ -157,7 +165,11 @@ export default function agenda(app: FastifyInstance): Promise<void> {
       return reply.status(410).send({ erro: 'LINK_EXPIRADO', mensagem: 'Este link expirou' });
     }
     const contexto = await carregarContexto(app.deps.prisma, link.link.agenciaId);
-    return listarSlots(contexto, consulta, app.deps.relogio.agora());
+    return listarSlots(
+      contexto,
+      { ...consulta, onboardingId: link.link.onboardingId },
+      app.deps.relogio.agora(),
+    );
   });
 
   app.post('/publico/onboardings/:token/agendamentos', async (request, reply) => {
@@ -178,7 +190,12 @@ export default function agenda(app: FastifyInstance): Promise<void> {
       app.deps.prisma,
       app.deps.eventos,
       link.link,
-      { tipo: corpo.tipo, inicio: new Date(corpo.inicio), fuso: corpo.fuso },
+      {
+        tipo: corpo.tipo,
+        inicio: new Date(corpo.inicio),
+        fuso: corpo.fuso,
+        captacao: corpo.captacao,
+      },
       agora,
     );
     switch (resultado.tipo) {
@@ -189,6 +206,15 @@ export default function agenda(app: FastifyInstance): Promise<void> {
           erro: 'SLOT_INDISPONIVEL',
           mensagem: 'Este horário acabou de ser reservado. Escolha outro.',
           ...resultado.lista,
+        });
+      case 'dados_invalidos':
+        return reply.status(422).send({
+          erro: 'DADOS_CAPTACAO_INVALIDOS',
+          motivo: resultado.erro,
+          mensagem:
+            resultado.erro === 'local_obrigatorio'
+              ? 'Informe o endereço ou local da captação.'
+              : 'Informe os dados da captação.',
         });
       case 'ja_agendado':
         return reply.status(409).send({

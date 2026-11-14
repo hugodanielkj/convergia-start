@@ -1,0 +1,33 @@
+.formulario {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.campo input,
+.campo textarea {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+  font-weight: 400;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dados {
+  margin: 0;
+  padding-left: 1.25rem;
+}

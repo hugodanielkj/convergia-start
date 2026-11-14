@@ -82,6 +82,7 @@ model Agendamento {
   motivoCancelamento           String?
   criadoEm                     DateTime           @default(now())
   atualizadoEm                 DateTime           @updatedAt
+  dadosCaptacao                DadosCaptacao?
 
   @@index([agenciaId, inicio])
   @@index([onboardingId, tipo])
