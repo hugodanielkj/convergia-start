@@ -1,0 +1,50 @@
+.pagina {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.subtitulo {
+  color: var(--suave);
+}
+
+.caixa {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+}
+
+.termo {
+  margin: 0;
+}
+
+.aceite {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.erro {
+  margin: 0;
+  color: #c92a2a;
+}
+
+.botao {
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--destaque);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

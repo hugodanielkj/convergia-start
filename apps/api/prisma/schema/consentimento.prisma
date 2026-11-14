@@ -1,0 +1,27 @@
+// Módulo consentimento (S2-1, trilha A). `onboardingId` é só uma coluna (sem relação) para não
+// alterar o módulo onboarding. Nada de IP nem dispositivo: coletamos só o necessário (RN-73).
+
+// Aceite do termo pelo cliente (RN-72): data, hora e versão do termo.
+model ConsentimentoCliente {
+  id           String   @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId String
+  versaoTermo  String
+  aceitoEm     DateTime
+
+  @@unique([onboardingId, versaoTermo])
+  @@index([agenciaId])
+  @@map("consentimentos_cliente")
+}
+
+// Primeira abertura do link (RN-50). A chave única garante que só a primeira conta.
+model PrimeiroAcesso {
+  onboardingId String   @id
+  agenciaId    String
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  em           DateTime
+
+  @@index([agenciaId])
+  @@map("primeiros_acessos")
+}

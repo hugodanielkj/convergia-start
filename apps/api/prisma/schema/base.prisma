@@ -38,11 +38,13 @@ model Agencia {
   auditoria         AuditoriaLog[]
   arquivos          Arquivo[]
   clientes          Cliente[]
+  consentimentos    ConsentimentoCliente[]
   config            ConfigAgencia?
   etapasOnboarding  EtapaOnboarding[]
   linksOnboarding   LinkOnboarding[]
   modeloFormulario  ModeloFormulario?
   onboardings       Onboarding[]
+  primeirosAcessos  PrimeiroAcesso[]
   sessoes           Sessao[]
   usuarios          Usuario[]
   versoesFormulario VersaoFormulario[]
