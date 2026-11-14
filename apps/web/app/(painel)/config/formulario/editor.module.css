@@ -1,0 +1,113 @@
+.resumo {
+  color: var(--suave);
+}
+
+.ok,
+.erro {
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--borda);
+}
+
+.ok {
+  background: var(--superficie);
+}
+
+.erro {
+  border-color: #c92a2a;
+  color: #c92a2a;
+}
+
+.lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campo,
+.arquivado {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+}
+
+.arquivado {
+  opacity: 0.6;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.linha label:first-child {
+  min-width: 5rem;
+  color: var(--suave);
+  font-size: 0.9rem;
+}
+
+.linha input:not([type='checkbox']),
+.linha textarea {
+  flex: 1 1 14rem;
+}
+
+.linha input,
+.linha select,
+.linha textarea {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.4rem;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+}
+
+.marcar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.acoes,
+.rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rodape button,
+.acoes button {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.rodape button:disabled,
+.acoes button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rodape .primario {
+  margin-left: auto;
+  border-color: var(--destaque);
+  background: var(--destaque);
+  color: #fff;
+}
+
+.etiqueta {
+  color: var(--suave);
+  font-size: 0.85rem;
+}

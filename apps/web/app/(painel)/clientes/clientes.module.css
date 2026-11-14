@@ -1,0 +1,198 @@
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.lista {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao {
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.cartao p {
+  margin: 0.25rem 0;
+}
+
+.topoCartao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.topoCartao h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.status {
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.etapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0.5rem 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.vazio {
+  margin-top: 1.5rem;
+  color: var(--suave);
+}
+
+.ajuda {
+  color: var(--suave);
+  font-size: 0.875rem;
+}
+
+.aviso {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Formulário: campos em coluna única, pensados para o celular (mobile-first). */
+.formulario {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.campo label,
+.link label {
+  font-weight: 600;
+}
+
+.campo input,
+.linhaLink input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+}
+
+.campo input[aria-invalid='true'] {
+  border-color: #c92a2a;
+}
+
+.erroCampo,
+.erroGeral {
+  margin: 0;
+  color: #c92a2a;
+  font-size: 0.875rem;
+}
+
+.alertaDuplicidade {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e67700;
+  border-radius: 0.375rem;
+  background: var(--superficie);
+}
+
+.alertaDuplicidade ul {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.botao,
+.botaoSecundario {
+  display: inline-block;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: 0.375rem;
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao {
+  background: var(--destaque);
+  color: #ffffff;
+}
+
+.botaoSecundario {
+  background: transparent;
+  color: var(--destaque);
+}
+
+.botao:disabled,
+.botaoSecundario:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.sucesso {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 32rem;
+}
+
+.link {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.linhaLink {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.linhaLink input {
+  flex: 1 1 14rem;
+  width: auto;
+}
+
+.linhaLink button {
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--destaque);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.novoLink {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
