@@ -3,7 +3,9 @@ import type { PrismaClient } from '../../base/prisma.js';
 import { localizarLink, type LinkLocalizado } from '../link/localizar-link.js';
 
 export type ResultadoLink<T> =
-  { readonly tipo: 'invalido' | 'expirado' } | { readonly tipo: 'ok'; readonly valor: T };
+  | { readonly tipo: 'invalido' }
+  | { readonly tipo: 'expirado' }
+  | { readonly tipo: 'ok'; readonly valor: T };
 
 /** Resolve o token e só segue se o link vale (RN-11, RN-13). */
 export async function comLinkValido<T>(

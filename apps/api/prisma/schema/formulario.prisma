@@ -19,7 +19,28 @@ model VersaoFormulario {
   campos       Json
   publicadaEm  DateTime @default(now())
   publicadaPor String?
+  respostas RespostaFormulario[]
 
   @@unique([agenciaId, numero])
   @@map("versoes_formulario")
+}
+
+// Respostas do cliente (S2-3). Uma por onboarding, presa à versão do modelo vigente quando o
+// cliente começou a responder (RN-15). `enviadaEm` nulo = rascunho (RN-18); `fechadaEm` é a
+// agência travando as edições (RN-21). `onboardingId` é coluna simples, sem relação.
+model RespostaFormulario {
+  id           String           @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia          @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId String           @unique
+  versaoId     String
+  versao       VersaoFormulario @relation(fields: [versaoId], references: [id])
+  respostas    Json
+  enviadaEm    DateTime?
+  fechadaEm    DateTime?
+  criadoEm     DateTime         @default(now())
+  atualizadoEm DateTime         @updatedAt
+
+  @@index([agenciaId])
+  @@map("respostas_formulario")
 }

@@ -1,0 +1,289 @@
+import {
+  NaoEncontradoError,
+  ProibidoError,
+  RegraVioladaError,
+  podeVerOnboarding,
+  type UsuarioAutenticado,
+} from '@convergia/core/base';
+import { TERMO_ATUAL } from '@convergia/core/consentimento';
+import {
+  validarRespostas,
+  type CampoFormulario,
+  type ErroResposta,
+  type Respostas,
+} from '@convergia/core/formulario';
+import type { Prisma } from '../../generated/prisma/client.js';
+import { escopoAgencia, type PrismaDaAgencia } from '../../base/escopo-agencia.js';
+import type { PrismaClient } from '../../base/prisma.js';
+import { aceiteDoCliente } from '../consentimento/consentimento.js';
+import type { LinkLocalizado } from '../link/localizar-link.js';
+import { garantirModeloPadrao, lerCampos } from './modelo.js';
+
+export type SituacaoFormulario = 'rascunho' | 'enviado' | 'fechado';
+
+export interface EstadoFormulario {
+  readonly versao: number;
+  /** Só os campos ativos: o cliente não vê os arquivados (RN-15). */
+  readonly campos: CampoFormulario[];
+  readonly respostas: Respostas;
+  readonly situacao: SituacaoFormulario;
+  /** Falso quando a agência fechou ou a reunião já aconteceu (RN-21). */
+  readonly editavel: boolean;
+}
+
+export type ResultadoFormulario<T> =
+  { readonly tipo: 'sem_consentimento' } | { readonly tipo: 'ok'; readonly valor: T };
+
+export type ResultadoGravacao =
+  | { readonly tipo: 'gravado' }
+  | { readonly tipo: 'invalido'; readonly erros: readonly ErroResposta[] }
+  | { readonly tipo: 'ja_enviado' }
+  | { readonly tipo: 'bloqueado'; readonly motivo: 'fechado' | 'reuniao_realizada' };
+
+const lerRespostas = (json: unknown): Respostas => (json ?? {}) as Respostas;
+const ator = (onboardingId: string): string => `cliente:${onboardingId}`;
+
+/** Edição trancada pela agência ou porque a reunião já ocorreu (RN-21). */
+async function motivoBloqueio(
+  prisma: PrismaDaAgencia,
+  onboardingId: string,
+  fechadaEm: Date | null,
+): Promise<'fechado' | 'reuniao_realizada' | null> {
+  if (fechadaEm) return 'fechado';
+  const reuniao = await prisma.etapaOnboarding.findFirst({
+    where: { onboardingId, tipo: 'reuniao', status: 'concluida' },
+  });
+  return reuniao ? 'reuniao_realizada' : null;
+}
+
+/** Versão em que o cliente responde: a já vinculada, ou a vigente se ainda não começou. */
+async function versaoDoCliente(prisma: PrismaDaAgencia, versaoId: string | null) {
+  if (versaoId) return prisma.versaoFormulario.findFirstOrThrow({ where: { id: versaoId } });
+  return prisma.versaoFormulario.findFirstOrThrow({ orderBy: { numero: 'desc' } });
+}
+
+async function comConsentimento<T>(
+  prisma: PrismaClient,
+  link: LinkLocalizado,
+  acao: (escopo: PrismaDaAgencia) => Promise<T>,
+): Promise<ResultadoFormulario<T>> {
+  if ((await aceiteDoCliente(prisma, link, TERMO_ATUAL.versao)) === null) {
+    return { tipo: 'sem_consentimento' };
+  }
+  const escopo = escopoAgencia(prisma, link.agenciaId);
+  await garantirModeloPadrao(escopo, link.agenciaId);
+  return { tipo: 'ok', valor: await acao(escopo) };
+}
+
+export function lerFormularioDoCliente(prisma: PrismaClient, link: LinkLocalizado) {
+  return comConsentimento(prisma, link, async (escopo): Promise<EstadoFormulario> => {
+    const resposta = await escopo.respostaFormulario.findFirst({
+      where: { onboardingId: link.onboardingId },
+    });
+    const versao = await versaoDoCliente(escopo, resposta?.versaoId ?? null);
+    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, resposta?.fechadaEm ?? null);
+    const situacao: SituacaoFormulario =
+      bloqueio === 'fechado' ? 'fechado' : resposta?.enviadaEm ? 'enviado' : 'rascunho';
+    return {
+      versao: versao.numero,
+      campos: lerCampos(versao.campos).filter((c) => !c.arquivado),
+      respostas: lerRespostas(resposta?.respostas),
+      situacao,
+      editavel: bloqueio === null,
+    };
+  });
+}
+
+/** Cada arquivo citado precisa existir e ser deste cliente (RN-20, RN-75). */
+async function errosDeArquivo(
+  escopo: PrismaDaAgencia,
+  clienteId: string,
+  campos: readonly CampoFormulario[],
+  respostas: Respostas,
+): Promise<ErroResposta[]> {
+  const erros: ErroResposta[] = [];
+  for (const campo of campos) {
+    const id = respostas[campo.chave];
+    if (campo.tipo !== 'upload' || typeof id !== 'string' || id === '') continue;
+    const arquivo = await escopo.arquivo.findFirst({ where: { id, clienteId } });
+    if (!arquivo) erros.push({ chave: campo.chave, codigo: 'arquivo_invalido' });
+  }
+  return erros;
+}
+
+interface Gravacao {
+  readonly resposta: {
+    id: string;
+    enviadaEm: Date | null;
+    fechadaEm: Date | null;
+    versaoId: string;
+    respostas: unknown;
+  } | null;
+  readonly campos: CampoFormulario[];
+  readonly versaoId: string;
+  readonly clienteId: string;
+}
+
+async function prepararGravacao(escopo: PrismaDaAgencia, onboardingId: string): Promise<Gravacao> {
+  const [resposta, onboarding] = await Promise.all([
+    escopo.respostaFormulario.findFirst({ where: { onboardingId } }),
+    escopo.onboarding.findFirstOrThrow({
+      where: { id: onboardingId },
+      select: { clienteId: true },
+    }),
+  ]);
+  const versao = await versaoDoCliente(escopo, resposta?.versaoId ?? null);
+  return {
+    resposta,
+    campos: lerCampos(versao.campos),
+    versaoId: versao.id,
+    clienteId: onboarding.clienteId,
+  };
+}
+
+/** Rascunho automático (RN-18): substitui o rascunho e põe a etapa em andamento. */
+export function salvarRascunhoDoCliente(
+  prisma: PrismaClient,
+  link: LinkLocalizado,
+  respostas: Respostas,
+) {
+  return comConsentimento(prisma, link, async (escopo): Promise<ResultadoGravacao> => {
+    const g = await prepararGravacao(escopo, link.onboardingId);
+    if (g.resposta?.enviadaEm) return { tipo: 'ja_enviado' };
+    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta?.fechadaEm ?? null);
+    if (bloqueio) return { tipo: 'bloqueado', motivo: bloqueio };
+
+    const erros = [
+      ...validarRespostas(g.campos, respostas, { completo: false }),
+      ...(await errosDeArquivo(escopo, g.clienteId, g.campos, respostas)),
+    ];
+    if (erros.length > 0) return { tipo: 'invalido', erros };
+
+    await escopo.$transaction([
+      escopo.respostaFormulario.upsert({
+        where: { onboardingId: link.onboardingId },
+        create: {
+          agenciaId: link.agenciaId,
+          onboardingId: link.onboardingId,
+          versaoId: g.versaoId,
+          respostas: respostas as Prisma.InputJsonValue,
+        },
+        update: { respostas: respostas as Prisma.InputJsonValue },
+      }),
+      escopo.etapaOnboarding.updateMany({
+        where: { onboardingId: link.onboardingId, tipo: 'formulario', status: 'pendente' },
+        data: { status: 'em_andamento' },
+      }),
+    ]);
+    return { tipo: 'gravado' };
+  });
+}
+
+/** Chaves cujo valor mudou, para a auditoria registrar o que foi editado sem guardar o conteúdo. */
+function chavesAlteradas(antes: Respostas, depois: Respostas): string[] {
+  const chaves = new Set([...Object.keys(antes), ...Object.keys(depois)]);
+  return [...chaves]
+    .filter((k) => JSON.stringify(antes[k] ?? null) !== JSON.stringify(depois[k] ?? null))
+    .sort();
+}
+
+/**
+ * Envio final (RN-17) e edições posteriores (RN-21). Exige todos os obrigatórios válidos;
+ * conclui a etapa no primeiro envio. Edição depois do envio é auditada (RN-77).
+ */
+export function enviarFormularioDoCliente(
+  prisma: PrismaClient,
+  link: LinkLocalizado,
+  respostas: Respostas,
+  agora: Date,
+) {
+  return comConsentimento(prisma, link, async (escopo): Promise<ResultadoGravacao> => {
+    const g = await prepararGravacao(escopo, link.onboardingId);
+    const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta?.fechadaEm ?? null);
+    if (bloqueio) return { tipo: 'bloqueado', motivo: bloqueio };
+
+    const erros = [
+      ...validarRespostas(g.campos, respostas, { completo: true }),
+      ...(await errosDeArquivo(escopo, g.clienteId, g.campos, respostas)),
+    ];
+    if (erros.length > 0) return { tipo: 'invalido', erros };
+
+    const anteriores = lerRespostas(g.resposta?.respostas);
+    const primeiroEnvio = !g.resposta?.enviadaEm;
+    const alteradas = chavesAlteradas(anteriores, respostas);
+    const auditoria = primeiroEnvio
+      ? { acao: 'formulario.enviado', dados: { versao: g.versaoId } }
+      : alteradas.length > 0
+        ? { acao: 'formulario.editado', dados: { campos: alteradas.join(',') } }
+        : null;
+
+    await escopo.$transaction([
+      escopo.respostaFormulario.upsert({
+        where: { onboardingId: link.onboardingId },
+        create: {
+          agenciaId: link.agenciaId,
+          onboardingId: link.onboardingId,
+          versaoId: g.versaoId,
+          respostas: respostas as Prisma.InputJsonValue,
+          enviadaEm: agora,
+        },
+        update: {
+          respostas: respostas as Prisma.InputJsonValue,
+          ...(primeiroEnvio ? { enviadaEm: agora } : {}),
+        },
+      }),
+      escopo.etapaOnboarding.updateMany({
+        where: { onboardingId: link.onboardingId, tipo: 'formulario' },
+        data: { status: 'concluida' },
+      }),
+      ...(auditoria
+        ? [
+            escopo.auditoriaLog.create({
+              data: {
+                agenciaId: link.agenciaId,
+                ator: ator(link.onboardingId),
+                acao: auditoria.acao,
+                entidade: 'Onboarding',
+                entidadeId: link.onboardingId,
+                dados: auditoria.dados,
+              },
+            }),
+          ]
+        : []),
+    ]);
+    return { tipo: 'gravado' };
+  });
+}
+
+/** A agência fecha o formulário: o cliente não edita mais (RN-21). Só Admin ou responsável (RN-02). */
+export async function fecharFormulario(
+  prisma: PrismaDaAgencia,
+  usuario: UsuarioAutenticado,
+  onboardingId: string,
+  agora: Date,
+): Promise<void> {
+  const onboarding = await prisma.onboarding.findFirst({
+    where: { id: onboardingId },
+    select: { responsavelId: true },
+  });
+  if (!onboarding) throw new NaoEncontradoError('Onboarding');
+  if (!podeVerOnboarding(usuario, onboarding.responsavelId)) throw new ProibidoError('RN-02');
+
+  const resposta = await prisma.respostaFormulario.findFirst({ where: { onboardingId } });
+  if (!resposta?.enviadaEm) {
+    throw new RegraVioladaError('RN-21', 'O cliente ainda não enviou o formulário');
+  }
+  if (resposta.fechadaEm) return;
+  await prisma.$transaction([
+    prisma.respostaFormulario.update({ where: { onboardingId }, data: { fechadaEm: agora } }),
+    prisma.auditoriaLog.create({
+      data: {
+        agenciaId: usuario.agenciaId,
+        ator: `usuario:${usuario.id}`,
+        acao: 'formulario.fechado',
+        entidade: 'Onboarding',
+        entidadeId: onboardingId,
+      },
+    }),
+  ]);
+}

@@ -1,0 +1,73 @@
+.form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.pergunta {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.rotulo {
+  font-weight: 600;
+}
+
+.ajuda {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.pergunta input:not([type='checkbox']):not([type='file']),
+.pergunta textarea,
+.pergunta select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+}
+
+.opcoes {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.marcar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.erro {
+  margin: 0;
+  color: #c92a2a;
+  font-size: 0.9rem;
+}
+
+.ok {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+}
+
+.botao {
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--destaque);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

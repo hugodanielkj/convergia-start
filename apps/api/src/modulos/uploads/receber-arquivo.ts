@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import type { UsuarioAutenticado } from '@convergia/core/base';
 import { CONFIG_PADRAO, NaoEncontradoError } from '@convergia/core/base';
 import {
   chaveDoArquivo,
@@ -9,6 +8,12 @@ import {
   type ErroUpload,
 } from '@convergia/core/uploads';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
+
+/** Quem envia: a agência (`usuario:<id>`) ou o cliente pelo link (`cliente:<onboardingId>`). */
+export interface AutorUpload {
+  readonly agenciaId: string;
+  readonly ator: string;
+}
 
 export interface ArquivoEnviado {
   readonly id: string;
@@ -38,7 +43,7 @@ export async function configDeUpload(prisma: PrismaDaAgencia): Promise<ConfigUpl
 export async function receberArquivo(
   prisma: PrismaDaAgencia,
   armazenamento: Armazenamento,
-  usuario: UsuarioAutenticado,
+  autor: AutorUpload,
   entrada: {
     clienteId: string;
     nome: string;
@@ -63,7 +68,7 @@ export async function receberArquivo(
 
   const id = randomUUID();
   const chave = chaveDoArquivo({
-    agenciaId: usuario.agenciaId,
+    agenciaId: autor.agenciaId,
     clienteId: cliente.id,
     arquivoId: id,
     tipo: validacao.tipo,
@@ -74,7 +79,7 @@ export async function receberArquivo(
       prisma.arquivo.create({
         data: {
           id,
-          agenciaId: usuario.agenciaId,
+          agenciaId: autor.agenciaId,
           clienteId: cliente.id,
           nomeOriginal: validacao.nome,
           tipo: validacao.tipo,
@@ -84,8 +89,8 @@ export async function receberArquivo(
       }),
       prisma.auditoriaLog.create({
         data: {
-          agenciaId: usuario.agenciaId,
-          ator: `usuario:${usuario.id}`,
+          agenciaId: autor.agenciaId,
+          ator: autor.ator,
           acao: 'arquivo.enviado',
           entidade: 'Arquivo',
           entidadeId: id,

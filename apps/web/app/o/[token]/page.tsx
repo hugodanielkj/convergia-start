@@ -22,7 +22,7 @@ interface Termo {
 }
 
 /** Página do cliente (link único, sem login, RN-01). Cada etapa vive em _etapas/<etapa>/. */
-const ETAPAS: { id: string; Componente: ComponentType }[] = [
+const ETAPAS: { id: string; Componente: ComponentType<{ token: string }> }[] = [
   { id: 'formulario', Componente: EtapaFormulario },
   { id: 'acessos', Componente: EtapaAcessos },
   { id: 'reuniao', Componente: EtapaReuniao },
@@ -63,7 +63,7 @@ export default async function PaginaOnboarding({ params }: { params: Promise<{ t
       <ol className={estilos.etapas}>
         {ETAPAS.map(({ id, Componente }) => (
           <li key={id}>
-            <Componente />
+            <Componente token={token} />
           </li>
         ))}
       </ol>
