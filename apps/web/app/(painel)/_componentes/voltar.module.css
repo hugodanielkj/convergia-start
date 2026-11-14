@@ -1,0 +1,25 @@
+/* Botão "Voltar": pílula discreta acima do título, com área de toque de 44px. */
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: var(--alvo-toque);
+  margin: 0 0 0.25rem -0.5rem;
+  padding: 0 0.9rem 0 0.5rem;
+  border-radius: var(--raio-pilula);
+  color: var(--suave);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.voltar:hover,
+.voltar:focus-visible {
+  background: var(--hover-suave);
+  color: var(--texto);
+}
+
+.icone {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
