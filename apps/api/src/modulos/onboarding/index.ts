@@ -19,8 +19,9 @@ export default function onboarding(app: FastifyInstance): Promise<void> {
         usuarioDaRequisicao(request),
         clienteId,
         responsavelId,
+        app.deps.relogio.agora(),
       );
-      return reply.status(201).send({ onboarding: criado });
+      return reply.status(201).send(criado);
     },
   );
 

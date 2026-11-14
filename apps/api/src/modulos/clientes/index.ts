@@ -28,6 +28,7 @@ export default function clientes(app: FastifyInstance): Promise<void> {
         confirmarDuplicidade: corpo.confirmarDuplicidade,
         responsavelId: corpo.responsavelId,
       },
+      app.deps.relogio.agora(),
     );
 
     switch (resultado.tipo) {
@@ -44,7 +45,7 @@ export default function clientes(app: FastifyInstance): Promise<void> {
           })),
         });
       case 'criado':
-        return reply.status(201).send({ cliente: resultado.cliente });
+        return reply.status(201).send({ cliente: resultado.cliente, link: resultado.link });
     }
   });
 

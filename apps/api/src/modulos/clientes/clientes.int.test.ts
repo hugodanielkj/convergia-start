@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { UsuarioAutenticado } from '@convergia/core/base';
+import { CONFIG_PADRAO, type UsuarioAutenticado } from '@convergia/core/base';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { construirApp } from '../../app.js';
@@ -35,6 +35,10 @@ function construir(usuario: UsuarioAutenticado | null): FastifyInstance {
 beforeAll(async () => {
   agenciaA = (await prisma.agencia.create({ data: { nome: 'A' } })).id;
   agenciaB = (await prisma.agencia.create({ data: { nome: 'B' } })).id;
+  // A validade do link vem da configuração da agência (RN-11).
+  await prisma.configAgencia.createMany({
+    data: [agenciaA, agenciaB].map((agenciaId) => ({ agenciaId, ...CONFIG_PADRAO })),
+  });
   // A RN-08 precisa de um Admin ativo em cada agência para ser o responsável padrão.
   adminA = (
     await prisma.usuario.create({
