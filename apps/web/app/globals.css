@@ -1,5 +1,8 @@
 /* Estilos globais: tokens da marca Convergia (convergiadigital.com) e base tipográfica.
-   Estilos de tela ficam em *.module.css ao lado do componente (D-24). */
+   Estilos de tela ficam em *.module.css ao lado do componente (D-24).
+
+   MOBILE-FIRST (decisão 2026-11-14-a-mobile-first, .claude/rules/ui-mobile.md): a base abaixo é
+   a do celular de 360px. Telas maiores só com @media (min-width: ...), nunca max-width. */
 :root {
   color-scheme: light dark;
 
@@ -19,6 +22,14 @@
   --raio-grande: 18px;
   --raio-pilula: 999px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Mobile-first: alvo de toque mínimo (44px), margem lateral e áreas seguras do iPhone. */
+  --alvo-toque: 2.75rem;
+  --gutter: 1rem;
+  --seguro-topo: env(safe-area-inset-top, 0px);
+  --seguro-base: env(safe-area-inset-bottom, 0px);
+  --seguro-esq: env(safe-area-inset-left, 0px);
+  --seguro-dir: env(safe-area-inset-right, 0px);
 
   /* Papéis (mudam com o tema). Telas usam estes nomes. */
   --fundo: var(--cream);
@@ -57,10 +68,31 @@
   }
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Sem isso o iPhone aumenta a fonte sozinho ao virar a tela. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
+  /* Áreas seguras laterais (iPhone deitado) e da barra de gestos. O topo fica com cada casca. */
+  padding: 0 var(--seguro-dir) var(--seguro-base) var(--seguro-esq);
   background: var(--fundo);
   color: var(--texto);
+  /* E-mail, link e token longos quebram em vez de empurrar a tela para o lado. */
+  overflow-wrap: anywhere;
+}
+
+:where(img, svg, video, canvas) {
+  max-width: 100%;
+  height: auto;
 }
 
 h1,
@@ -88,9 +120,30 @@ a {
   }
 }
 
-/* Base dos controles (S6-6). `:where` zera a especificidade: o CSS module de cada tela sempre vence. */
+/* Base dos controles (S6-6). `:where` zera a especificidade: o CSS module de cada tela sempre vence,
+   então o module não pode reduzir altura (44px) nem fonte de campo (16px) abaixo daqui. */
 :where(button, input, select, textarea) {
   font: inherit;
+}
+
+:where(button, summary, [role='button']) {
+  min-height: var(--alvo-toque);
+  /* Toque responde na hora, sem esperar o duplo toque de zoom. */
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+:where(summary) {
+  padding-block: 0.6rem;
+}
+
+/* A linha inteira da caixa de seleção é a área de toque. */
+:where(label:has(> input[type='checkbox']), label:has(> input[type='radio'])) {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: var(--alvo-toque);
+  cursor: pointer;
 }
 
 :where(
@@ -98,9 +151,12 @@ a {
   select,
   textarea
 ) {
-  box-sizing: border-box;
-  min-height: 2.75rem;
+  width: 100%;
+  max-width: 100%;
+  min-height: var(--alvo-toque);
   padding: 0.55rem 0.85rem;
+  /* 16px: abaixo disso o iPhone dá zoom ao tocar no campo. */
+  font-size: max(1rem, 16px);
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   background: var(--superficie);
@@ -113,8 +169,10 @@ a {
 }
 
 :where(input[type='checkbox'], input[type='radio']) {
-  width: 1.15rem;
-  height: 1.15rem;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
   accent-color: var(--destaque);
 }
 
