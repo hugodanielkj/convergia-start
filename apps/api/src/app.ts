@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import fastifyCookie from '@fastify/cookie';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { pluginAuth } from './base/auth.js';
 import type { Dependencias } from './base/dependencias.js';
@@ -11,6 +12,7 @@ export function construirApp(env: Pick<Env, 'LOG_LEVEL'>, deps: Dependencias): F
 
   app.decorate('deps', deps);
   registrarTratamentoDeErros(app);
+  void app.register(fastifyCookie, { secret: deps.auth.segredoCookie });
   void app.register(pluginAuth);
   registrarModulos(app, join(import.meta.dirname, 'modulos'));
 

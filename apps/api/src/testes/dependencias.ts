@@ -31,6 +31,12 @@ export function dependenciasDeTeste(parcial: Partial<Dependencias> = {}): Depend
     mensageria: new MensageriaEmMemoria(),
     relogio: relogioFixo(AGORA_TESTE),
     resolverSessao: () => Promise.resolve(null),
+    auth: {
+      segredoCookie: 'segredo-de-teste-com-mais-de-32-caracteres',
+      urlApp: 'http://localhost:3000',
+      duracaoSessaoHoras: 168,
+      identidade: null,
+    },
     ...parcial,
   };
 }

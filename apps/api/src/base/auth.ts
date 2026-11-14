@@ -21,6 +21,36 @@ declare module 'fastify' {
   }
 }
 
+/** Identidade confirmada por um provedor externo (Google). */
+export interface DadosIdentidade {
+  email: string;
+  emailVerificado: boolean;
+  nome: string | null;
+}
+
+/** Verificações do fluxo OAuth (state, nonce e PKCE), guardadas em cookie assinado. */
+export interface VerificacaoLogin {
+  state: string;
+  nonce: string;
+  codeVerifier: string;
+}
+
+/** Porta para o provedor de login. Implementação real: Google (modulos/auth); testes usam fake. */
+export interface ProvedorIdentidade {
+  urlAutorizacao(params: { state: string; nonce: string; codeChallenge: string }): Promise<URL>;
+  concluir(urlRetorno: URL, verificacao: VerificacaoLogin): Promise<DadosIdentidade>;
+}
+
+export interface ConfigAuth {
+  /** Assina cookies (verificação OAuth). */
+  segredoCookie: string;
+  /** Origem da web (ex.: http://localhost:3000). A API é servida em `${urlApp}/api`. */
+  urlApp: string;
+  duracaoSessaoHoras: number;
+  /** null quando o Google não está configurado: o login responde "indisponível". */
+  identidade: ProvedorIdentidade | null;
+}
+
 /** Sem login implementado: ninguém está autenticado. */
 export const semSessao: ResolvedorSessao = () => Promise.resolve(null);
 

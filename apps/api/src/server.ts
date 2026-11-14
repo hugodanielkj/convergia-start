@@ -1,10 +1,13 @@
+import { randomBytes } from 'node:crypto';
 import { relogioSistema } from '@convergia/core/base';
 import { MensageriaEmMemoria } from './adapters/mensageria/em-memoria.js';
 import { construirApp } from './app.js';
-import { semSessao, sessaoDeDesenvolvimento } from './base/auth.js';
+import { sessaoDeDesenvolvimento } from './base/auth.js';
 import { criarBarramentoEmMemoria } from './base/eventos.js';
 import { criarPrisma } from './base/prisma.js';
 import { carregarEnv } from './config/env.js';
+import { criarProvedorGoogle } from './modulos/auth/provedor-google.js';
+import { resolvedorSessaoCookie } from './modulos/auth/sessoes.js';
 
 const env = carregarEnv();
 const prisma = criarPrisma(env.DATABASE_URL);
@@ -18,8 +21,27 @@ const app = construirApp(env, {
   relogio: relogioSistema,
   resolverSessao: env.AUTH_DEV_USUARIO_EMAIL
     ? sessaoDeDesenvolvimento(prisma, env.AUTH_DEV_USUARIO_EMAIL)
-    : semSessao,
+    : resolvedorSessaoCookie(prisma, relogioSistema),
+  auth: {
+    // Em desenvolvimento, sem SESSAO_SEGREDO, um segredo aleatório por execução basta
+    // (só assina o cookie de 10 min do fluxo OAuth). Em produção é obrigatório (carregarEnv).
+    segredoCookie: env.SESSAO_SEGREDO ?? randomBytes(32).toString('hex'),
+    urlApp: env.APP_URL,
+    duracaoSessaoHoras: env.SESSAO_DURACAO_HORAS,
+    identidade:
+      env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+        ? criarProvedorGoogle({
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            urlRetorno: `${env.APP_URL}/api/auth/google/callback`,
+          })
+        : null,
+  },
 });
+
+if (env.AUTH_DEV_USUARIO_EMAIL) {
+  app.log.warn(`Sessão de desenvolvimento ativa: todos entram como ${env.AUTH_DEV_USUARIO_EMAIL}`);
+}
 
 const encerrar = async (): Promise<void> => {
   await app.close();
