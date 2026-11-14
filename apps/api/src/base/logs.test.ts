@@ -7,6 +7,8 @@ describe('RN-10 token do link fora dos logs', () => {
   it.each([
     [`/publico/onboardings/${TOKEN}`, '/publico/onboardings/:token'],
     [`/o/${TOKEN}`, '/o/:token'],
+    [`/publico/lembretes/${TOKEN}/parar`, '/publico/lembretes/:token/parar'],
+    [`/parar-lembretes/${TOKEN}`, '/parar-lembretes/:token'],
     [`/o/${TOKEN}/expirado`, '/o/:token/expirado'],
     [`/o/${TOKEN}?origem=email`, '/o/:token?origem=email'],
     [
