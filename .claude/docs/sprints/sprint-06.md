@@ -59,7 +59,7 @@ As 6 histórias foram mergeadas na `hml` com CI verde.
   - As regras novas ficaram puras no core (`formulario/personalizacao`, `acessos/escolha`, `liberacao`) e foram testadas sem banco.
   - O contrato de avanço deixou a mudança na reunião (trilha B) em 1 linha.
 - **Atenção:**
-  - O bloqueio no servidor quebrou 62 testes de integração da trilha B, que agendavam sem cumprir as etapas. Foi resolvido com o helper `liberarAteReuniao`, mas o colaborador precisa usá-lo nos testes novos.
+  - O bloqueio no servidor quebrou 61 testes de integração da trilha B, que agendavam sem cumprir as etapas. Foi resolvido com o helper `liberarAteReuniao`, mas o colaborador precisa usá-lo nos testes novos.
   - Como as histórias foram encadeadas em branches, cada merge na `hml` pediu um merge de volta, com conflitos de "adicionado nos dois lados".
 - **Pendências:**
   - A personalização é uma foto do modelo padrão: se a agência publicar uma versão nova, os clientes já personalizados não mudam (decisão registrada).
