@@ -1,3 +1,4 @@
+import { captacaoRespeitaIntervalo } from '@convergia/core/captacao';
 import {
   agruparPorDia,
   dataLocal,
@@ -35,12 +36,15 @@ export interface ConsultaSlots {
   readonly ate?: string | undefined;
   /** Fuso do cliente; sem ele vale o da agência. */
   readonly fuso?: string | undefined;
+  /** Onboarding do cliente: a captação depende da reunião dele (RN-39). */
+  readonly onboardingId?: string | undefined;
 }
 
 export interface ContextoDaAgenda {
   readonly prisma: PrismaDaAgencia;
   readonly fusoAgencia: string;
   readonly antecedenciaMinimaHoras: number;
+  readonly intervaloReuniaoCaptacaoDiasMin: number;
   readonly duracaoPadraoMinutos: Record<TipoAtendimento, number>;
 }
 
@@ -61,6 +65,7 @@ export async function carregarContexto(
     prisma,
     fusoAgencia: agencia.fusoHorario,
     antecedenciaMinimaHoras: config.antecedenciaMinimaHoras,
+    intervaloReuniaoCaptacaoDiasMin: config.intervaloReuniaoCaptacaoDiasMin,
     duracaoPadraoMinutos: {
       reuniao: config.duracaoReuniaoMinutos,
       captacao: config.duracaoCaptacaoMinutos,
@@ -79,6 +84,8 @@ export async function slotsLivres(
   agora: Date,
   /** Agendamento que está sendo remarcado: o horário dele não conta como ocupado. */
   ignorarAgendamentoId?: string,
+  /** Dono dos horários: só a captação usa, para respeitar a reunião dele (RN-39). */
+  onboardingId?: string,
 ) {
   const { prisma, fusoAgencia } = contexto;
   const [janelas, bloqueiosDb] = await Promise.all([
@@ -105,7 +112,7 @@ export async function slotsLivres(
     select: { inicio: true, fim: true },
   });
 
-  return gerarSlots({
+  const livres = gerarSlots({
     janelas: janelas.map((j) => ({
       diaSemana: j.diaSemana,
       horaInicio: j.horaInicio,
@@ -121,6 +128,38 @@ export async function slotsLivres(
     de,
     ate,
   });
+  if (tipo !== 'captacao') return livres;
+
+  // RN-39: sem reunião agendada (ou já feita) não há horário de captação; com ela, só depois do
+  // intervalo mínimo. Sem saber de quem é o pedido, a captação não oferece nada.
+  const reuniaoInicio =
+    onboardingId === undefined ? null : await inicioDaReuniao(prisma, onboardingId);
+  if (reuniaoInicio === null) return [];
+  return livres.filter((s) =>
+    captacaoRespeitaIntervalo(
+      reuniaoInicio,
+      s.inicio,
+      contexto.intervaloReuniaoCaptacaoDiasMin,
+      fusoAgencia,
+    ),
+  );
+}
+
+/** Início da primeira reunião do onboarding que está marcada ou já aconteceu (RN-39). */
+export async function inicioDaReuniao(
+  prisma: PrismaDaAgencia,
+  onboardingId: string,
+): Promise<Date | null> {
+  const reuniao = await prisma.agendamento.findFirst({
+    where: {
+      onboardingId,
+      tipo: 'reuniao',
+      status: { in: ['agendado', 'reagendado', 'realizado'] },
+    },
+    orderBy: { inicio: 'asc' },
+    select: { inicio: true },
+  });
+  return reuniao?.inicio ?? null;
 }
 
 /** Lista de horários no fuso pedido, agrupados por dia (RN-32). Período padrão: hoje + duas semanas. */
@@ -137,7 +176,15 @@ export async function listarSlots(
     consulta.ate ??
     textoDaData(new Date(Date.parse(`${de}T00:00:00Z`) + (DIAS_PADRAO_DA_LISTA - 1) * MS_DIA));
 
-  const slots = await slotsLivres(contexto, consulta.tipo, de, ate, agora, ignorarAgendamentoId);
+  const slots = await slotsLivres(
+    contexto,
+    consulta.tipo,
+    de,
+    ate,
+    agora,
+    ignorarAgendamentoId,
+    consulta.onboardingId,
+  );
   return {
     fuso,
     dias: agruparPorDia(slots, fuso).map((dia) => ({

@@ -83,11 +83,24 @@ export async function reagendarAgendamento(
 
   const indisponivel = async (): Promise<ResultadoReagendamentoCliente> => ({
     tipo: 'indisponivel',
-    lista: await listarSlots(contexto, { tipo: atual.tipo, fuso: entrada.fuso }, agora, atual.id),
+    lista: await listarSlots(
+      contexto,
+      { tipo: atual.tipo, fuso: entrada.fuso, onboardingId: link.onboardingId },
+      agora,
+      atual.id,
+    ),
   });
 
   const dia = dataLocal(entrada.inicio, fusoAgencia);
-  const livres = await slotsLivres(contexto, atual.tipo, dia, dia, agora, atual.id);
+  const livres = await slotsLivres(
+    contexto,
+    atual.tipo,
+    dia,
+    dia,
+    agora,
+    atual.id,
+    link.onboardingId,
+  );
   const escolhido = livres.find((s) => s.inicio.getTime() === entrada.inicio.getTime());
   if (!escolhido) return indisponivel();
 
