@@ -1,6 +1,6 @@
 # Sprint 6 — Personalização por cliente · Ordem guiada · Visual Convergia
 
-**Status:** em andamento (trilha A, 2026-11-14).
+**Status:** trilha A concluída (2026-11-14).
 
 ## Trilha A — PO
 
@@ -38,9 +38,32 @@
 
 ### Trilha A
 
+As 6 histórias foram mergeadas na `hml` com CI verde.
+
+- **S6-1:** tokens da marca e Fraunces (#46). Estilos base com `:where()` (#50).
+- **S6-2:** perguntas por cliente com versões próprias, trava no primeiro rascunho com resposta e tela `/onboardings/[id]/personalizar` (#47).
+- **S6-3:** plataformas escolhidas por cliente, com pelo menos uma e trava quando a etapa começa (#48).
+- **S6-4:**
+  - liberação sequencial (RN-79) no core e no servidor, com 422 `RN-79`;
+  - botões das etapas no topo, uma etapa por vez;
+  - etapa bloqueada só para leitura, com alerta;
+  - avanço automático pelo contrato `useAvancoEtapa` (#49).
+- **S6-5:** ícones de progresso em `/onboardings`, com o cadeado calculado pela RN-79.
+- **S6-6:** painel com topo petrol e marca em Fraunces, cores e raios por token, cartões e selos da página do cliente, ações rápidas em contorno e menos texto em Acessos.
+
 ## Retro
 
 ### Trilha A
+
+- **Funcionou:**
+  - As regras novas ficaram puras no core (`formulario/personalizacao`, `acessos/escolha`, `liberacao`) e foram testadas sem banco.
+  - O contrato de avanço deixou a mudança na reunião (trilha B) em 1 linha.
+- **Atenção:**
+  - O bloqueio no servidor quebrou 62 testes de integração da trilha B, que agendavam sem cumprir as etapas. Foi resolvido com o helper `liberarAteReuniao`, mas o colaborador precisa usá-lo nos testes novos.
+  - Como as histórias foram encadeadas em branches, cada merge na `hml` pediu um merge de volta, com conflitos de "adicionado nos dois lados".
+- **Pendências:**
+  - A personalização é uma foto do modelo padrão: se a agência publicar uma versão nova, os clientes já personalizados não mudam (decisão registrada).
+  - A tela `/config` continua 404.
 
 ## Trilha B — colaborador
 
