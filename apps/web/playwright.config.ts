@@ -47,6 +47,10 @@ export default defineConfig({
             SEED_ADMIN_EMAIL: EMAIL_E2E,
             SEED_ADMIN_NOME: 'Equipe E2E',
             LOG_LEVEL: 'warn',
+            // Tudo vem do mesmo IP local, em paralelo: limites altos para não recusar os testes.
+            LIMITE_PUBLICO_POR_IP: '100000',
+            LIMITE_PUBLICO_POR_TOKEN: '100000',
+            LIMITE_TOKENS_INVALIDOS_POR_IP: '100000',
           },
         },
         {

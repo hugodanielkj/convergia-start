@@ -1,3 +1,4 @@
+import { fetchDoCliente } from '../../../../_lib/fetch-do-cliente';
 import { URL_API } from '../../../../_lib/url-api';
 import { CartaoEtapa } from '../../_componentes/CartaoEtapa';
 import { FormularioCliente } from './FormularioCliente';
@@ -5,7 +6,7 @@ import type { EstadoFormulario } from './tipos';
 
 /** Etapa A: formulário de dados da empresa, com rascunho automático (RN-17, RN-18, RN-21). */
 export async function EtapaFormulario({ token }: { token: string }) {
-  const resposta = await fetch(
+  const resposta = await fetchDoCliente(
     `${URL_API}/publico/onboardings/${encodeURIComponent(token)}/formulario`,
     { cache: 'no-store' },
   );
