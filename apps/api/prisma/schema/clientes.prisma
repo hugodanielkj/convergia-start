@@ -2,15 +2,16 @@
 // e-mail em minúsculas, para o alerta de duplicidade (RN-07) comparar valores iguais.
 // Não há índice único: o usuário pode confirmar um cadastro duplicado depois do alerta.
 model Cliente {
-  id           String   @id @default(uuid(7))
+  id           String       @id @default(uuid(7))
   agenciaId    String
-  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  agencia      Agencia      @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
   nomeEmpresa  String
   nomeContato  String
   whatsapp     String?
   email        String?
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime     @default(now())
+  atualizadoEm DateTime     @updatedAt
+  onboardings  Onboarding[]
 
   @@index([agenciaId, whatsapp])
   @@index([agenciaId, email])
