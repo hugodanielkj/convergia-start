@@ -26,6 +26,24 @@
   list-style: none;
 }
 
+.conta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--suave);
+  font-size: 0.9rem;
+}
+
+.sair {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+}
+
 .conteudo {
   max-width: 64rem;
   margin: 0 auto;

@@ -1,0 +1,15 @@
+// Módulo auth (S1-2, trilha A). Sessões da equipe; o cliente nunca tem sessão (RN-01).
+
+// `id` é o hash SHA-256 do token do cookie: o token em si nunca é gravado.
+model Sessao {
+  id        String   @id
+  agenciaId String
+  agencia   Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  criadaEm  DateTime @default(now())
+  expiraEm  DateTime
+
+  @@index([usuarioId])
+  @@map("sessoes")
+}
