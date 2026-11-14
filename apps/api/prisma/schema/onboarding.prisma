@@ -41,6 +41,7 @@ model Onboarding {
   criadoEm      DateTime          @default(now())
   atualizadoEm  DateTime          @updatedAt
   etapas        EtapaOnboarding[]
+  link          LinkOnboarding?
 
   @@index([agenciaId, clienteId])
   @@index([agenciaId, responsavelId])

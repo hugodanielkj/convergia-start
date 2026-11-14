@@ -39,6 +39,7 @@ model Agencia {
   clientes         Cliente[]
   config           ConfigAgencia?
   etapasOnboarding EtapaOnboarding[]
+  linksOnboarding  LinkOnboarding[]
   onboardings      Onboarding[]
   sessoes          Sessao[]
   usuarios         Usuario[]
