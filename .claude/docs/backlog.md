@@ -65,7 +65,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 | ------ | ----------------------------------------------------------------------------- | ------------------------------------------------- |
 | A      | [x] S4-1 Máquina de estados; pausar, cancelar e reabrir (RN-49 a RN-54)       | `core/estados`, `modulos/onboarding/estados`      |
 | A      | [ ] S4-2 Detalhe do onboarding com timeline e ações rápidas (RN-65, RN-66)    | `modulos/painel`, `app/(painel)/onboardings/[id]` |
-| A      | [ ] S4-3 Auditoria consultável, exportação e exclusão de dados (RN-73, RN-77) | `modulos/lgpd`                                    |
+| A      | [x] S4-3 Auditoria consultável, exportação e exclusão de dados (RN-73, RN-77) | `modulos/lgpd`                                    |
 | B      | [ ] S4-4 Captação dependente da reunião, com local (RN-38 a RN-42)            | `modulos/captacao`, `_etapas/captacao`            |
 | B      | [ ] S4-5 Prazo em dias úteis e recálculo (RN-43 a RN-46)                      | `core/prazo`, `modulos/prazo`                     |
 | B      | [ ] S4-6 Ajuste manual do prazo e indicadores (RN-47, RN-48)                  | `modulos/prazo`                                   |
