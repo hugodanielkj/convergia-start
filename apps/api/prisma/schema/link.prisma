@@ -1,0 +1,17 @@
+// Módulo link (S1-5). O token em si nunca é gravado: só o hash SHA-256 (RN-10, D-13).
+// Um registro por onboarding; regenerar troca hash e validade no mesmo registro, o que
+// invalida o token anterior na hora (RN-12).
+model LinkOnboarding {
+  id           String     @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia    @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId String     @unique
+  onboarding   Onboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  tokenHash    String     @unique
+  expiraEm     DateTime
+  criadoEm     DateTime   @default(now())
+  regeneradoEm DateTime?
+
+  @@index([agenciaId])
+  @@map("links_onboarding")
+}

@@ -8,6 +8,7 @@ import {
   type ErroCadastro,
 } from '@convergia/core/clientes';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
+import { prepararLink, type LinkEmitido } from '../link/emitir-link.js';
 import {
   dadosNovoOnboarding,
   resolverResponsavel,
@@ -36,7 +37,12 @@ export interface ClienteCadastrado {
 export type ResultadoCadastroCliente =
   | { readonly tipo: 'invalido'; readonly erros: readonly ErroCadastro[] }
   | { readonly tipo: 'duplicado'; readonly duplicidades: readonly Duplicidade[] }
-  | { readonly tipo: 'criado'; readonly cliente: ClienteCadastrado };
+  | {
+      readonly tipo: 'criado';
+      readonly cliente: ClienteCadastrado;
+      /** Único momento em que o token aparece: depois só existe o hash (D-13). */
+      readonly link: LinkEmitido;
+    };
 
 const COM_ONBOARDING = {
   onboardings: {
@@ -57,6 +63,7 @@ export async function cadastrarCliente(
   prisma: PrismaDaAgencia,
   usuario: UsuarioAutenticado,
   entrada: EntradaCadastro,
+  agora: Date,
 ): Promise<ResultadoCadastroCliente> {
   const validacao = validarCadastroCliente(entrada);
   if (!validacao.ok) return { tipo: 'invalido', erros: validacao.erros };
@@ -69,7 +76,8 @@ export async function cadastrarCliente(
 
   const responsavelId = await resolverResponsavel(prisma, usuario, entrada.responsavelId);
   const id = randomUUID();
-  const onboarding = dadosNovoOnboarding(usuario.agenciaId, responsavelId);
+  const link = await prepararLink(prisma, usuario.agenciaId, agora);
+  const onboarding = dadosNovoOnboarding(usuario.agenciaId, responsavelId, link.dados);
   const ator = `usuario:${usuario.id}`;
   const [criado] = await prisma.$transaction([
     prisma.cliente.create({
@@ -97,7 +105,7 @@ export async function cadastrarCliente(
       },
     }),
   ]);
-  return { tipo: 'criado', cliente: paraResposta(criado) };
+  return { tipo: 'criado', cliente: paraResposta(criado), link: link.emitido };
 }
 
 export async function listarClientes(prisma: PrismaDaAgencia): Promise<ClienteCadastrado[]> {

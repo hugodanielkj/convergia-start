@@ -15,6 +15,7 @@ import {
   type TipoEtapa,
 } from '@convergia/core/onboarding';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
+import { prepararLink, type DadosLink, type LinkEmitido } from '../link/emitir-link.js';
 
 export interface OnboardingResumo {
   readonly id: string;
@@ -55,11 +56,12 @@ export async function resolverResponsavel(
 }
 
 /** Dados de um onboarding novo com as quatro etapas pendentes (RN-06), prontos para o Prisma. */
-export function dadosNovoOnboarding(agenciaId: string, responsavelId: string) {
+export function dadosNovoOnboarding(agenciaId: string, responsavelId: string, link: DadosLink) {
   return {
     id: randomUUID(),
     agenciaId,
     responsavelId,
+    link: { create: link },
     etapas: {
       create: criarEtapasIniciais().map((etapa) => ({ agenciaId, ...etapa })),
     },
@@ -75,7 +77,8 @@ export async function criarOnboardingParaCliente(
   usuario: UsuarioAutenticado,
   clienteId: string,
   responsavelId: string | undefined,
-): Promise<OnboardingResumo> {
+  agora: Date,
+): Promise<{ onboarding: OnboardingResumo; link: LinkEmitido }> {
   const cliente = await prisma.cliente.findUnique({
     where: { id: clienteId },
     select: { id: true },
@@ -89,7 +92,8 @@ export async function criarOnboardingParaCliente(
   if (ativo) throw segundoOnboardingAtivo();
 
   const responsavel = await resolverResponsavel(prisma, usuario, responsavelId);
-  const dados = dadosNovoOnboarding(usuario.agenciaId, responsavel);
+  const link = await prepararLink(prisma, usuario.agenciaId, agora);
+  const dados = dadosNovoOnboarding(usuario.agenciaId, responsavel, link.dados);
   try {
     const [criado] = await prisma.$transaction([
       prisma.onboarding.create({
@@ -107,7 +111,7 @@ export async function criarOnboardingParaCliente(
         },
       }),
     ]);
-    return resumirOnboarding(criado);
+    return { onboarding: resumirOnboarding(criado), link: link.emitido };
   } catch (erro) {
     // Duas requisições ao mesmo tempo passam na checagem acima; o índice único parcial barra a segunda.
     if (violouUnicidade(erro)) throw segundoOnboardingAtivo();
