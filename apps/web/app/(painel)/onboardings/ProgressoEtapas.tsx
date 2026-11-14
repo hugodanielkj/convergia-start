@@ -22,3 +22,24 @@ export function ProgressoEtapas({
     </ol>
   );
 }
+
+const LEGENDA = [
+  { estado: 'concluida', texto: 'concluída' },
+  { estado: 'em_andamento', texto: 'em andamento' },
+  { estado: 'pendente', texto: 'pendente' },
+  { estado: 'bloqueada', texto: 'bloqueada' },
+] as const;
+
+/** Legenda visível dos ícones: no celular não há hover para ler o tooltip (decisão mobile-first). */
+export function LegendaProgresso() {
+  return (
+    <ul className={estilos.legenda} aria-label="Legenda do progresso">
+      {LEGENDA.map((l, i) => (
+        <li key={l.estado}>
+          <IconeEtapa estado={l.estado} numero={i + 1} rotulo="Etapa" decorativo />
+          {l.texto}
+        </li>
+      ))}
+    </ul>
+  );
+}
