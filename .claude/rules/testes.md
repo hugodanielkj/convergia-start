@@ -15,3 +15,4 @@ paths:
 - Integrações externas são substituídas por fakes que implementam a mesma interface de `core`.
 - Cobertura mínima: `core` 90%, `api` 80%. Não escreva testes vazios só para cobertura.
 - Nomes de teste descrevem o comportamento em português: `it('não exibe slots com menos de 24h de antecedência')`.
+- Testes de integração rodam em paralelo no mesmo banco: cada teste cria a própria agência e só confere os dados dela. Nunca dependa de "todos os registros" do banco.

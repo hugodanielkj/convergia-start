@@ -1,6 +1,6 @@
 # Sprint 4 — Acompanhamento · Captação e prazo
 
-**Status:** trilha A concluída (2026-11-14).
+**Status:** concluída — trilhas A e B (2026-11-14).
 
 ## Trilha A — PO
 
@@ -72,12 +72,16 @@ As 3 histórias mergeadas na `hml`, com CI verde:
 
 ### Entregue
 
-- S4-4 Captação dependente da reunião (#38).
-- S4-5 Prazo em dias úteis e recálculo (#41), com a correção do worker do calendário que derrubava um teste de vez em quando.
-- S4-6 Ajuste manual e indicadores (este PR).
+- S4-4 Captação dependente da reunião (#38): a etapa de captação fica bloqueada até a reunião ser marcada; depois o cliente informa o local e escolhe um dia a partir do intervalo mínimo.
+- S4-5 Prazo em dias úteis e recálculo (#41): ao agendar a captação o cliente vê a previsão de liberação dos primeiros conteúdos; ela é recalculada se a captação mudar de dia. Inclui a correção do worker do calendário.
+- S4-6 Ajuste manual e indicadores (#43): o painel mostra o prazo com "No prazo", "Atenção" ou "Atrasado" e filtra por ele; no detalhe, o responsável ajusta o prazo com justificativa.
+
+### Não entregue
+
+- Nada voltou ao backlog. Ficaram de fora, por decisão: RN-42 (profissional de captação diferente do responsável, depende de agenda por profissional, D-02) e o local da captação no detalhe do onboarding.
 
 ### Retro
 
-- **Funcionou:** recálculo idempotente disparado pelos eventos da agenda; a agenda não sabe que o prazo existe.
-- **Atenção:** as notificações ao cliente (prazo comunicado, recalculado, ajustado) dependem da S5 consumir `prazo.alterado`. Testes de integração que varrem dados de todas as agências (worker do calendário) podem pegar linhas de outros arquivos: preferir agência própria por teste.
-- **Pendências:** RN-42 (profissional de captação diferente, depende de agenda por profissional); local da captação no detalhe do onboarding; alerta interno de prazo em atenção/atrasado (RN-58, S5).
+- **Manter:** regra pura no `core` antes da API; recálculo idempotente disparado pelos eventos da agenda (a agenda não conhece o prazo); perguntar ao PO antes de tocar pasta da outra trilha.
+- **Melhorar:** teste de integração que varre dados de todas as agências pegava linhas de outros arquivos e falhava de vez em quando (virou regra em `.claude/rules/testes.md`); o merge travou porque a `hml` andou durante a CI: rebasear logo antes do merge; a demonstração no navegador não rodou nesta sessão (os servidores do preview não subiram).
+- **Pendências:** as notificações ao cliente (prazo comunicado, recalculado ou ajustado) dependem da S5 consumir `prazo.alterado`; alerta interno de prazo em atenção ou atrasado (RN-58, S5).
