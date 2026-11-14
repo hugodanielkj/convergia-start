@@ -1,0 +1,19 @@
+// Módulo clientes (S1-3). Canais são guardados já normalizados (RN-05): WhatsApp em E.164 e
+// e-mail em minúsculas, para o alerta de duplicidade (RN-07) comparar valores iguais.
+// Não há índice único: o usuário pode confirmar um cadastro duplicado depois do alerta.
+model Cliente {
+  id           String   @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  nomeEmpresa  String
+  nomeContato  String
+  whatsapp     String?
+  email        String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([agenciaId, whatsapp])
+  @@index([agenciaId, email])
+  @@index([agenciaId, criadoEm])
+  @@map("clientes")
+}
