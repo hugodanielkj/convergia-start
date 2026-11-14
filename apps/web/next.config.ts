@@ -2,6 +2,11 @@ import type { NextConfig } from 'next';
 import { URL_API } from './app/_lib/url-api';
 
 const config: NextConfig = {
+  // Os testes de celular (e2e/) sobem uma segunda cópia do app em outra pasta, sem brigar com o
+  // `next dev` do dia a dia, que trava a pasta .next/dev.
+  distDir: process.env['NEXT_DIST_DIR'] ?? '.next',
+  // O botão flutuante do Next cobre a tela nas fotos dos testes de celular.
+  devIndicators: process.env['NEXT_DIST_DIR'] ? false : { position: 'bottom-left' },
   output: 'standalone',
   poweredByHeader: false,
   reactStrictMode: true,
