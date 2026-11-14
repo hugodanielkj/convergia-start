@@ -44,6 +44,7 @@ model Onboarding {
   etapas        EtapaOnboarding[]
   link          LinkOnboarding?
   notificacoes  Notificacao[]
+  prazo         PrazoLiberacao?
   preferencia   PreferenciaEnvio?
   transicoes    TransicaoStatus[]
 

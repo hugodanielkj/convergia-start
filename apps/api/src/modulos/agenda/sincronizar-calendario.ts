@@ -55,12 +55,14 @@ export async function sincronizarAgendamento(
   });
   if (reserva.count === 0) return 'ignorado';
 
-  const agendamento = await prisma.agendamento.findUniqueOrThrow({
+  const agendamento = await prisma.agendamento.findUnique({
     where: { id: agendamentoId },
     include: {
       onboarding: { include: { cliente: { select: { nomeEmpresa: true, email: true } } } },
     },
   });
+  // Apagado entre a reserva e a leitura (ex.: exclusão de dados do cliente, RN-73): nada a enviar.
+  if (!agendamento) return 'ignorado';
   const ativo = (ATIVOS as readonly string[]).includes(agendamento.status);
   const evento: EventoCalendario = {
     titulo: `${agendamento.tipo === 'reuniao' ? 'Reunião' : 'Captação'} de onboarding: ${agendamento.onboarding.cliente.nomeEmpresa}`,
@@ -87,7 +89,8 @@ export async function sincronizarAgendamento(
     }
     // Realizado e não compareceu mantêm o evento como histórico; nada a enviar.
 
-    await prisma.agendamento.update({
+    // `updateMany` não falha se o agendamento foi apagado enquanto o calendário respondia.
+    await prisma.agendamento.updateMany({
       where: { id: agendamentoId },
       data: {
         eventoExternoId,
@@ -109,7 +112,7 @@ export async function sincronizarAgendamento(
     });
 
     if (decisao.tipo === 'tentar_de_novo') {
-      await prisma.agendamento.update({
+      await prisma.agendamento.updateMany({
         where: { id: agendamentoId },
         data: {
           calendarioTentativas: { increment: 1 },
@@ -121,7 +124,7 @@ export async function sincronizarAgendamento(
     }
 
     await prisma.$transaction([
-      prisma.agendamento.update({
+      prisma.agendamento.updateMany({
         where: { id: agendamentoId },
         data: {
           calendarioSituacao: 'falhou',
