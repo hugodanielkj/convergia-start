@@ -26,7 +26,7 @@
   border: 0;
   border-radius: 0.5rem;
   background: var(--destaque);
-  color: #fff;
+  color: var(--sobre-destaque);
   font: inherit;
   font-weight: 600;
   cursor: pointer;

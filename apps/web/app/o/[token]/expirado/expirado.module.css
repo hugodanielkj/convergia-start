@@ -16,7 +16,7 @@
   border: 1px solid var(--destaque);
   border-radius: 0.375rem;
   background: var(--destaque);
-  color: #ffffff;
+  color: var(--sobre-destaque);
   font: inherit;
   font-weight: 600;
   cursor: pointer;

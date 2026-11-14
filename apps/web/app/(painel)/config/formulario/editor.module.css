@@ -104,7 +104,7 @@
   margin-left: auto;
   border-color: var(--destaque);
   background: var(--destaque);
-  color: #fff;
+  color: var(--sobre-destaque);
 }
 
 .etiqueta {
