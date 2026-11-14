@@ -35,23 +35,25 @@ model Agencia {
   criadoEm    DateTime @default(now())
 
   // Relações reversas (ordem alfabética)
-  auditoria         AuditoriaLog[]
-  agendamentos      Agendamento[]
-  arquivos          Arquivo[]
-  bloqueios         Bloqueio[]
-  clientes          Cliente[]
-  consentimentos    ConsentimentoCliente[]
-  config            ConfigAgencia?
-  disponibilidades  Disponibilidade[]
-  etapasOnboarding  EtapaOnboarding[]
-  linksOnboarding   LinkOnboarding[]
-  modeloFormulario  ModeloFormulario?
-  onboardings       Onboarding[]
-  primeirosAcessos  PrimeiroAcesso[]
+  acessos             AcessoPlataforma[]
+  agendamentos        Agendamento[]
+  auditoria           AuditoriaLog[]
+  arquivos            Arquivo[]
+  bloqueios           Bloqueio[]
+  clientes            Cliente[]
+  consentimentos      ConsentimentoCliente[]
+  config              ConfigAgencia?
+  configAcessos       ConfigAcessos?
+  disponibilidades    Disponibilidade[]
+  etapasOnboarding    EtapaOnboarding[]
+  linksOnboarding     LinkOnboarding[]
+  modeloFormulario    ModeloFormulario?
+  onboardings         Onboarding[]
+  primeirosAcessos    PrimeiroAcesso[]
   respostasFormulario RespostaFormulario[]
-  sessoes           Sessao[]
-  usuarios          Usuario[]
-  versoesFormulario VersaoFormulario[]
+  sessoes             Sessao[]
+  usuarios            Usuario[]
+  versoesFormulario   VersaoFormulario[]
 
   @@map("agencias")
 }

@@ -1,0 +1,43 @@
+.form {
+  display: grid;
+  gap: 1rem;
+  max-width: 36rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.campo input {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+  font-weight: 400;
+}
+
+.botao {
+  justify-self: start;
+  padding: 0.7rem 1.2rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--destaque);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ok {
+  margin: 0;
+  color: #2f9e44;
+}
+
+.erro {
+  margin: 0;
+  color: #c92a2a;
+}

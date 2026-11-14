@@ -1,0 +1,35 @@
+// Módulo acessos (S3-1, trilha A). Acesso por parceiro, sem senha (D-05, RN-22, RN-27).
+enum StatusAcesso {
+  pendente
+  concedido
+  invalido
+}
+
+// Um por plataforma e onboarding, criado na primeira consulta. `informadoEm`: o cliente avisou
+// que já adicionou a agência. `motivo`: preenchido quando a agência marca inválido (RN-28).
+model AcessoPlataforma {
+  id           String       @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia      @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId String
+  plataforma   String
+  status       StatusAcesso @default(pendente)
+  motivo       String?
+  informadoEm  DateTime?
+  atualizadoEm DateTime     @updatedAt
+
+  @@unique([onboardingId, plataforma])
+  @@index([agenciaId])
+  @@map("acessos_plataforma")
+}
+
+// Identificador da agência que o cliente deve adicionar em cada plataforma (RN-22).
+// `identificadores`: { instagram: "...", facebook: "...", tiktok: "...", google: "..." }.
+model ConfigAcessos {
+  agenciaId       String   @id
+  agencia         Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  identificadores Json     @default("{}")
+  atualizadoEm    DateTime @updatedAt
+
+  @@map("config_acessos")
+}
