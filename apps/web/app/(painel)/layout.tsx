@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { exigirSessao } from '../_lib/sessao';
+import { RastreadorNavegacao } from './_componentes/BotaoVoltar';
 import { MenuPainel } from './MenuPainel';
 import estilos from './painel.module.css';
 
@@ -27,6 +28,7 @@ export default async function LayoutPainel({ children }: { children: ReactNode }
           </button>
         </form>
       </header>
+      <RastreadorNavegacao />
       <main className={estilos.conteudo}>{children}</main>
     </div>
   );
