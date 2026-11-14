@@ -94,6 +94,7 @@ export async function detalharOnboarding(
         fechadaEm: true,
         reabertaEm: true,
         versao: { select: { numero: true, campos: true } },
+        versaoCliente: { select: { numero: true, campos: true } },
       },
     }),
     lerAcessosDaAgencia(prisma, usuario, onboardingId),
@@ -156,11 +157,16 @@ export async function detalharOnboarding(
     link: o.link,
     formulario: resposta
       ? {
-          versao: resposta.versao.numero,
+          // RN-15: perguntas personalizadas têm numeração própria do cliente.
+          versao: (resposta.versaoCliente ?? resposta.versao).numero,
+          personalizada: resposta.versaoCliente !== null,
           enviadaEm: resposta.enviadaEm,
           fechadaEm: resposta.fechadaEm,
           reabertaEm: resposta.reabertaEm,
-          respostas: respostasComRotulo(resposta.versao.campos, resposta.respostas),
+          respostas: respostasComRotulo(
+            (resposta.versaoCliente ?? resposta.versao).campos,
+            resposta.respostas,
+          ),
         }
       : null,
     acessos,

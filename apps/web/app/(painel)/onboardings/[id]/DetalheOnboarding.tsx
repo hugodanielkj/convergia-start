@@ -47,6 +47,9 @@ export function DetalheOnboarding({
           Responsável: {detalhe.responsavel.nome} · Criado em {formatarDataHora(detalhe.criadoEm)}
           {detalhe.link && <> · Link válido até {formatarDataHora(detalhe.link.expiraEm)}</>}
         </p>
+        <Link href={`/onboardings/${detalhe.id}/personalizar`} className={estilos.personalizar}>
+          Personalizar perguntas e acessos
+        </Link>
       </header>
 
       <AcoesRapidas detalhe={detalhe} />

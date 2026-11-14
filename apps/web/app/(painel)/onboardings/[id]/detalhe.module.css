@@ -260,3 +260,8 @@
 .linhaDoTempo span {
   overflow-wrap: anywhere;
 }
+
+.personalizar {
+  justify-self: start;
+  font-weight: 700;
+}

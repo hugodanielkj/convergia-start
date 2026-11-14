@@ -101,7 +101,7 @@ export async function obterModelo(
   };
 }
 
-function completarCampos(entrada: readonly CampoDeEntrada[]): CampoFormulario[] {
+export function completarCampos(entrada: readonly CampoDeEntrada[]): CampoFormulario[] {
   const chaves = entrada.flatMap((c) => (c.chave ? [c.chave] : []));
   return entrada.map((c): CampoFormulario => {
     const chave = c.chave ?? gerarChave(c.rotulo, chaves);

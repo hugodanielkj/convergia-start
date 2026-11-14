@@ -60,6 +60,9 @@ export default async function PaginaClientes() {
                   </ul>
                 )}
                 <p className={estilos.ajuda}>Cadastrado em {formatarDataHora(cliente.criadoEm)}</p>
+                {ativo && (
+                  <Link href={`/onboardings/${onboarding.id}/personalizar`}>Personalizar</Link>
+                )}
                 {ativo && <BotaoNovoLink onboardingId={onboarding.id} />}
               </li>
             );

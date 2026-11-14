@@ -112,6 +112,7 @@ const ROTULO_ACAO: Readonly<Record<string, string>> = {
   'onboarding.status_alterado': 'Status alterado',
   'consentimento.aceito': 'Cliente aceitou o termo de consentimento',
   'formulario.enviado': 'Formulário enviado',
+  'formulario.personalizado': 'Perguntas personalizadas para o cliente',
   'formulario.editado': 'Formulário editado pelo cliente',
   'formulario.fechado': 'Formulário fechado para edição',
   'etapa.reaberta': 'Etapa reaberta',
