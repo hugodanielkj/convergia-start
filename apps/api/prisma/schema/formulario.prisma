@@ -12,14 +12,14 @@ model ModeloFormulario {
 
 // Imutável depois de publicada: respostas (S2-3) apontam para a versão em que foram dadas.
 model VersaoFormulario {
-  id           String   @id @default(uuid(7))
+  id           String               @id @default(uuid(7))
   agenciaId    String
-  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  agencia      Agencia              @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
   numero       Int
   campos       Json
-  publicadaEm  DateTime @default(now())
+  publicadaEm  DateTime             @default(now())
   publicadaPor String?
-  respostas RespostaFormulario[]
+  respostas    RespostaFormulario[]
 
   @@unique([agenciaId, numero])
   @@map("versoes_formulario")

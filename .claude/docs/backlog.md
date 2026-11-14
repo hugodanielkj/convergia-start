@@ -52,7 +52,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 
 | Trilha | História                                                                                                | Pastas                                       |
 | ------ | ------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| A      | [ ] S3-1 Etapa de acessos por parceiro, com instruções por plataforma (RN-22, RN-27, RN-29, D-05, D-06) | `modulos/acessos`, `_etapas/acessos`         |
+| A      | [x] S3-1 Etapa de acessos por parceiro, com instruções por plataforma (RN-22, RN-27, RN-29, D-05, D-06) | `modulos/acessos`, `_etapas/acessos`         |
 | A      | [ ] S3-2 Agência marca acesso como concedido/inválido (RN-28)                                           | `modulos/acessos`                            |
 | A      | [ ] S3-3 Painel de onboardings com filtros (RN-63, RN-64)                                               | `modulos/painel`, `app/(painel)/onboardings` |
 | B      | [ ] S3-4 Google Calendar + Meet com retentativa (RN-34, RN-67)                                          | `adapters/calendario`, `modulos/agenda`      |
