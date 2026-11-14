@@ -13,6 +13,7 @@ Argumento: ID da história (ex. `S1-3`).
 4. **Testes primeiro.** Escreva os testes de cada RN (veja `.claude/rules/testes.md`). Rode e confirme que falham.
 5. **Implementação.** Mínimo para passar, seguindo `.claude/rules/codigo.md`. Refatore com os testes verdes.
 6. **Validação.** `pnpm check`. Se mexeu em Docker ou build, `docker compose build`.
+   - **Obrigatório se a história tem tela (`apps/web`): verificar no celular.** Abra cada tela alterada no navegador do app a **360×800** (e 375×812), confira o checklist de `.claude/rules/ui-mobile.md` (sem rolagem horizontal, toque ≥ 44px, campos ≥ 16px, nada só no hover) e rode `pnpm --filter @convergia/web test:e2e`. Tela nova entra em `apps/web/e2e/telas.ts`. Sem isso, não abra o PR.
 7. **Commit e PR.** Commits em Conventional Commits. Push e `gh pr create --base hml` com o template preenchido. Aguarde a CI.
 8. **Merge em hml.** Com CI verde: `gh pr merge --squash --delete-branch`. Antes do merge, `git rebase hml` (regere a migração se a `hml` ganhou outra). Marque `[x]` no backlog e registre decisões novas como arquivo em `.claude/docs/decisoes/`. Corrija a CI se quebrar; nunca faça merge com CI vermelha.
 9. **Homologação.** Rode o app localmente e mostre ao PO no navegador do app o que mudou (D-20). Merge em `main` só no go-live, aprovado pelo PO.

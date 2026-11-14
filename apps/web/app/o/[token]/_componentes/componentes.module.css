@@ -31,7 +31,7 @@
 }
 
 .cartao {
-  padding: 1.25rem;
+  padding: 1.25rem 1rem;
   border: 1px solid var(--borda);
   border-radius: var(--raio-grande);
   background: var(--superficie);
@@ -39,6 +39,7 @@
 
 .cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
@@ -68,4 +69,10 @@
   background: color-mix(in srgb, var(--realce) 15%, transparent);
   color: var(--destaque);
   font-weight: 700;
+}
+
+@media (min-width: 40rem) {
+  .cartao {
+    padding: 1.25rem;
+  }
 }

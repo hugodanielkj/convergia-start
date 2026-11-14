@@ -1,7 +1,7 @@
 .pagina {
   max-width: 40rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: calc(1.5rem + var(--seguro-topo)) var(--gutter) 3rem;
 }
 
 .subtitulo {
@@ -12,7 +12,7 @@
   display: grid;
   gap: 1rem;
   margin-top: 1.5rem;
-  padding: 1.25rem;
+  padding: 1.25rem 1rem;
   border: 1px solid var(--borda);
   border-radius: var(--raio-grande);
   background: var(--superficie);
@@ -34,6 +34,8 @@
 }
 
 .botao {
+  width: 100%;
+  min-height: var(--alvo-toque);
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: var(--raio);
@@ -47,4 +49,11 @@
 .botao:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+/* Mobile-first: ação principal larga, fácil de alcançar com o polegar. */
+@media (min-width: 40rem) {
+  .botao {
+    width: auto;
+  }
 }

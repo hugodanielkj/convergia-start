@@ -1,27 +1,31 @@
+/* Casca do painel, mobile-first: base = celular (360px); tablet e desktop com min-width. */
+
 .painel {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
+/* Celular: topo de uma linha só (marca + sair). O menu vira a barra de abas de baixo. */
 .topo {
-  position: sticky;
-  top: 0;
-  z-index: 3;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding: 0.75rem 1rem;
+  gap: 0.5rem;
+  padding: calc(0.25rem + var(--seguro-topo)) var(--gutter) 0.25rem;
   background: var(--petrol);
   color: var(--cream);
 }
 
 .marca {
+  display: inline-flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  min-height: var(--alvo-toque);
   font-family: var(--serif);
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 500;
   color: var(--cream);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 /* O ponto laranja da marca, como no site. */
@@ -30,56 +34,151 @@
   color: var(--orange);
 }
 
-.menu {
-  display: flex;
-  gap: 0.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow-x: auto;
-}
-
-.menu a {
-  display: inline-block;
-  padding: 0.45rem 0.85rem;
-  border-radius: var(--raio-pilula);
-  color: var(--cream);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.menu a:hover {
-  background: rgba(248, 235, 221, 0.12);
-}
-
 .conta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  min-width: 0;
   color: var(--cream);
   font-size: 0.9rem;
-  opacity: 0.9;
+}
+
+.usuario {
+  overflow: hidden;
+  max-width: 8rem;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .sair {
-  min-height: 2.25rem;
-  padding: 0 0.9rem;
+  min-height: var(--alvo-toque);
+  padding: 0 1rem;
   border: 1px solid rgba(248, 235, 221, 0.4);
   border-radius: var(--raio-pilula);
   background: transparent;
   color: var(--cream);
   font: inherit;
-  cursor: pointer;
+}
+
+/* Barra de abas fixa embaixo: alcance do polegar, acima da barra de gestos do iPhone. */
+.navegacao {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  padding: 0 var(--seguro-dir) var(--seguro-base) var(--seguro-esq);
+  background: var(--petrol);
+  box-shadow: 0 -1px 0 rgba(248, 235, 221, 0.15);
+}
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 3.5rem;
+  padding: 0.35rem 0.25rem;
+  color: rgba(248, 235, 221, 0.75);
+  font-size: 0.75rem;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: normal;
+}
+
+.item[aria-current='page'] {
+  color: var(--cream);
+  font-weight: 700;
+  box-shadow: inset 0 3px 0 var(--orange);
+}
+
+.icone {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
 }
 
 .conteudo {
   max-width: 64rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  /* Espaço para a barra de abas não cobrir o fim da página. */
+  padding: 1.25rem var(--gutter) calc(5.5rem + var(--seguro-base));
 }
 
 .conteudo > h1:first-child,
 .conteudo > :first-child h1 {
-  margin-top: 0.5rem;
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  margin-top: 0.25rem;
+  font-size: clamp(1.75rem, 7vw, 2.6rem);
+}
+
+/* Tablet em diante: menu volta para o topo, que fica fixo ao rolar. */
+@media (min-width: 48rem) {
+  .topo {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    gap: 1rem;
+    padding-block: calc(0.5rem + var(--seguro-topo)) 0.5rem;
+  }
+
+  .marca {
+    flex: none;
+    font-size: 1.3rem;
+  }
+
+  .navegacao {
+    position: static;
+    flex: 1;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .menu {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .item {
+    flex-direction: row;
+    gap: 0.4rem;
+    min-height: var(--alvo-toque);
+    padding: 0 0.9rem;
+    border-radius: var(--raio-pilula);
+    font-size: 1rem;
+  }
+
+  .item:hover {
+    background: rgba(248, 235, 221, 0.12);
+  }
+
+  .item[aria-current='page'] {
+    background: rgba(248, 235, 221, 0.16);
+    box-shadow: none;
+  }
+
+  .icone {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .usuario {
+    max-width: 14rem;
+  }
+
+  .conteudo {
+    padding: 1.5rem 1.5rem 3rem;
+  }
 }

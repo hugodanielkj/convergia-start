@@ -18,6 +18,8 @@
   background: var(--fundo);
   color: inherit;
   font: inherit;
+  /* 16px: o .campo usa 14px no rótulo, mas o campo não pode ter menos (zoom do iPhone). */
+  font-size: max(1rem, 16px);
   font-weight: 400;
 }
 

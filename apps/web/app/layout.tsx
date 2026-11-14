@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // A página ocupa a tela toda no iPhone; as cascas recuam com env(safe-area-inset-*).
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f8ebdd' },
     { media: '(prefers-color-scheme: dark)', color: '#0e2b31' },

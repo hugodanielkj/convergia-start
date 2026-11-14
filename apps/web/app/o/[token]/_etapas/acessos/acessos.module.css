@@ -72,6 +72,8 @@
 }
 
 .botao {
+  width: 100%;
+  min-height: var(--alvo-toque);
   padding: 0.7rem 1rem;
   border: 0;
   border-radius: var(--raio);
@@ -90,4 +92,11 @@
 .intro {
   margin: 0;
   color: var(--suave);
+}
+
+/* Mobile-first: ação principal larga, fácil de alcançar com o polegar. */
+@media (min-width: 40rem) {
+  .botao {
+    width: auto;
+  }
 }
