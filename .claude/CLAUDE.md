@@ -34,7 +34,7 @@ Branches: `feat/*` → `hml` (homologação) → `main` (produção). Detalhes e
 2. Branch `feat/<id>-<slug>` a partir de `hml`. Testes primeiro para regras (RN), depois código.
 3. `pnpm check` verde antes de commitar. Commits em Conventional Commits, em português.
 4. PR para `hml`; com CI verde, **Claude faz o merge**.
-5. Fim da sprint: PR `hml → main`. **Merge na `main` só pelo PO.** Depois, skill `fechar-sprint`.
+5. Fim da sprint: skill `fechar-sprint` e demonstração local ao PO. **Merge na `main` só pelo PO**, e só a partir do go-live (D-20).
 
 ## Modelo e esforço
 

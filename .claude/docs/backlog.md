@@ -17,11 +17,10 @@ Ordem = prioridade. O PO pode reordenar. Cada história cita as RN que cobre.
 ## Sprint 1 — Cadastro e link único
 
 - [ ] S1-1 Schema Prisma inicial (agência, usuário, cliente, onboarding, etapas, config, auditoria) + seed da agência (RN-75, D-01). Adicionar serviço Postgres na CI e testes de integração `*.int.test.ts`.
-- [ ] S1-2 Login da equipe e papéis admin/membro (RN-02, RN-03). Decisão de método de login a propor ao PO.
+- [ ] S1-2 Login com Google e papéis admin/membro (RN-02, RN-03, D-21, D-22).
 - [ ] S1-3 Cadastro de cliente com validação e alerta de duplicidade (RN-04, RN-05, RN-07, RN-08).
 - [ ] S1-4 Criação automática do onboarding com 4 etapas (RN-06).
 - [ ] S1-5 Link único: geração, expiração, regeneração, isolamento (RN-10 a RN-13).
-- [ ] S1-6 Ambiente de homologação publicado a partir de `hml` (depende do PO).
 
 ## Sprint 2 — Página do cliente e formulário
 

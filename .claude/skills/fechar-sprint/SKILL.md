@@ -5,7 +5,7 @@ description: Review e retrospectiva de sprint — resume o que foi entregue, o q
 
 # Fechar sprint
 
-1. Liste PRs mergeados em `hml` na sprint: `gh pr list --base hml --state merged --limit 20`. Abra o PR `hml → main` com o resumo e peça a aprovação do PO (não faça o merge).
+1. Liste PRs mergeados em `hml` na sprint: `gh pr list --base hml --state merged --limit 20`. Só depois do go-live (D-20): abra o PR `hml → main` com o resumo e peça a aprovação do PO (não faça o merge).
 2. Atualize o arquivo da sprint em `.claude/docs/sprints/`:
    - **Entregue:** histórias concluídas, em linguagem de produto.
    - **Não entregue:** o que voltou ao backlog e por quê.

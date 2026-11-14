@@ -26,3 +26,12 @@ Formato: `D-xx — data — decisão. Motivo.` Decisões novas no fim. Para muda
 - **D-17** — Imagens Docker: build multi-stage, usuário não-root; API via `pnpm deploy --legacy`, web via `output: 'standalone'` do Next.
 - **D-18** — CI (GitHub Actions) bloqueia merge se falhar: formatação, lint (typed, `strictTypeChecked`), typecheck, testes com cobertura mínima, build, `pnpm audit` (high) e build das imagens Docker.
 - **D-19** — 2026-11-13 — Branches `feat/*` → `hml` → `main`. Claude faz merge em `hml` com CI verde; merge em `main` só com aprovação do PO. A CI roda igual em PRs e em push para `main` e `hml`.
+
+## Sprint 1 (respostas do PO, 2026-11-13)
+
+Contexto: o PO desenvolve o sistema para uma cliente, a dona da agência. Ela é a usuária do painel. Os clientes dela (empresas) nunca fazem login (RN-01).
+
+- **D-20** — Durante o desenvolvimento, `hml` é a branch principal: Claude faz merge nela com CI verde. **Não há ambiente publicado nem Docker obrigatório para homologar**; o PO vê as entregas rodando localmente no navegador do app. `main` só recebe o primeiro PR (`hml → main`, aprovado pelo PO) quando o sistema for ao ar com clientes reais. A partir daí, vale D-19 completo. Substitui a história S1-6.
+- **D-21** — Login do painel com "Entrar com Google", aceitando só e-mails cadastrados como usuários ativos. A dona da agência já usa Google Calendar (D-04), e a mesma conta servirá para a integração da Sprint 4. O e-mail dela entra por variável de ambiente no seed, nunca no repositório.
+- **D-22** — Por enquanto a única usuária do painel é a dona da agência (admin). O papel "membro" existe no modelo (RN-02), mas a tela de gerenciar equipe fica fora do MVP até haver equipe.
+- **D-23** — Até a Sprint 6, o convite (RN-09) não é enviado automaticamente: o painel mostra o link com o botão "Copiar link". Sem impacto real, porque o sistema só recebe clientes reais depois do MVP completo.

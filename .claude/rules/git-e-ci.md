@@ -1,4 +1,6 @@
-# Git, PR e CI (D-19)
+# Git, PR e CI (D-19, D-20)
+
+> **Fase atual: desenvolvimento (D-20).** `hml` funciona como branch principal. Não abra PR `hml → main` ao fechar sprint; isso só acontece no go-live, a pedido do PO. Homologação = rodar localmente e mostrar ao PO no navegador do app.
 
 ## Branches
 
