@@ -11,6 +11,7 @@ import {
   dependenciasDeTeste,
   usuarioTeste,
 } from '../../testes/dependencias.js';
+import { enviarFormulario } from '../../testes/liberacao.js';
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const sufixo = randomUUID().slice(0, 8);
@@ -66,6 +67,7 @@ async function criarOnboarding(tag: string, expirado = false) {
       },
     },
   });
+  if (!expirado) await enviarFormulario(prisma, token);
   return { token, id: onboarding.id };
 }
 
@@ -330,5 +332,18 @@ describe('S6-3 plataformas escolhidas por cliente (RN-27)', () => {
       where: { entidadeId: id, acao: 'acessos.escolhidos' },
     });
     expect(log?.dados).toEqual({ plataformas: 'google' });
+  });
+});
+
+describe('RN-79 acessos só depois do formulário enviado', () => {
+  it('recusa o aviso do cliente enquanto o formulário não foi enviado', async () => {
+    const { token, id } = await criarOnboarding('ordem');
+    await prisma.respostaFormulario.update({
+      where: { onboardingId: id },
+      data: { enviadaEm: null },
+    });
+    const r = await informar(token, 'instagram');
+    expect(r.statusCode).toBe(422);
+    expect(r.json<{ erro: string }>().erro).toBe('RN-79');
   });
 });

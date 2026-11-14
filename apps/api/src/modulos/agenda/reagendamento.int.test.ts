@@ -12,6 +12,7 @@ import {
   dependenciasDeTeste,
   usuarioTeste,
 } from '../../testes/dependencias.js';
+import { liberarAteReuniao } from '../../testes/liberacao.js';
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const apps: FastifyInstance[] = [];
@@ -123,6 +124,7 @@ async function novoCliente(app = appAdmin, extra: Record<string, unknown> = {}) 
     cliente: { onboarding: { id: string } };
     link: { token: string };
   }>();
+  await liberarAteReuniao(prisma, corpo.link.token);
   return { token: corpo.link.token, onboardingId: corpo.cliente.onboarding.id };
 }
 

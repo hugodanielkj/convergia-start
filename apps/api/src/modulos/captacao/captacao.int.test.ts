@@ -11,6 +11,7 @@ import {
   dependenciasDeTeste,
   usuarioTeste,
 } from '../../testes/dependencias.js';
+import { liberarAteReuniao } from '../../testes/liberacao.js';
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const apps: FastifyInstance[] = [];
@@ -77,7 +78,9 @@ async function novoCliente() {
       email: `c${String(n)}-${sufixo}@t.com`,
     },
   });
-  return r.json<{ link: { token: string } }>().link.token;
+  const token = r.json<{ link: { token: string } }>().link.token;
+  await liberarAteReuniao(prisma, token);
+  return token;
 }
 
 const situacao = (token: string) =>
@@ -135,8 +138,9 @@ describe('RN-39 captação depende da reunião', () => {
   it('recusa a reserva da captação sem reunião', async () => {
     const token = await novoCliente();
     const r = await reservar(token, 'captacao', '2026-11-20T12:00:00.000Z', DADOS);
-    expect(r.statusCode).toBe(409);
-    expect(r.json()).toMatchObject({ erro: 'SLOT_INDISPONIVEL' });
+    // Desde a S6-4 a liberação sequencial (RN-79) barra antes de olhar os horários.
+    expect(r.statusCode).toBe(422);
+    expect(r.json()).toMatchObject({ erro: 'RN-79' });
   });
 
   it('libera só horários depois do intervalo mínimo após a reunião', async () => {

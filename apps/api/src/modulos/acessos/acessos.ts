@@ -20,6 +20,7 @@ import {
 } from '@convergia/core/acessos';
 import { registrarAuditoria } from '../../base/auditoria.js';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
+import { exigirEtapaLiberada } from '../liberacao/liberacao.js';
 
 export interface AcessoVisao {
   readonly plataforma: PlataformaAcesso;
@@ -61,6 +62,27 @@ export async function plataformasEscolhidas(
   if (!escolha) return plataformasPadrao(prisma);
   const valida = validarEscolha(escolha.plataformas);
   return valida.ok ? valida.plataformas : plataformasPadrao(prisma);
+}
+
+/** Situação de cada plataforma escolhida, sem criar linhas (leitura para a RN-79). */
+export async function situacoesEscolhidas(
+  prisma: PrismaDaAgencia,
+  onboardingId: string,
+): Promise<SituacaoAcesso[]> {
+  const [escolhidas, linhas] = await Promise.all([
+    plataformasEscolhidas(prisma, onboardingId),
+    prisma.acessoPlataforma.findMany({
+      where: { onboardingId },
+      select: { plataforma: true, status: true, informadoEm: true },
+    }),
+  ]);
+  return escolhidas.map((p): SituacaoAcesso => {
+    const linha = linhas.find((l) => l.plataforma === p);
+    return {
+      status: linha?.status ?? 'pendente',
+      informado: (linha?.informadoEm ?? null) !== null,
+    };
+  });
 }
 
 /** Cria as linhas que faltam (só das escolhidas) e devolve a situação de cada plataforma. */
@@ -146,6 +168,7 @@ export async function informarAcessoDoCliente(
   plataforma: PlataformaAcesso,
   agora: Date,
 ): Promise<{ resultado: ResultadoInformar; estado: EstadoAcessos }> {
+  await exigirEtapaLiberada(prisma, onboardingId, 'acessos');
   const escolhidas = await plataformasEscolhidas(prisma, onboardingId);
   if (!escolhidas.includes(plataforma)) throw new NaoEncontradoError('Plataforma');
   const linhas = await garantirLinhas(prisma, agenciaId, onboardingId, escolhidas);
