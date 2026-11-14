@@ -1,0 +1,25 @@
+// Módulo formulario (S2-2, trilha A). Modelo de formulário versionado (RN-15).
+
+// Um por agência. `rascunho` guarda a edição em andamento; null = igual à última versão.
+model ModeloFormulario {
+  agenciaId    String   @id
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  rascunho     Json?
+  atualizadoEm DateTime @updatedAt
+
+  @@map("modelos_formulario")
+}
+
+// Imutável depois de publicada: respostas (S2-3) apontam para a versão em que foram dadas.
+model VersaoFormulario {
+  id           String   @id @default(uuid(7))
+  agenciaId    String
+  agencia      Agencia  @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  numero       Int
+  campos       Json
+  publicadaEm  DateTime @default(now())
+  publicadaPor String?
+
+  @@unique([agenciaId, numero])
+  @@map("versoes_formulario")
+}
