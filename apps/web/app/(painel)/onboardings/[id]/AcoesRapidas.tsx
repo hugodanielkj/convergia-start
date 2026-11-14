@@ -191,14 +191,15 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
             Excluir dados (LGPD)
           </button>
         )}
-        <button type="button" disabled title="Chega na Sprint 5, com o envio de mensagens">
+        {/* O motivo fica no texto visível abaixo: no celular não há hover (decisão mobile-first). */}
+        <button type="button" disabled aria-describedby="dica-acoes-mensagens">
           Reenviar convite
         </button>
-        <button type="button" disabled title="Chega na Sprint 5, com o envio de mensagens">
+        <button type="button" disabled aria-describedby="dica-acoes-mensagens">
           Reenviar lembrete
         </button>
       </div>
-      <p className={estilos.dica}>
+      <p id="dica-acoes-mensagens" className={estilos.dica}>
         Reenviar convite e lembrete chegam na Sprint 5. O prazo se ajusta na seção “Prazo de
         liberação”.
       </p>

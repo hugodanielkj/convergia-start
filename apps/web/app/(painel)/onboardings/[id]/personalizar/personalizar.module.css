@@ -5,6 +5,10 @@
 }
 
 .voltar {
+  display: inline-flex;
+  align-items: center;
+  align-self: start;
+  min-height: var(--alvo-toque);
   font-size: 0.9rem;
   text-decoration: none;
 }

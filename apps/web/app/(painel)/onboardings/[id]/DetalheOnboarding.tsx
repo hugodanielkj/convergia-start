@@ -71,7 +71,9 @@ export function DetalheOnboarding({
         <section className={estilos.secao} aria-labelledby="titulo-acessos">
           <div className={estilos.cabecalhoSecao}>
             <h2 id="titulo-acessos">Acessos</h2>
-            <Link href={`/onboardings/${detalhe.id}/acessos`}>Confirmar acessos</Link>
+            <Link href={`/onboardings/${detalhe.id}/acessos`} className={estilos.linkAcao}>
+              Confirmar acessos
+            </Link>
           </div>
           <ul className={estilos.etapas}>
             {acessos.plataformas.map((a) => (
