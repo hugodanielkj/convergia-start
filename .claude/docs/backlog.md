@@ -55,7 +55,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 | A      | [x] S3-1 Etapa de acessos por parceiro, com instruções por plataforma (RN-22, RN-27, RN-29, D-05, D-06) | `modulos/acessos`, `_etapas/acessos`         |
 | A      | [x] S3-2 Agência marca acesso como concedido/inválido (RN-28)                                           | `modulos/acessos`                            |
 | A      | [x] S3-3 Painel de onboardings com filtros (RN-63, RN-64)                                               | `modulos/painel`, `app/(painel)/onboardings` |
-| B      | [~] S3-4 Google Calendar + Meet com retentativa (RN-34, RN-67)                                          | `adapters/calendario`, `modulos/agenda`      |
+| B      | [x] S3-4 Google Calendar + Meet com retentativa (RN-34, RN-67)                                          | `adapters/calendario`, `modulos/agenda`      |
 | B      | [x] S3-5 Reagendamento, limite e não comparecimento (RN-35 a RN-37)                                     | `modulos/agenda`, `core/agenda`              |
 | B      | [x] S3-6 Etapa "reunião" na página do cliente                                                           | `_etapas/reuniao`                            |
 
