@@ -1,6 +1,6 @@
 # Sprint 4 — Acompanhamento · Captação e prazo
 
-**Status:** trilha A aprovada pelo PO e em andamento (2026-11-14).
+**Status:** trilha A concluída (2026-11-14).
 
 ## Trilha A — PO
 
@@ -38,13 +38,19 @@
 
 ### Trilha A
 
-(vazio)
+As 3 histórias mergeadas na `hml`, com CI verde:
+
+- S4-1 Máquina de estados (#34): status avança sozinho; Admin pausa, retoma e cancela com motivo; responsável registra entrega e encerra; conclusão automática após N dias; reabrir formulário com motivo.
+- S4-3 Auditoria, exportação e exclusão (#35): linha do tempo consultável com filtros; exportação em JSON e exclusão definitiva pelo Admin.
+- S4-2 Detalhe do onboarding (este PR): tela `/onboardings/[id]` com linha do tempo, respostas, acessos, agendamentos, arquivos e ações rápidas; o nome do cliente no painel leva a ela. Regra da RN-66 pronta no `core` para a S5.
 
 ## Retro
 
 ### Trilha A
 
-(vazio)
+- **Funcionou:** regra pura no `core` primeiro, depois a API; um evento (`onboarding.etapas_mudaram`) como única porta para mudar o status evita as duas trilhas gravarem status contraditórios. A tela pede à API quais ações cabem, então não repete regra.
+- **Atenção:** cancelar o onboarding cancela os agendamentos futuros direto no banco; o calendário da trilha B (#32) precisa reagir a `onboarding.status_alterado` para remover os eventos do Google. Agendamento realizado/cancelado da trilha B deve publicar `onboarding.etapas_mudaram` para o status andar sozinho.
+- **Pendências:** reenviar convite e lembrete, histórico de notificações e aviso de cancelamento ao cliente (S5); ajustar prazo (S4-6, trilha B); auditar edição de cliente quando a rota existir (trilha B).
 
 ## Trilha B — colaborador
 

@@ -1,7 +1,7 @@
 import { RegraVioladaError } from '../base/erros.js';
 import type { StatusEtapa, StatusOnboarding, TipoEtapa } from '../onboarding/index.js';
 import { derivarStatus, type FatosOnboarding } from './derivar.js';
-import { garantirTransicao } from './transicoes.js';
+import { garantirTransicao, transicaoPermitida } from './transicoes.js';
 
 /** Ações da agência sobre o status geral (RN-52, RN-53). */
 export const ACOES_MANUAIS = [
@@ -103,6 +103,30 @@ export function destinoDaAcao(
   }
   return destino;
 }
+
+/**
+ * Ações que cabem no status atual para quem pede (RN-52, RN-53): a tela de detalhe só mostra estas.
+ * Mesmo critério de `destinoDaAcao`, sem precisar dos fatos (retomar sempre vai para a jornada).
+ */
+export function acoesDisponiveis(atual: StatusOnboarding, ehAdmin: boolean): AcaoManual[] {
+  return ACOES_MANUAIS.filter((acao) => {
+    const regra = REGRAS[acao];
+    if (regra.soAdmin && !ehAdmin) return false;
+    if (regra.origem !== null) return atual === regra.origem;
+    return transicaoPermitida(atual, regra.destino(FATOS_NEUTROS));
+  });
+}
+
+/** Pausar e cancelar têm destino fixo; os fatos não mudam o resultado deles. */
+const FATOS_NEUTROS: FatosOnboarding = {
+  abriuLink: false,
+  conviteEnviado: false,
+  formularioConcluido: false,
+  acessosConcluidos: false,
+  reuniao: 'nenhum',
+  captacao: 'nenhum',
+  entregueEm: null,
+};
 
 /** Etapas que a agência reabre por este caminho (decisão 2026-11-14-a-estados-onboarding). */
 const ETAPAS_REABRIVEIS: ReadonlySet<TipoEtapa> = new Set(['formulario']);

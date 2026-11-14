@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { RegraVioladaError } from '../base/erros.js';
 import { STATUS_ONBOARDING, type StatusOnboarding } from '../onboarding/index.js';
 import {
+  acoesDisponiveis,
   derivarStatus,
   destinoDaAcao,
   exigeAdmin,
@@ -221,6 +222,24 @@ describe('RN-52 e RN-53 ações manuais', () => {
     );
     expect(destinoDaAcao('encerrar', 'primeiro_conteudo_entregue', fatos())).toBe('concluido');
     expect(() => destinoDaAcao('encerrar', 'em_producao', fatos())).toThrow(RegraVioladaError);
+  });
+});
+
+describe('RN-52 e RN-53 ações disponíveis na tela', () => {
+  it('Admin vê pausar e cancelar num ativo; membro não', () => {
+    expect(acoesDisponiveis('em_andamento', true)).toEqual(['pausar', 'cancelar']);
+    expect(acoesDisponiveis('em_andamento', false)).toEqual([]);
+  });
+
+  it('pausado: retomar e cancelar; em produção: entrega para qualquer um da equipe', () => {
+    expect(acoesDisponiveis('pausado', true)).toEqual(['retomar', 'cancelar']);
+    expect(acoesDisponiveis('em_producao', false)).toEqual(['registrar_entrega']);
+    expect(acoesDisponiveis('primeiro_conteudo_entregue', false)).toEqual(['encerrar']);
+  });
+
+  it('encerrado não tem ação', () => {
+    expect(acoesDisponiveis('cancelado', true)).toEqual([]);
+    expect(acoesDisponiveis('concluido', true)).toEqual([]);
   });
 });
 

@@ -1,0 +1,262 @@
+.pagina {
+  display: grid;
+  gap: 1rem;
+}
+
+.voltar {
+  color: var(--suave);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.cabecalho h1 {
+  margin: 0;
+}
+
+.cabecalho p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--suave);
+  overflow-wrap: anywhere;
+}
+
+.status {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+}
+
+.status[data-status='pausado'] {
+  border-color: #e67700;
+  color: #e67700;
+}
+
+.status[data-status='cancelado'] {
+  border-color: #c92a2a;
+  color: #c92a2a;
+}
+
+.status[data-status='concluido'],
+.status[data-status='primeiro_conteudo_entregue'] {
+  border-color: #2f9e44;
+  color: #2f9e44;
+}
+
+.grade {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 48rem) {
+  .grade {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.secao {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.6rem;
+  min-width: 0;
+}
+
+.secao h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cabecalhoSecao {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.botoes button,
+.botaoLink {
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--destaque);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.botoes button:disabled {
+  background: var(--superficie);
+  color: var(--suave);
+  border: 1px dashed var(--borda);
+  cursor: not-allowed;
+}
+
+.botoes .perigo {
+  background: #c92a2a;
+}
+
+.botoes .secundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+}
+
+.dica {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.confirmacao {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-radius: 0.6rem;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+}
+
+.confirmacao[data-perigo] {
+  border-color: #c92a2a;
+}
+
+.confirmacao p {
+  margin: 0;
+}
+
+.confirmacao label {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.confirmacao textarea,
+.confirmacao input,
+.filtro select {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+  font-weight: 400;
+}
+
+.confirmacao textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.erro {
+  margin: 0;
+  color: #c92a2a;
+}
+
+.vazio {
+  margin: 0;
+  color: var(--suave);
+}
+
+.etapas,
+.lista,
+.linhaDoTempo {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etapas li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.4rem;
+  background: var(--superficie);
+}
+
+.etapas li[data-status='concluida'] strong,
+.etapas li[data-status='concedido'] strong {
+  color: #2f9e44;
+}
+
+.etapas li[data-status='invalido'] strong {
+  color: #c92a2a;
+}
+
+.lista li {
+  display: grid;
+  gap: 0.1rem;
+  overflow-wrap: anywhere;
+}
+
+.lista small,
+.linhaDoTempo small {
+  color: var(--suave);
+}
+
+.respostas {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+.respostas div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.respostas dt {
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.respostas dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.filtro {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.linhaDoTempo li {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.2rem 0 0.6rem 0.9rem;
+  border-left: 2px solid var(--borda);
+}
+
+.linhaDoTempo time {
+  color: var(--suave);
+  font-size: 0.8rem;
+}
+
+.linhaDoTempo span {
+  overflow-wrap: anywhere;
+}
