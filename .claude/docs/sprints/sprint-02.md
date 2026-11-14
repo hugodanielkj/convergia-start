@@ -40,10 +40,22 @@
 
 ### Trilha A
 
+Todas as 4 histórias mergeadas na `hml` (2026-11-14), com CI verde:
+
+- S2-2 Modelo de formulário versionado e editável (#15) — tela `/config/formulario`.
+- S2-4 Upload com validação no servidor (#19) — storage local; S3 compatível entra no go-live.
+- S2-1 Página do cliente: primeiro acesso e consentimento LGPD (#21).
+- S2-3 Preenchimento com rascunho automático, envio e edição auditada (#23).
+
 ### Trilha B
 
 ## Retro
 
 ### Trilha A
+
+- **Funcionou:** testes das RN primeiro pegaram erros cedo; validação no `core` serve API e tela; verificação no navegador do fluxo completo do cliente.
+- **Atenção:** a RN-21 fala em etapa "fechada", que não existe como status; resolvi com `fechadaEm` e a rota `.../formulario/fechar` (decisão registrada). Falta o botão "Fechar" na tela da agência (S4-2).
+- **Pendências herdadas:** adaptador S3 do storage (go-live); página `/config` ainda não existe (o menu "Configurações" leva a 404; o formulário abre por `/config/formulario`).
+- **Lição:** ao mergear `hml`, rodar `pnpm install` e `db:generate` antes do `pnpm check` (as dependências e o cliente do banco mudam com o trabalho da outra trilha).
 
 ### Trilha B
