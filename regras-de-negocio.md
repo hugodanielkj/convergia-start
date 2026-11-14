@@ -150,7 +150,7 @@ Centralizar o início do relacionamento em **um único fluxo simples e automáti
 [7] Reunião e captação realizadas ──▶ [8] Entrega dos primeiros conteúdos ──▶ Onboarding concluído
 ```
 
-As etapas A–D podem ser feitas **em qualquer ordem e em momentos diferentes** (o cliente pode salvar e voltar), respeitando as dependências da seção 6.
+As etapas A–D são liberadas **em sequência** (RN-79): o cliente pode salvar e voltar em momentos diferentes, e pode abrir uma etapa ainda bloqueada para ver o que vem pela frente, mas só consegue agir nela depois de concluir as anteriores. _(Revisado em 2026-11-14 com o PO: substitui a ordem livre.)_
 
 ---
 
@@ -175,7 +175,7 @@ As etapas A–D podem ser feitas **em qualquer ordem e em momentos diferentes** 
 
 ### 6.3 Etapa A — Formulário de dados da empresa
 
-**RN-15** — A agência possui um **modelo de formulário padrão** editável. Alterações no modelo criam nova versão; respostas já enviadas permanecem vinculadas à versão com que foram respondidas.
+**RN-15** — A agência possui um **modelo de formulário padrão** editável. Alterações no modelo criam nova versão; respostas já enviadas permanecem vinculadas à versão com que foram respondidas. Ao cadastrar o cliente (ou depois, pelo detalhe do onboarding), a agência pode **personalizar as perguntas só para aquele cliente**: parte do modelo padrão vigente e adiciona, remove ou edita perguntas sem alterar o modelo padrão. Cada alteração da personalização gera uma nova versão própria daquele onboarding. A personalização **trava** quando o cliente começa a responder (primeiro rascunho salvo com alguma resposta; só abrir a página não conta). _(Revisado em 2026-11-14.)_
 **RN-16** — Campos suportados: texto curto, texto longo, número, seleção única, múltipla escolha, data, upload de arquivo (logo, manual de marca), URL.
 **RN-17** — Campos podem ser obrigatórios ou opcionais. A etapa só é considerada `concluida` quando todos os campos obrigatórios estiverem preenchidos e válidos.
 **RN-18** — O formulário permite **salvar rascunho automaticamente**; o cliente pode sair e voltar pelo mesmo link sem perder o que preencheu.
@@ -186,13 +186,20 @@ As etapas A–D podem ser feitas **em qualquer ordem e em momentos diferentes** 
 ### 6.4 Etapa B — Acessos aos perfis
 
 **RN-22** — O método **preferencial** de acesso é por **permissão/parceiro**, sem compartilhar senha (ex.: adicionar a agência como parceiro/administrador no Meta Business Manager). O sistema mostra instruções passo a passo e o identificador da agência a ser adicionado.
+
+> **Login e senha ficam fora do sistema (decisão do PO, 2026-11-14).** O acesso é sempre por parceiro/permissão (RN-22). Se a agência precisar de uma senha, ela é combinada por fora, como hoje. RN-23 a RN-26 não serão implementadas no MVP e o campo `permitirCredenciais` permanece desligado.
+
 **RN-23** — O método alternativo (credencial de acesso) só pode ser usado se o Admin habilitar essa opção na configuração. Se habilitado, o cliente deve ver aviso sobre os riscos e a alternativa recomendada.
 **RN-24** — Senhas **nunca** são armazenadas em texto puro. Se o método credencial estiver habilitado, os dados devem ser cifrados em repouso (ex.: AES-256 com chave gerenciada fora do banco), exibidos mascarados e visíveis apenas ao responsável e ao Admin.
 **RN-25** — Todo acesso de leitura a credencial gera registro em `AuditoriaLog`.
 **RN-26** — Credenciais devem poder ser **apagadas** pela agência e pelo cliente (solicitação) a qualquer momento, e são removidas automaticamente em até `retencao_credencial_dias` após o encerramento do contrato **[CONFIGURÁVEL]**.
-**RN-27** — A etapa tem status individual por plataforma (`pendente|concedido|invalido`). A etapa de acessos é `concluida` quando todas as plataformas marcadas como **obrigatórias** na configuração estiverem `concedido`.
+**RN-27** — A etapa tem status individual por plataforma (`pendente|concedido|invalido`). A agência **escolhe, por cliente, quais plataformas pedir** (no cadastro ou depois, pelo detalhe do onboarding). As plataformas vêm marcadas conforme a configuração da agência (`plataformasObrigatorias`), e qualquer uma pode ser desmarcada, inclusive Instagram e Facebook, mas é preciso escolher **pelo menos uma**. O cliente só vê as plataformas escolhidas. A etapa de acessos é `concluida` quando todas as plataformas escolhidas estiverem `concedido`. A escolha **trava** quando a etapa começa: o cliente clica "Já adicionei" em alguma plataforma, ou a agência marca alguma como concedida ou inválida. _(Revisado em 2026-11-14.)_
 **RN-28** — A agência pode marcar manualmente um acesso como `concedido` (por exemplo, após confirmar o convite no Business Manager) ou `invalido`, com motivo; no caso de `invalido`, o cliente é notificado para corrigir.
 **RN-29** — Nunca pedir ou aceitar credenciais por WhatsApp/e-mail nos templates de mensagem; o texto deve sempre direcionar ao link do sistema.
+
+### 6.4.1 Ordem das etapas
+
+**RN-79** — As etapas são liberadas em sequência: o **formulário enviado** libera Acessos; o cliente **ter avisado em todas as plataformas escolhidas** (ou a agência já ter marcado como concedidas) libera Reunião; a **reunião agendada** libera Captação (ver também RN-39). Uma etapa bloqueada pode ser aberta para ver as informações, mas mostra um alerta dizendo que as anteriores precisam ser concluídas, e o servidor recusa ações nela. Se algo anterior volta atrás (a agência reabre o formulário, ou marca um acesso como inválido), a etapa seguinte volta a travar **só se ainda não foi feita** (por exemplo, uma reunião já agendada continua valendo). Ao concluir uma etapa sem erro nem falta de informação, o cliente é levado automaticamente para a seguinte. _(Nova em 2026-11-14.)_
 
 ### 6.5 Etapa C — Primeira reunião
 
@@ -345,15 +352,15 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 
 **Agência (login)**
 
-1. Painel de onboardings (lista + filtros + indicadores).
-2. Novo cliente (cadastro rápido + envio de convite).
+1. Painel de onboardings (lista + filtros + indicadores; progresso com um ícone por etapa).
+2. Novo cliente (cadastro rápido + personalizar perguntas e acessos daquele cliente + envio de convite).
 3. Detalhe do onboarding (timeline, respostas, acessos, agenda, notificações, ações).
 4. Configurações: dados da agência, prazos, disponibilidade e bloqueios, modelo de formulário, templates de mensagem, integrações, métodos de acesso permitidos.
 
 **Cliente (link único, sem login)**
 
 1. Boas-vindas + consentimento.
-2. Página única com 4 etapas e barra de progresso: dados da empresa → acessos → reunião → captação.
+2. Página única com 4 etapas, barra de progresso e botões no topo para ir de uma etapa a outra sem rolar: dados da empresa → acessos → reunião → captação (liberação sequencial, RN-79).
 3. Confirmação final com resumo (datas e prazo de liberação).
 4. Tela de link expirado / onboarding concluído.
 
@@ -391,7 +398,7 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 - Cadastro de cliente + criação automática do onboarding (RN-04 a RN-09).
 - Link único com expiração e regeneração (RN-10 a RN-14).
 - Formulário configurável com rascunho (RN-15 a RN-21).
-- Etapa de acessos com método preferencial por permissão e instruções (RN-22, 27 a 29; credencial opcional conforme RN-23/24).
+- Etapa de acessos por permissão/parceiro, com instruções e plataformas escolhidas por cliente (RN-22, 27 a 29). Login e senha ficam fora do sistema (RN-23 a 26 não entram).
 - Agendamento de reunião e captação com disponibilidade, bloqueios, reagendamento e proteção contra overbooking (RN-30 a RN-42).
 - Cálculo e comunicação do prazo de liberação (RN-43 a RN-48).
 - Notificações por e-mail e WhatsApp, lembretes e alertas internos (RN-55 a RN-62).
