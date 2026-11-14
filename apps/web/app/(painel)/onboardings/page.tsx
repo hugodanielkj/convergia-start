@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { URL_API } from '../../_lib/url-api';
 import { formatarDataHora } from '../clientes/formatar';
 import { rotuloEtapa, rotuloStatusOnboarding } from '../clientes/mensagens';
+import { ProgressoEtapas } from './ProgressoEtapas';
 import estilos from './onboardings.module.css';
 import {
   ROTULO_ATENCAO,
@@ -151,15 +152,7 @@ export default async function PaginaOnboardings({
                   <td>{o.responsavel}</td>
                   <td>{rotuloStatusOnboarding(o.statusGeral)}</td>
                   <td>
-                    <strong>
-                      {o.progresso.concluidas} de {o.progresso.total}
-                    </strong>
-                    <small>
-                      {o.etapas
-                        .filter((e) => e.status !== 'concluida')
-                        .map((e) => rotuloEtapa(e.tipo))
-                        .join(', ') || 'Tudo pronto'}
-                    </small>
+                    <ProgressoEtapas etapas={o.etapas} />
                   </td>
                   <td>{o.proximoCompromisso ?? '—'}</td>
                   <td>

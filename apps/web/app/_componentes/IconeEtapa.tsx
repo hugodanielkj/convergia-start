@@ -1,6 +1,7 @@
+import type { EstadoIcone } from './estado-etapa';
 import estilos from './icone-etapa.module.css';
 
-export type EstadoIcone = 'concluida' | 'em_andamento' | 'pendente' | 'bloqueada';
+export type { EstadoIcone } from './estado-etapa';
 
 const DESCRICAO: Record<EstadoIcone, string> = {
   concluida: 'concluída',

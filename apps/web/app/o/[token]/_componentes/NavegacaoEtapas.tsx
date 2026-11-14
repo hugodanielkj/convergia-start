@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ContextoAvanco, type AvancoEtapa } from './avanco';
 import { BarraProgresso } from './BarraProgresso';
-import { descreverEtapa, IconeEtapa, type EstadoIcone } from '../../../_componentes/IconeEtapa';
+import { estadoDaEtapa } from '../../../_componentes/estado-etapa';
+import { descreverEtapa, IconeEtapa } from '../../../_componentes/IconeEtapa';
 import estilos from './navegacao.module.css';
 
 export type EtapaId = 'formulario' | 'acessos' | 'reuniao' | 'captacao';
@@ -31,13 +32,6 @@ const ALERTA: Record<EtapaId, string> = {
   reuniao: 'Avise em todas as redes que adicionou a agência para liberar esta etapa.',
   captacao: 'Agende a reunião para liberar esta etapa.',
 };
-
-function estadoDoIcone(e: EtapaNavegacao): EstadoIcone {
-  if (!e.liberada) return 'bloqueada';
-  if (e.status === 'concluida') return 'concluida';
-  if (e.status === 'em_andamento' || e.feita) return 'em_andamento';
-  return 'pendente';
-}
 
 /**
  * Casca da página do cliente (S6-4, RN-79): barra de progresso e um botão por etapa no topo; mostra
@@ -91,7 +85,7 @@ export function NavegacaoEtapas({
         <nav aria-label="Etapas">
           <ol className={estilos.botoes}>
             {etapas.map((e, i) => {
-              const estado = estadoDoIcone(e);
+              const estado = estadoDaEtapa(e);
               return (
                 <li key={e.etapa}>
                   <button
