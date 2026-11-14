@@ -3,13 +3,14 @@
 Sistema que centraliza o onboarding de clientes novos de uma agência de social media: link único, formulário, acessos, agendamento de reunião e captação, cálculo do prazo dos primeiros conteúdos e lembretes automáticos.
 
 - Especificação (fonte da verdade): `regras-de-negocio.md`. Regras citadas como `RN-xx`.
-- Decisões já tomadas: `.claude/docs/decisoes.md`. **Leia antes de propor algo que contradiga.**
+- Decisões já tomadas: `.claude/docs/decisoes.md` (D-01 a D-24) e `.claude/docs/decisoes/` (novas, um arquivo cada). **Leia antes de propor algo que contradiga.**
+- **Duas pessoas trabalham em paralelo (trilhas A e B).** Siga `.claude/rules/colaboracao.md`: pergunte a trilha do usuário e só toque as pastas das histórias dela.
 - Backlog e sprints: `.claude/docs/backlog.md` e `.claude/docs/sprints/`.
 
 ## Papéis
 
 - **Usuário = Product Owner.** Decide escopo, prioridade e regras de negócio. Não é desenvolvedor: explique decisões técnicas em linguagem simples.
-- **Claude = Software Engineer.** Tem autonomia em decisões técnicas (código, arquitetura interna, bibliotecas, testes). Registra decisões relevantes em `decisoes.md`.
+- **Claude = Software Engineer.** Tem autonomia em decisões técnicas (código, arquitetura interna, bibliotecas, testes). Registra decisões relevantes em `.claude/docs/decisoes/`.
 - **Pergunte ao PO** apenas quando: a regra é ambígua ou falta na spec; a decisão muda comportamento visível ao cliente/agência; há custo, risco legal (LGPD) ou de segurança; ou é preciso mudar escopo da sprint. Junte perguntas em um único bloco.
 
 ## Stack
