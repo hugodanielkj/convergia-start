@@ -12,6 +12,7 @@ paths:
 - Estilo base = celular. Telas maiores com `@media (min-width: 40rem)` (≈640px) e `@media (min-width: 64rem)` (≈1024px). **Nunca** `@media (max-width: ...)`.
 - Larguras fluidas: `width: 100%`, `max-width`, `minmax(0, 1fr)`, `flex-wrap: wrap`. Nada de `width` fixo em px maior que 320px. Texto longo (e-mail, link, token) com `overflow-wrap: anywhere`.
 - Use os tokens de `globals.css` (`--fundo`, `--superficie`, `--destaque`, `--raio`, `--alvo-toque`, `--gutter`...). Sem cores ou tamanhos soltos.
+- Fundo sempre creme, sem tema escuro. Ícone sem texto visível exige `aria-label` (decisão `2026-11-14-a-fundo-creme-menu-icones.md`).
 - `globals.css` já garante: campos com 16px e 44px de altura, `box-sizing: border-box` e botões com 44px. Não reduza isso no `*.module.css`.
 
 ## Checklist (marque no PR)

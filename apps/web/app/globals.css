@@ -4,7 +4,8 @@
    MOBILE-FIRST (decisão 2026-11-14-a-mobile-first, .claude/rules/ui-mobile.md): a base abaixo é
    a do celular de 360px. Telas maiores só com @media (min-width: ...), nunca max-width. */
 :root {
-  color-scheme: light dark;
+  /* Sempre claro, com fundo creme em todas as telas (decisão do PO, 2026-11-14): sem tema escuro. */
+  color-scheme: light;
 
   /* Marca (não mudam com o tema). */
   --cream: #f8ebdd;
@@ -31,7 +32,7 @@
   --seguro-esq: env(safe-area-inset-left, 0px);
   --seguro-dir: env(safe-area-inset-right, 0px);
 
-  /* Papéis (mudam com o tema). Telas usam estes nomes. */
+  /* Papéis. Telas usam estes nomes. */
   --fundo: var(--cream);
   --superficie: #fdf6ee;
   --texto: var(--ink);
@@ -46,26 +47,12 @@
   --erro: #b42318;
   --aviso: #8a4b00;
   --pendente: #8a9699;
+  /* Fundos de estado (item ativo, hover) sobre o creme. */
+  --realce-suave: rgba(232, 73, 30, 0.12);
+  --hover-suave: rgba(14, 43, 49, 0.06);
 
   font-family: var(--sans);
   line-height: 1.5;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fundo: var(--ink);
-    --superficie: #143a41;
-    --texto: var(--cream);
-    --suave: #c9cfc9;
-    --borda: rgba(248, 235, 221, 0.22);
-    --destaque: var(--peach);
-    --sobre-destaque: var(--ink);
-    --realce: var(--orange);
-    --sucesso: #7fd18f;
-    --erro: #ff9b8f;
-    --aviso: #ffc46b;
-    --pendente: #9fb0b3;
-  }
 }
 
 *,

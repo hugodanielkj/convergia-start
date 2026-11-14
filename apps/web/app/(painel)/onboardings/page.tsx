@@ -51,7 +51,33 @@ export default async function PaginaOnboardings({
       <h1>Onboardings</h1>
       {/* Mobile-first: os 7 filtros ocupavam a tela inteira do celular; ficam recolhidos. */}
       <details className={estilos.caixaFiltros} open={filtrando}>
-        <summary>{filtrando ? 'Filtros (ativos)' : 'Filtros'}</summary>
+        <summary className={estilos.botaoFiltros}>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className={estilos.iconeFiltros}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+          </svg>
+          {filtrando ? 'Filtros ativos' : 'Filtros'}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className={estilos.setaFiltros}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
         <form method="get" className={estilos.filtros} aria-label="Filtros">
           <label>
             Status
