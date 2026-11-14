@@ -323,14 +323,31 @@ describe('RN-35 e RN-36 o cliente reagenda o próprio horário', () => {
     ).toBe(1);
   });
 
-  it('o mesmo cliente reagendando duas vezes ao mesmo tempo conta uma só', async () => {
+  it('duas trocas do mesmo cliente ao mesmo tempo nunca perdem nem contam a mais', async () => {
     const { token, id } = await agendado(dia(30, 12));
     const respostas = await Promise.all([
       reagendar(token, id, dia(30, 13)),
       reagendar(token, id, dia(30, 14)),
     ]);
-    expect(respostas.filter((r) => r.statusCode === 200)).toHaveLength(1);
-    expect((await prisma.agendamento.findUniqueOrThrow({ where: { id } })).reagendamentos).toBe(1);
+    // Se a segunda chega depois da primeira terminar, são duas trocas válidas (o limite é 2); se
+    // chegam juntas, a conferência do contador deixa passar só uma. Nos dois casos, o contador
+    // tem de bater exatamente com as trocas aceitas e o horário final é o de uma delas.
+    const aceitas = respostas.filter((r) => r.statusCode === 200);
+    expect(aceitas.length).toBeGreaterThanOrEqual(1);
+    for (const recusada of respostas.filter((r) => r.statusCode !== 200)) {
+      expect(recusada.statusCode).toBe(422);
+    }
+    const gravado = await prisma.agendamento.findUniqueOrThrow({ where: { id } });
+    expect(gravado.reagendamentos).toBe(aceitas.length);
+    expect([dia(30, 13), dia(30, 14)]).toContain(gravado.inicio.toISOString());
+    expect(
+      await prisma.agendamento.count({
+        where: {
+          onboardingId: (await prisma.agendamento.findUniqueOrThrow({ where: { id } }))
+            .onboardingId,
+        },
+      }),
+    ).toBe(1);
   });
 });
 
