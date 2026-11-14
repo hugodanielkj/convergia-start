@@ -197,12 +197,10 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
         <button type="button" disabled title="Chega na Sprint 5, com o envio de mensagens">
           Reenviar lembrete
         </button>
-        <button type="button" disabled title="Chega com o prazo de liberação (trilha B)">
-          Ajustar prazo
-        </button>
       </div>
       <p className={estilos.dica}>
-        Reenviar convite e lembrete chegam na Sprint 5; ajustar prazo, com o prazo de liberação.
+        Reenviar convite e lembrete chegam na Sprint 5. O prazo se ajusta na seção “Prazo de
+        liberação”.
       </p>
 
       {painel && texto && (

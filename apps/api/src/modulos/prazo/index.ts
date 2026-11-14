@@ -1,10 +1,17 @@
+import { NaoEncontradoError } from '@convergia/core/base';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { exigirUsuario, prismaDaRequisicao, usuarioDaRequisicao } from '../../base/auth.js';
 import { escopoAgencia } from '../../base/escopo-agencia.js';
 import { localizarLink } from '../link/localizar-link.js';
+import { ajustarPrazo } from './ajustar.js';
+import { prazosDosOnboardings } from './consultar.js';
 import { recalcularPrazo, textoDaData } from './recalcular.js';
 
 const paramsPublicos = z.object({ token: z.string().min(1).max(100) });
+const paramsOnboarding = z.object({ id: z.string().min(1).max(64) });
+// Os limites só barram entradas absurdas; as regras do ajuste são do core (RN-47).
+const corpoAjuste = z.object({ data: z.string().max(10), justificativa: z.string().max(2000) });
 
 /**
  * Módulo prazo (S4-5): calcula a data de liberação dos primeiros conteúdos quando a captação é
@@ -49,6 +56,38 @@ export default function prazo(app: FastifyInstance): Promise<void> {
       select: { data: true },
     });
     return registro ? { definido: true, data: textoDaData(registro.data) } : { definido: false };
+  });
+
+  // Agência: prazo e indicador do onboarding (RN-48) e ajuste manual com justificativa (RN-47).
+  app.get('/onboardings/:id/prazo', { preHandler: exigirUsuario }, async (request) => {
+    const { id } = paramsOnboarding.parse(request.params);
+    const usuario = usuarioDaRequisicao(request);
+    const banco = prismaDaRequisicao(app, request);
+    const onboarding = await banco.onboarding.findUnique({
+      where: { id },
+      select: { id: true, statusGeral: true, responsavelId: true },
+    });
+    // Membro só vê os seus (RN-02); o que não pode ver responde como inexistente.
+    if (!onboarding || (usuario.papel !== 'admin' && onboarding.responsavelId !== usuario.id)) {
+      throw new NaoEncontradoError('Onboarding');
+    }
+    const prazo = (
+      await prazosDosOnboardings(banco, usuario.agenciaId, [onboarding], relogio.agora())
+    ).get(id);
+    return prazo ? { definido: true, ...prazo } : { definido: false };
+  });
+
+  app.post('/onboardings/:id/prazo/ajuste', { preHandler: exigirUsuario }, async (request) => {
+    const { id } = paramsOnboarding.parse(request.params);
+    const corpo = corpoAjuste.parse(request.body);
+    return ajustarPrazo(
+      prismaDaRequisicao(app, request),
+      eventos,
+      usuarioDaRequisicao(request),
+      id,
+      corpo,
+      relogio.agora(),
+    );
   });
 
   return Promise.resolve();

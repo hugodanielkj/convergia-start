@@ -68,7 +68,7 @@ A coluna **Pastas** diz o que a história pode criar ou alterar. Fora delas, só
 | A      | [x] S4-3 Auditoria consultável, exportação e exclusão de dados (RN-73, RN-77) | `modulos/lgpd`                                    |
 | B      | [x] S4-4 Captação dependente da reunião, com local (RN-38 a RN-42)            | `modulos/captacao`, `_etapas/captacao`            |
 | B      | [x] S4-5 Prazo em dias úteis e recálculo (RN-43 a RN-46)                      | `core/prazo`, `modulos/prazo`                     |
-| B      | [ ] S4-6 Ajuste manual do prazo e indicadores (RN-47, RN-48)                  | `modulos/prazo`                                   |
+| B      | [x] S4-6 Ajuste manual do prazo e indicadores (RN-47, RN-48)                  | `modulos/prazo`                                   |
 
 ## Sprint 5 — Envio de mensagens · Lembretes e alertas
 

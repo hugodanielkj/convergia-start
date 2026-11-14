@@ -5,7 +5,13 @@ import { URL_API } from '../../_lib/url-api';
 import { formatarDataHora } from '../clientes/formatar';
 import { rotuloEtapa, rotuloStatusOnboarding } from '../clientes/mensagens';
 import estilos from './onboardings.module.css';
-import { ROTULO_ATENCAO, consultaDosFiltros, type RespostaPainel } from './tipos';
+import {
+  ROTULO_ATENCAO,
+  ROTULO_PRAZO,
+  consultaDosFiltros,
+  formatarDataDoPrazo,
+  type RespostaPainel,
+} from './tipos';
 
 export const metadata: Metadata = { title: 'Onboardings · Convergia Start' };
 export const dynamic = 'force-dynamic';
@@ -98,6 +104,17 @@ export default async function PaginaOnboardings({
             ))}
           </select>
         </label>
+        <label>
+          Prazo
+          <select name="prazo" defaultValue={filtros.prazo ?? ''}>
+            <option value="">Todos</option>
+            {Object.entries(ROTULO_PRAZO).map(([valor, rotulo]) => (
+              <option key={valor} value={valor}>
+                {rotulo}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className={estilos.botoes}>
           <button type="submit">Filtrar</button>
           {filtrando && <Link href="/onboardings">Limpar</Link>}
@@ -145,7 +162,20 @@ export default async function PaginaOnboardings({
                     </small>
                   </td>
                   <td>{o.proximoCompromisso ?? '—'}</td>
-                  <td>{o.prazoLiberacao ?? '—'}</td>
+                  <td>
+                    {o.prazoLiberacao === null ? (
+                      '—'
+                    ) : (
+                      <>
+                        {formatarDataDoPrazo(o.prazoLiberacao)}
+                        {o.indicadorPrazo && (
+                          <span className={estilos.prazo} data-indicador={o.indicadorPrazo}>
+                            {ROTULO_PRAZO[o.indicadorPrazo] ?? o.indicadorPrazo}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </td>
                   <td>
                     {o.atencao.length === 0
                       ? '—'
