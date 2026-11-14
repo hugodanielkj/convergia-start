@@ -42,3 +42,5 @@ export function indicadoresAtencao(e: EntradaAtencao): IndicadorAtencao[] {
   }
   return resultado;
 }
+
+export * from './reenvio.js';

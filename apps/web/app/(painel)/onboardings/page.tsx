@@ -128,7 +128,7 @@ export default async function PaginaOnboardings({
               {onboardings.map((o) => (
                 <tr key={o.id}>
                   <td>
-                    <Link href={`/onboardings/${o.id}/acessos`}>{o.cliente}</Link>
+                    <Link href={`/onboardings/${o.id}`}>{o.cliente}</Link>
                     <small>Criado em {formatarDataHora(o.criadoEm)}</small>
                   </td>
                   <td>{o.responsavel}</td>
