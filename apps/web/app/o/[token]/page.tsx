@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import type { ComponentType } from 'react';
 import { URL_API } from '../../_lib/url-api';
-import { BarraProgresso } from './_componentes/BarraProgresso';
+import { NavegacaoEtapas, type EtapaId, type EtapaNavegacao } from './_componentes/NavegacaoEtapas';
 import { Consentimento } from './_consentimento/Consentimento';
 import { EtapaAcessos } from './_etapas/acessos/EtapaAcessos';
 import { EtapaCaptacao } from './_etapas/captacao/EtapaCaptacao';
@@ -14,20 +13,16 @@ export const metadata: Metadata = { title: 'Seu onboarding' };
 
 interface Visao {
   empresa: string;
-  etapas: { tipo: string; status: string }[];
 }
 interface Termo {
   termo: { versao: string; texto: string };
   aceitoEm: string | null;
 }
 
-/** Página do cliente (link único, sem login, RN-01). Cada etapa vive em _etapas/<etapa>/. */
-const ETAPAS: { id: string; Componente: ComponentType<{ token: string }> }[] = [
-  { id: 'formulario', Componente: EtapaFormulario },
-  { id: 'acessos', Componente: EtapaAcessos },
-  { id: 'reuniao', Componente: EtapaReuniao },
-  { id: 'captacao', Componente: EtapaCaptacao },
-];
+interface Etapas {
+  etapas: EtapaNavegacao[];
+  atual: EtapaId;
+}
 
 async function chamar(token: string, caminho: string, metodo: 'GET' | 'POST' = 'GET') {
   const resposta = await fetch(
@@ -40,6 +35,10 @@ async function chamar(token: string, caminho: string, metodo: 'GET' | 'POST' = '
   return resposta;
 }
 
+/**
+ * Página do cliente (link único, sem login, RN-01). Cada etapa vive em _etapas/<etapa>/; a casca
+ * cuida da ordem e da navegação (RN-79).
+ */
 export default async function PaginaOnboarding({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
@@ -52,21 +51,22 @@ export default async function PaginaOnboarding({ params }: { params: Promise<{ t
     return <Consentimento token={token} empresa={onboarding.empresa} termo={consentimento.termo} />;
   }
 
-  const concluidas = onboarding.etapas.filter((e) => e.status === 'concluida').length;
+  // Liberação sequencial (RN-79): o que está liberado e onde a página abre.
+  const { etapas, atual } = (await (await chamar(token, '/etapas')).json()) as Etapas;
   return (
     <main className={estilos.pagina}>
-      <h1>Bem-vindo(a), {onboarding.empresa}!</h1>
-      <p className={estilos.subtitulo}>
-        Em poucos minutos você deixa tudo pronto para começarmos a produzir o seu conteúdo.
-      </p>
-      <BarraProgresso concluidas={concluidas} total={ETAPAS.length} />
-      <ol className={estilos.etapas}>
-        {ETAPAS.map(({ id, Componente }) => (
-          <li key={id}>
-            <Componente token={token} />
-          </li>
-        ))}
-      </ol>
+      <h1>Olá, {onboarding.empresa}!</h1>
+      <p className={estilos.subtitulo}>4 passos para começarmos o seu conteúdo.</p>
+      <NavegacaoEtapas
+        etapas={etapas}
+        atual={atual}
+        paineis={{
+          formulario: <EtapaFormulario token={token} />,
+          acessos: <EtapaAcessos token={token} />,
+          reuniao: <EtapaReuniao token={token} />,
+          captacao: <EtapaCaptacao token={token} />,
+        }}
+      />
     </main>
   );
 }

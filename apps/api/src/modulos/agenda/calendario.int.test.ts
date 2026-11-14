@@ -14,6 +14,7 @@ import {
   usuarioTeste,
 } from '../../testes/dependencias.js';
 import { processarPendentes, sincronizarAgendamento } from './sincronizar-calendario.js';
+import { liberarAteReuniao } from '../../testes/liberacao.js';
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const apps: FastifyInstance[] = [];
@@ -83,6 +84,7 @@ async function agendado(inicio: string, extra: Record<string, unknown> = {}) {
       payload: { nomeEmpresa: `Empresa ${String(contador)}`, nomeContato: 'Contato', ...extra },
     })
   ).json<{ link: { token: string } }>();
+  await liberarAteReuniao(prisma, cliente.link.token);
   const reserva = await appPublico.inject({
     method: 'POST',
     url: `/publico/onboardings/${cliente.link.token}/agendamentos`,
@@ -333,6 +335,7 @@ describe('worker ligado ao app', () => {
         payload: { nomeEmpresa: `Empresa ${String(contador)}`, nomeContato: 'C', ...email() },
       })
     ).json<{ link: { token: string } }>();
+    await liberarAteReuniao(prisma, cliente.link.token);
     const reserva = await app.inject({
       method: 'POST',
       url: `/publico/onboardings/${cliente.link.token}/agendamentos`,

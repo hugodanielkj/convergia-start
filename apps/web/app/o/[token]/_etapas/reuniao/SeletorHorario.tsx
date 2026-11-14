@@ -10,6 +10,7 @@ import {
 } from './api';
 import { formatarDia, fusoDoNavegador, fusosDisponiveis } from './formatar';
 import estilos from './reuniao.module.css';
+import { useAvancoEtapa } from '../../_componentes/avanco';
 
 export type ModoSeletor =
   { readonly tipo: 'novo' } | { readonly tipo: 'reagendar'; readonly agendamentoId: string };
@@ -48,6 +49,7 @@ export function SeletorHorario({
   aoConcluir,
 }: Props) {
   const roteador = useRouter();
+  const { avancar } = useAvancoEtapa();
   const api = useMemo(
     () => criarApiReuniao({ baseUrl: '/api', fetcher: (...args) => fetch(...args) }),
     [],
@@ -107,7 +109,9 @@ export function SeletorHorario({
       case 'ok':
       case 'ja_agendado':
         aoConcluir?.();
-        roteador.refresh();
+        // RN-79 (contrato da casca, trilha A): agendou → segue para a próxima etapa.
+        if (modo.tipo === 'novo') avancar();
+        else roteador.refresh();
         return;
       case 'indisponivel':
         setLista(resultado.lista);

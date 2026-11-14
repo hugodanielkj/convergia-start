@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import estilos from './acessos.module.css';
 import type { AcessoVisao, EstadoAcessos } from './tipos';
+import { useAvancoEtapa } from '../../_componentes/avanco';
 
 const ROTULO_STATUS: Record<AcessoVisao['status'], string> = {
   pendente: 'Pendente',
@@ -18,6 +19,7 @@ function rotulo(a: AcessoVisao): string {
 
 export function AcessosCliente({ token, inicial }: { token: string; inicial: EstadoAcessos }) {
   const [estado, setEstado] = useState(inicial);
+  const { avancar } = useAvancoEtapa();
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -33,7 +35,13 @@ export function AcessosCliente({ token, inicial }: { token: string; inicial: Est
       setErro('Não foi possível registrar agora. Tente novamente.');
       return;
     }
-    setEstado((await r.json()) as EstadoAcessos);
+    const novo = (await r.json()) as EstadoAcessos;
+    setEstado(novo);
+    // RN-79: avisou em todas as plataformas (ou já concedidas) → segue para a Reunião.
+    const todas = novo.plataformas.every(
+      (p) => p.status === 'concedido' || (p.informado && p.status === 'pendente'),
+    );
+    if (todas) avancar();
   }
 
   return (

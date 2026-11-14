@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import estilos from './formulario.module.css';
 import { MENSAGEM_ARQUIVO, mensagensPorCampo } from './mensagens';
 import type { Campo, ErroResposta, EstadoFormulario, Respostas, ValorResposta } from './tipos';
+import { useAvancoEtapa } from '../../_componentes/avanco';
 
 const ESPERA_AUTOSAVE_MS = 1000;
 
@@ -25,6 +26,7 @@ export function FormularioCliente({
   const [salvando, setSalvando] = useState(false);
   const [nomesArquivo, setNomesArquivo] = useState<Record<string, string>>({});
   const router = useRouter();
+  const { avancar } = useAvancoEtapa();
   const sujo = useRef(false);
   const editavel = inicial.editavel && situacao !== 'fechado';
 
@@ -87,8 +89,11 @@ export function FormularioCliente({
     if (r.ok) {
       sujo.current = false;
       setErros({});
+      const primeiroEnvio = situacao === 'rascunho';
       setSituacao('enviado');
-      router.refresh(); // atualiza o selo da etapa e a barra de progresso
+      // RN-79: no primeiro envio o cliente segue para Acessos; editando depois, só atualiza.
+      if (primeiroEnvio) avancar();
+      else router.refresh(); // atualiza o selo da etapa e a barra de progresso
       setAviso({ tom: 'ok', texto: 'Respostas enviadas. Você pode editar até a nossa reunião.' });
       return;
     }

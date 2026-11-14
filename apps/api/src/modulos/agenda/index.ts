@@ -8,6 +8,8 @@ import {
   prismaDaRequisicao,
   usuarioDaRequisicao,
 } from '../../base/auth.js';
+import { escopoAgencia } from '../../base/escopo-agencia.js';
+import { exigirEtapaLiberada } from '../liberacao/liberacao.js';
 import { localizarLink } from '../link/localizar-link.js';
 import { registrarRotasAgendamento } from './rotas-agendamento.js';
 import { ligarSincronizacaoDoCalendario } from './worker-calendario.js';
@@ -186,6 +188,12 @@ export default function agenda(app: FastifyInstance): Promise<void> {
       return reply.status(410).send({ erro: 'LINK_EXPIRADO', mensagem: 'Este link expirou' });
     }
 
+    // RN-79 (trilha A): reunião só depois dos acessos; captação só depois da reunião.
+    await exigirEtapaLiberada(
+      escopoAgencia(app.deps.prisma, link.link.agenciaId),
+      link.link.onboardingId,
+      corpo.tipo,
+    );
     const resultado = await reservarSlot(
       app.deps.prisma,
       app.deps.eventos,

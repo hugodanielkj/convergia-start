@@ -1,0 +1,40 @@
+.icone {
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  border: 2px solid currentColor;
+}
+
+.icone svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icone[data-estado='concluida'] {
+  background: var(--sucesso, #2b7a3d);
+  border-color: var(--sucesso, #2b7a3d);
+  color: var(--fundo, #fff);
+}
+
+.icone[data-estado='em_andamento'] {
+  /* Laranja da marca em versão escura no tema claro: número com contraste AA (5,2:1). */
+  background: var(--destaque, #b33513);
+  border-color: var(--realce, #e8491e);
+  color: var(--sobre-destaque, #f8ebdd);
+}
+
+.icone[data-estado='pendente'] {
+  color: var(--pendente, #8a9699);
+  background: transparent;
+}
+
+.icone[data-estado='bloqueada'] {
+  color: var(--pendente, #8a9699);
+  border-style: dashed;
+  background: transparent;
+}

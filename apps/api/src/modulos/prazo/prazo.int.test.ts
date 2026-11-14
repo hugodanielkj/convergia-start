@@ -14,6 +14,7 @@ import {
 import { escopoAgencia } from '../../base/escopo-agencia.js';
 import { prazosDosOnboardings } from './consultar.js';
 import { recalcularPrazo } from './recalcular.js';
+import { liberarAteReuniao } from '../../testes/liberacao.js';
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const apps: FastifyInstance[] = [];
@@ -120,6 +121,7 @@ async function clienteComReuniao(c: Cenario, reuniao = REUNIAO) {
   });
   const corpo = r.json<{ cliente: { onboarding: { id: string } }; link: { token: string } }>();
   const token = corpo.link.token;
+  await liberarAteReuniao(prisma, token);
   expect((await reservar(c, token, 'reuniao', reuniao)).statusCode).toBe(201);
   return { token, onboardingId: corpo.cliente.onboarding.id };
 }
