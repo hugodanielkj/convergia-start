@@ -1,7 +1,7 @@
 .pagina {
   max-width: 40rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: calc(1.5rem + var(--seguro-topo)) var(--gutter) 3rem;
 }
 
 .pagina > h1 {

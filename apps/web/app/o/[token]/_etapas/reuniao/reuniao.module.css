@@ -7,6 +7,7 @@
 .fuso {
   display: grid;
   gap: 0.25rem;
+  width: 100%;
   max-width: 24rem;
 }
 
@@ -41,14 +42,15 @@
   text-transform: uppercase;
 }
 
+/* Mobile-first: grade de horários com alvos largos (≥ 44px) para o polegar. */
 .horarios {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
   gap: 0.5rem;
 }
 
 .horario {
-  min-width: 4.5rem;
+  min-height: var(--alvo-toque);
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--destaque);
   border-radius: var(--raio);
@@ -73,6 +75,8 @@
 
 .botao,
 .botaoSecundario {
+  flex: 1 1 100%;
+  min-height: var(--alvo-toque);
   padding: 0.625rem 1rem;
   border: 1px solid var(--destaque);
   border-radius: var(--raio);
@@ -115,4 +119,21 @@
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--aviso);
   border-radius: var(--raio);
+}
+
+/* No seletor, a ação fica presa embaixo da tela enquanto o cliente rola os horários. */
+.seletor > .acoes {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: 0.75rem 0 calc(0.75rem + var(--seguro-base));
+  background: var(--superficie);
+  box-shadow: 0 -1px 0 var(--borda);
+}
+
+@media (min-width: 40rem) {
+  .botao,
+  .botaoSecundario {
+    flex: none;
+  }
 }
