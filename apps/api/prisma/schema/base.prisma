@@ -35,14 +35,16 @@ model Agencia {
   criadoEm    DateTime @default(now())
 
   // Relações reversas (ordem alfabética)
-  auditoria        AuditoriaLog[]
-  clientes         Cliente[]
-  config           ConfigAgencia?
-  etapasOnboarding EtapaOnboarding[]
-  linksOnboarding  LinkOnboarding[]
-  onboardings      Onboarding[]
-  sessoes          Sessao[]
-  usuarios         Usuario[]
+  auditoria         AuditoriaLog[]
+  clientes          Cliente[]
+  config            ConfigAgencia?
+  etapasOnboarding  EtapaOnboarding[]
+  linksOnboarding   LinkOnboarding[]
+  modeloFormulario  ModeloFormulario?
+  onboardings       Onboarding[]
+  sessoes           Sessao[]
+  usuarios          Usuario[]
+  versoesFormulario VersaoFormulario[]
 
   @@map("agencias")
 }
