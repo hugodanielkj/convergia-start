@@ -2,6 +2,8 @@
 
 Sistema que centraliza o onboarding de clientes novos de uma agência de social media: link único, formulário, acessos, agendamento de reunião e captação, cálculo do prazo dos primeiros conteúdos e lembretes automáticos.
 
+> **📱 MOBILE-FIRST É OBRIGATÓRIO.** Toda tela de `apps/web` é feita e testada primeiro a **360px**: sem rolagem horizontal, toque ≥ 44px, campos ≥ 16px, CSS com `min-width` (nunca `max-width`). Regras: `.claude/rules/ui-mobile.md`. A CI reprova quem quebrar.
+
 - Especificação (fonte da verdade): `regras-de-negocio.md`. Regras citadas como `RN-xx`.
 - Decisões já tomadas: `.claude/docs/decisoes.md` (D-01 a D-24) e `.claude/docs/decisoes/` (novas, um arquivo cada). **Leia antes de propor algo que contradiga.**
 - **Duas pessoas trabalham em paralelo (trilhas A e B).** Siga `.claude/rules/colaboracao.md`: pergunte a trilha do usuário e só toque as pastas das histórias dela.
@@ -15,7 +17,7 @@ Sistema que centraliza o onboarding de clientes novos de uma agência de social 
 
 ## Stack
 
-Monorepo pnpm · Node 24 · TypeScript estrito · `packages/core` (regras puras) · `apps/api` (Fastify) · `apps/web` (Next.js, mobile-first) · PostgreSQL + Prisma · Redis + BullMQ · Vitest · Playwright · Docker.
+Monorepo pnpm · Node 24 · TypeScript estrito · `packages/core` (regras puras) · `apps/api` (Fastify) · `apps/web` (Next.js, **mobile-first obrigatório**) · PostgreSQL + Prisma · Redis + BullMQ · Vitest · Playwright · Docker.
 
 ## Comandos
 
@@ -24,6 +26,7 @@ pnpm install            # dependências
 pnpm infra:up           # Postgres (porta 55432) e Redis via docker compose
 pnpm check              # format:check + lint + typecheck + testes unitários
 pnpm test:int           # testes de integração (precisa do infra:up)
+pnpm --filter @convergia/web test:e2e     # telas no celular (360px), precisa do infra:up
 pnpm --filter @convergia/api db:migrate   # cria migração (só na hora do PR)
 pnpm --filter @convergia/api db:seed      # agência + admin (SEED_ADMIN_EMAIL)
 pnpm --filter @convergia/api dev
@@ -35,7 +38,7 @@ Branches: `feat/*` → `hml` (homologação) → `main` (produção). Detalhes e
 
 1. Sprint nova: skill `planejar-sprint`. Cada história: skill `implementar-historia`.
 2. Branch `feat/<id>-<slug>` a partir de `hml`. Testes primeiro para regras (RN), depois código.
-3. `pnpm check` verde antes de commitar. Commits em Conventional Commits, em português.
+3. `pnpm check` verde antes de commitar. Mexeu em `apps/web`? Veja a tela a 360px e rode `test:e2e`. Commits em Conventional Commits, em português.
 4. PR para `hml`; com CI verde, **Claude faz o merge**.
 5. Fim da sprint: skill `fechar-sprint` e demonstração local ao PO. **Merge na `main` só pelo PO**, e só a partir do go-live (D-20).
 
