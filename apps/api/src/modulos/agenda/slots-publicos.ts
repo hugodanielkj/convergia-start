@@ -77,6 +77,8 @@ export async function slotsLivres(
   de: string,
   ate: string,
   agora: Date,
+  /** Agendamento que está sendo remarcado: o horário dele não conta como ocupado. */
+  ignorarAgendamentoId?: string,
 ) {
   const { prisma, fusoAgencia } = contexto;
   const [janelas, bloqueiosDb] = await Promise.all([
@@ -98,6 +100,7 @@ export async function slotsLivres(
       status: { in: ['agendado', 'reagendado'] },
       inicio: { lt: fimDoPeriodo },
       fim: { gt: inicioDoPeriodo },
+      ...(ignorarAgendamentoId === undefined ? {} : { id: { not: ignorarAgendamentoId } }),
     },
     select: { inicio: true, fim: true },
   });
@@ -125,6 +128,7 @@ export async function listarSlots(
   contexto: ContextoDaAgenda,
   consulta: ConsultaSlots,
   agora: Date,
+  ignorarAgendamentoId?: string,
 ): Promise<ListaDeSlots> {
   const fuso = consulta.fuso ?? contexto.fusoAgencia;
   const hoje = dataLocal(agora, contexto.fusoAgencia);
@@ -133,7 +137,7 @@ export async function listarSlots(
     consulta.ate ??
     textoDaData(new Date(Date.parse(`${de}T00:00:00Z`) + (DIAS_PADRAO_DA_LISTA - 1) * MS_DIA));
 
-  const slots = await slotsLivres(contexto, consulta.tipo, de, ate, agora);
+  const slots = await slotsLivres(contexto, consulta.tipo, de, ate, agora, ignorarAgendamentoId);
   return {
     fuso,
     dias: agruparPorDia(slots, fuso).map((dia) => ({

@@ -9,6 +9,8 @@ import {
   usuarioDaRequisicao,
 } from '../../base/auth.js';
 import { localizarLink } from '../link/localizar-link.js';
+import { registrarRotasAgendamento } from './rotas-agendamento.js';
+import { ligarSincronizacaoDoCalendario } from './worker-calendario.js';
 import { reservarSlot } from './reservar.js';
 import { carregarContexto, listarSlots } from './slots-publicos.js';
 import { criarBloqueio, listarBloqueios, removerBloqueio } from './bloqueios.js';
@@ -195,6 +197,9 @@ export default function agenda(app: FastifyInstance): Promise<void> {
         });
     }
   });
+
+  registrarRotasAgendamento(app);
+  ligarSincronizacaoDoCalendario(app);
 
   return Promise.resolve();
 }
