@@ -46,16 +46,18 @@ export function AcessosCliente({ token, inicial }: { token: string; inicial: Est
 
   return (
     <div className={estilos.lista}>
-      <p>
-        Você não precisa compartilhar nenhuma senha. Basta adicionar a agência como parceira em cada
-        rede, seguindo o passo a passo. <strong>Nunca envie senhas por mensagem.</strong>
+      <p className={estilos.intro}>
+        Adicione a agência como parceira em cada rede. <strong>Sem senhas.</strong>
       </p>
       {estado.plataformas.map((a) => (
-        <details key={a.plataforma} className={estilos.item} open={a.status !== 'concedido'}>
+        <details
+          key={a.plataforma}
+          className={estilos.item}
+          // Aberto só o que ainda pede ação do cliente; o resto fica recolhido (menos texto).
+          open={a.status === 'invalido' || (a.status === 'pendente' && !a.informado)}
+        >
           <summary className={estilos.resumo}>
-            <span className={estilos.nome}>
-              {a.nome} {a.obrigatoria ? '' : <small>(opcional)</small>}
-            </span>
+            <span className={estilos.nome}>{a.nome}</span>
             <span className={estilos.selo} data-status={a.status}>
               {rotulo(a)}
             </span>

@@ -26,7 +26,7 @@
   min-height: 3.5rem;
   padding: 0.4rem 0.25rem;
   border: 0;
-  border-radius: var(--raio, 14px);
+  border-radius: var(--raio);
   background: transparent;
   color: var(--suave);
   font: inherit;
@@ -52,7 +52,7 @@
 .alerta {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
-  border-radius: var(--raio, 14px);
+  border-radius: var(--raio);
   background: color-mix(in srgb, var(--aviso, #8a4b00) 12%, transparent);
   color: var(--texto);
 }

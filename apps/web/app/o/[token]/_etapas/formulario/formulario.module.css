@@ -26,7 +26,7 @@
   box-sizing: border-box;
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: var(--texto);
   font: inherit;
@@ -45,7 +45,7 @@
 
 .erro {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
   font-size: 0.9rem;
 }
 
@@ -53,13 +53,13 @@
   margin: 0;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
 }
 
 .botao {
   padding: 0.75rem 1rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--destaque);
   color: var(--sobre-destaque);
   font: inherit;

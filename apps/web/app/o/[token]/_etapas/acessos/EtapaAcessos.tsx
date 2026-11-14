@@ -13,7 +13,7 @@ export async function EtapaAcessos({ token }: { token: string }) {
   const estado = (await resposta.json()) as EstadoAcessos;
 
   return (
-    <CartaoEtapa titulo="Acesso às redes sociais" status={estado.etapa}>
+    <CartaoEtapa titulo="Acessos" status={estado.etapa}>
       <AcessosCliente token={token} inicial={estado} />
     </CartaoEtapa>
   );

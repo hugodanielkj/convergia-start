@@ -6,7 +6,7 @@
 
 .item {
   border: 1px solid var(--borda);
-  border-radius: 0.6rem;
+  border-radius: var(--raio);
   padding: 0.75rem 0.9rem;
 }
 
@@ -31,13 +31,13 @@
 }
 
 .selo[data-status='concedido'] {
-  border-color: #2f9e44;
-  color: #2f9e44;
+  border-color: var(--sucesso);
+  color: var(--sucesso);
 }
 
 .selo[data-status='invalido'] {
-  border-color: #c92a2a;
-  color: #c92a2a;
+  border-color: var(--erro);
+  color: var(--erro);
 }
 
 .passos {
@@ -53,7 +53,7 @@
 
 .identificador code {
   padding: 0.15rem 0.4rem;
-  border-radius: 0.3rem;
+  border-radius: var(--raio);
   background: var(--borda);
   user-select: all;
 }
@@ -61,20 +61,20 @@
 .alerta {
   margin: 0.75rem 0 0;
   padding: 0.6rem 0.8rem;
-  border: 1px solid #c92a2a;
-  border-radius: 0.5rem;
-  color: #c92a2a;
+  border: 1px solid var(--erro);
+  border-radius: var(--raio);
+  color: var(--erro);
 }
 
 .erro {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
 }
 
 .botao {
   padding: 0.7rem 1rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--destaque);
   color: var(--sobre-destaque);
   font: inherit;
@@ -85,4 +85,9 @@
 .botao:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.intro {
+  margin: 0;
+  color: var(--suave);
 }

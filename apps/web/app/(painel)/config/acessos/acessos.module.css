@@ -13,7 +13,7 @@
 .campo input {
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: var(--texto);
   font: inherit;
@@ -24,7 +24,7 @@
   justify-self: start;
   padding: 0.7rem 1.2rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--destaque);
   color: var(--sobre-destaque);
   font: inherit;
@@ -34,10 +34,10 @@
 
 .ok {
   margin: 0;
-  color: #2f9e44;
+  color: var(--sucesso);
 }
 
 .erro {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
 }

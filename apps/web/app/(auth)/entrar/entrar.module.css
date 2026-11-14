@@ -20,15 +20,15 @@
 .erro {
   margin: 0;
   padding: 0.75rem 1rem;
-  border: 1px solid #d9480f;
-  border-radius: 0.5rem;
-  color: #d9480f;
+  border: 1px solid var(--realce);
+  border-radius: var(--raio);
+  color: var(--realce);
 }
 
 .botao {
   display: inline-block;
   padding: 0.75rem 1.25rem;
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--destaque);
   color: var(--sobre-destaque);
   font-weight: 600;

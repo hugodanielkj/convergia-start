@@ -5,7 +5,7 @@
 .ok,
 .erro {
   padding: 0.6rem 0.8rem;
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   border: 1px solid var(--borda);
 }
 
@@ -14,8 +14,8 @@
 }
 
 .erro {
-  border-color: #c92a2a;
-  color: #c92a2a;
+  border-color: var(--erro);
+  color: var(--erro);
 }
 
 .lista {
@@ -32,7 +32,7 @@
   gap: 0.5rem;
   padding: 0.9rem;
   border: 1px solid var(--borda);
-  border-radius: 0.75rem;
+  border-radius: var(--raio-grande);
   background: var(--superficie);
 }
 
@@ -63,7 +63,7 @@
 .linha textarea {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--borda);
-  border-radius: 0.4rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: var(--texto);
   font: inherit;
@@ -87,7 +87,7 @@
 .acoes button {
   padding: 0.4rem 0.85rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: transparent;
   color: var(--texto);
   font: inherit;

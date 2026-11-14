@@ -17,7 +17,7 @@
 .cartao {
   padding: 1rem;
   border: 1px solid var(--borda);
-  border-radius: 0.5rem;
+  border-radius: var(--raio);
   background: var(--superficie);
 }
 
@@ -94,27 +94,27 @@
   width: 100%;
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--borda);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   background: var(--fundo);
   color: inherit;
   font: inherit;
 }
 
 .campo input[aria-invalid='true'] {
-  border-color: #c92a2a;
+  border-color: var(--erro);
 }
 
 .erroCampo,
 .erroGeral {
   margin: 0;
-  color: #c92a2a;
+  color: var(--erro);
   font-size: 0.875rem;
 }
 
 .alertaDuplicidade {
   padding: 0.75rem 1rem;
-  border: 1px solid #e67700;
-  border-radius: 0.375rem;
+  border: 1px solid var(--aviso);
+  border-radius: var(--raio);
   background: var(--superficie);
 }
 
@@ -134,7 +134,7 @@
   display: inline-block;
   padding: 0.625rem 1rem;
   border: 1px solid var(--destaque);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   font: inherit;
   font-weight: 600;
   text-align: center;
@@ -183,7 +183,7 @@
 .linhaLink button {
   padding: 0.625rem 1rem;
   border: 1px solid var(--destaque);
-  border-radius: 0.375rem;
+  border-radius: var(--raio);
   background: transparent;
   color: var(--destaque);
   font: inherit;
