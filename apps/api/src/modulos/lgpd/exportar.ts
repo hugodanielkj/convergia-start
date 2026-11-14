@@ -85,6 +85,7 @@ export async function exportarDadosDoCliente(
         fechadaEm: true,
         reabertaEm: true,
         versao: { select: { numero: true } },
+        versaoCliente: { select: { numero: true, campos: true } },
       },
     }),
     prisma.acessoPlataforma.findMany({

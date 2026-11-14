@@ -10,6 +10,7 @@ import {
 } from '../../base/auth.js';
 import { comLinkValido } from '../consentimento/consentimento.js';
 import { campoDeEntrada, obterModelo, publicarVersao, salvarRascunho } from './modelo.js';
+import { lerCamposPadrao, lerPersonalizacao, salvarPersonalizacao } from './personalizacao.js';
 import {
   enviarFormularioDoCliente,
   fecharFormulario,
@@ -93,6 +94,53 @@ export default function formulario(app: FastifyInstance): Promise<void> {
         return reply.status(201).send({ numero: resultado.numero });
     }
   });
+
+  // Perguntas só deste cliente (S6-2, RN-15). Qualquer usuário cadastra cliente, então o ponto de
+  // partida (campos ativos do padrão) não exige admin; editar exige admin ou responsável (RN-02).
+  app.get('/formulario/padrao', { preHandler: exigirUsuario }, (request) =>
+    lerCamposPadrao(prismaDaRequisicao(app, request), usuarioDaRequisicao(request).agenciaId),
+  );
+
+  app.get(
+    '/onboardings/:onboardingId/formulario/personalizacao',
+    { preHandler: exigirUsuario },
+    (request) => {
+      const { onboardingId } = parametrosOnboarding.parse(request.params);
+      return lerPersonalizacao(
+        prismaDaRequisicao(app, request),
+        usuarioDaRequisicao(request),
+        onboardingId,
+      );
+    },
+  );
+
+  app.put(
+    '/onboardings/:onboardingId/formulario/personalizacao',
+    { preHandler: exigirUsuario },
+    async (request, reply) => {
+      const { onboardingId } = parametrosOnboarding.parse(request.params);
+      const { campos } = corpoRascunho.parse(request.body);
+      const r = await salvarPersonalizacao(
+        prismaDaRequisicao(app, request),
+        usuarioDaRequisicao(request),
+        onboardingId,
+        campos,
+      );
+      switch (r.tipo) {
+        case 'travada':
+          return reply.status(409).send({
+            erro: 'PERSONALIZACAO_TRAVADA',
+            mensagem: 'O cliente já começou a responder; as perguntas não podem mais mudar (RN-15)',
+          });
+        case 'invalida':
+          return reply.status(422).send({ erro: 'MODELO_INVALIDO', erros: r.erros });
+        case 'salva':
+          return reply.status(201).send(r.estado);
+        case 'sem_alteracoes':
+          return reply.status(200).send(r.estado);
+      }
+    },
+  );
 
   // Rotas públicas (S2-3): o token da URL é a única credencial (RN-01).
   app.addHook('onSend', (request, reply, payload, feito) => {

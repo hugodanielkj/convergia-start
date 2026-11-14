@@ -22,7 +22,13 @@ export type EstadoCadastro =
       readonly avisos: readonly string[];
     }
   | { readonly tipo: 'falha'; readonly valores: Valores; readonly mensagem: string }
-  | { readonly tipo: 'criado'; readonly nomeEmpresa: string; readonly link: LinkVisao };
+  | {
+      readonly tipo: 'criado';
+      readonly nomeEmpresa: string;
+      readonly link: LinkVisao;
+      /** Algo da personalização (S6-2/S6-3) não foi salvo; o cliente já existe. */
+      readonly aviso?: string;
+    };
 
 export type EstadoLink =
   | { readonly tipo: 'inicial' }

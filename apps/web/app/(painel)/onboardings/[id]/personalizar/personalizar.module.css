@@ -1,0 +1,109 @@
+.pagina {
+  display: grid;
+  gap: 1rem;
+  max-width: 48rem;
+}
+
+.voltar {
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.secao,
+.bloco {
+  border: 1px solid var(--borda);
+  border-radius: var(--raio, 14px);
+  background: var(--superficie);
+  padding: 1rem;
+}
+
+.secao > summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.secao > summary::after {
+  content: '▾';
+  color: var(--suave);
+}
+
+.secao[open] > summary {
+  margin-bottom: 1rem;
+}
+
+.tituloSecao {
+  font-weight: 700;
+}
+
+.resumo,
+.selo {
+  color: var(--suave);
+  font-size: 0.9rem;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cabecalho h2 {
+  margin: 0;
+}
+
+.campos {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.rodape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.rodape button {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula, 999px);
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.rodape .primario {
+  background: var(--destaque);
+  border-color: var(--destaque);
+  color: var(--sobre-destaque);
+  font-weight: 700;
+}
+
+.rodape button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.travada {
+  margin: 0.75rem 0;
+  color: var(--suave);
+}
+
+.alerta,
+.erro {
+  color: var(--erro, #b42318);
+}
+
+.ok {
+  color: var(--sucesso, #2b7a3d);
+}

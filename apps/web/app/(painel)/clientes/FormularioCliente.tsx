@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, type ReactNode } from 'react';
 import { cadastrarClienteAction } from './actions';
 import { LinkParaCopiar } from './LinkParaCopiar';
 import type { EstadoCadastro } from './processar';
@@ -9,7 +9,8 @@ import estilos from './clientes.module.css';
 
 const INICIAL: EstadoCadastro = { tipo: 'inicial' };
 
-export function FormularioCliente() {
+/** `children`: seções de personalização da trilha A (S6-2, S6-3), antes do botão de cadastrar. */
+export function FormularioCliente({ children }: { children?: ReactNode }) {
   const [estado, enviar, pendente] = useActionState(cadastrarClienteAction, INICIAL);
 
   if (estado.tipo === 'criado') {
@@ -17,6 +18,11 @@ export function FormularioCliente() {
       <section className={estilos.sucesso} aria-live="polite">
         <h2>{estado.nomeEmpresa} foi cadastrado</h2>
         <p>O onboarding já foi criado. Envie este link ao cliente:</p>
+        {estado.aviso && (
+          <p role="alert" className={estilos.erroGeral}>
+            {estado.aviso}
+          </p>
+        )}
         <LinkParaCopiar caminho={estado.link.caminho} expiraEm={estado.link.expiraEm} />
         <p className={estilos.aviso}>
           Copie agora: por segurança este link não é mostrado de novo. Depois, use “Gerar novo link”
@@ -82,6 +88,8 @@ export function FormularioCliente() {
         erro={erros['email']}
         dica="contato@empresa.com.br"
       />
+
+      {children}
 
       {estado.tipo === 'duplicado' && (
         <div role="alert" className={estilos.alertaDuplicidade}>

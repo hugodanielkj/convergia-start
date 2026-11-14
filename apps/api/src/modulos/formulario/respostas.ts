@@ -8,6 +8,7 @@ import {
 import { TERMO_ATUAL } from '@convergia/core/consentimento';
 import { garantirReabertura, motivoObrigatorio } from '@convergia/core/estados';
 import {
+  temResposta,
   validarRespostas,
   type CampoFormulario,
   type ErroResposta,
@@ -18,7 +19,8 @@ import { escopoAgencia, type PrismaDaAgencia } from '../../base/escopo-agencia.j
 import type { PrismaClient } from '../../base/prisma.js';
 import { aceiteDoCliente } from '../consentimento/consentimento.js';
 import type { LinkLocalizado } from '../link/localizar-link.js';
-import { garantirModeloPadrao, lerCampos } from './modelo.js';
+import { garantirModeloPadrao } from './modelo.js';
+import { versaoPresa, versaoVigenteDoCliente, type VersaoEmUso } from './personalizacao.js';
 
 export type SituacaoFormulario = 'rascunho' | 'enviado' | 'fechado';
 
@@ -67,10 +69,32 @@ async function motivoBloqueio(
   return reuniao ? 'reuniao_realizada' : null;
 }
 
-/** Versão em que o cliente responde: a já vinculada, ou a vigente se ainda não começou. */
-async function versaoDoCliente(prisma: PrismaDaAgencia, versaoId: string | null) {
-  if (versaoId) return prisma.versaoFormulario.findFirstOrThrow({ where: { id: versaoId } });
-  return prisma.versaoFormulario.findFirstOrThrow({ orderBy: { numero: 'desc' } });
+interface RespostaVinculada {
+  readonly versaoId: string;
+  readonly versaoClienteId: string | null;
+  readonly respostas: unknown;
+  readonly enviadaEm: Date | null;
+  readonly reabertaEm: Date | null;
+}
+
+/**
+ * Versão em que o cliente responde (RN-15): a já vinculada, se ele começou a responder; senão a
+ * vigente (personalizada pela agência ou padrão), que pode ter mudado desde um rascunho vazio.
+ */
+async function versaoDoCliente(
+  prisma: PrismaDaAgencia,
+  onboardingId: string,
+  resposta: RespostaVinculada | null,
+): Promise<VersaoEmUso> {
+  const comecou =
+    resposta !== null &&
+    (resposta.enviadaEm !== null ||
+      resposta.reabertaEm !== null ||
+      temResposta(lerRespostas(resposta.respostas)));
+  if (resposta && comecou) {
+    return versaoPresa(prisma, resposta.versaoId, resposta.versaoClienteId);
+  }
+  return versaoVigenteDoCliente(prisma, onboardingId);
 }
 
 async function comConsentimento<T>(
@@ -91,13 +115,13 @@ export function lerFormularioDoCliente(prisma: PrismaClient, link: LinkLocalizad
     const resposta = await escopo.respostaFormulario.findFirst({
       where: { onboardingId: link.onboardingId },
     });
-    const versao = await versaoDoCliente(escopo, resposta?.versaoId ?? null);
+    const versao = await versaoDoCliente(escopo, link.onboardingId, resposta);
     const bloqueio = await motivoBloqueio(escopo, link.onboardingId, resposta);
     const situacao: SituacaoFormulario =
       bloqueio === 'fechado' ? 'fechado' : resposta?.enviadaEm ? 'enviado' : 'rascunho';
     return {
       versao: versao.numero,
-      campos: lerCampos(versao.campos).filter((c) => !c.arquivado),
+      campos: versao.campos.filter((c) => !c.arquivado),
       respostas: lerRespostas(resposta?.respostas),
       situacao,
       editavel: bloqueio === null,
@@ -129,10 +153,12 @@ interface Gravacao {
     fechadaEm: Date | null;
     reabertaEm: Date | null;
     versaoId: string;
+    versaoClienteId: string | null;
     respostas: unknown;
   } | null;
   readonly campos: CampoFormulario[];
   readonly versaoId: string;
+  readonly versaoClienteId: string | null;
   readonly clienteId: string;
 }
 
@@ -144,11 +170,12 @@ async function prepararGravacao(escopo: PrismaDaAgencia, onboardingId: string): 
       select: { clienteId: true },
     }),
   ]);
-  const versao = await versaoDoCliente(escopo, resposta?.versaoId ?? null);
+  const versao = await versaoDoCliente(escopo, onboardingId, resposta);
   return {
     resposta,
-    campos: lerCampos(versao.campos),
-    versaoId: versao.id,
+    campos: versao.campos,
+    versaoId: versao.versaoId,
+    versaoClienteId: versao.versaoClienteId,
     clienteId: onboarding.clienteId,
   };
 }
@@ -178,9 +205,15 @@ export function salvarRascunhoDoCliente(
           agenciaId: link.agenciaId,
           onboardingId: link.onboardingId,
           versaoId: g.versaoId,
+          versaoClienteId: g.versaoClienteId,
           respostas: respostas as Prisma.InputJsonValue,
         },
-        update: { respostas: respostas as Prisma.InputJsonValue },
+        // Enquanto o rascunho está vazio, a versão acompanha a personalização da agência (RN-15).
+        update: {
+          respostas: respostas as Prisma.InputJsonValue,
+          versaoId: g.versaoId,
+          versaoClienteId: g.versaoClienteId,
+        },
       }),
       escopo.etapaOnboarding.updateMany({
         where: { onboardingId: link.onboardingId, tipo: 'formulario', status: 'pendente' },
@@ -224,7 +257,13 @@ export function enviarFormularioDoCliente(
     const primeiroEnvio = !g.resposta?.enviadaEm;
     const alteradas = chavesAlteradas(anteriores, respostas);
     const auditoria = primeiroEnvio
-      ? { acao: 'formulario.enviado', dados: { versao: g.versaoId } }
+      ? {
+          acao: 'formulario.enviado',
+          dados: {
+            versao: g.versaoId,
+            ...(g.versaoClienteId ? { versaoCliente: g.versaoClienteId } : {}),
+          },
+        }
       : alteradas.length > 0
         ? { acao: 'formulario.editado', dados: { campos: alteradas.join(',') } }
         : null;
@@ -236,11 +275,14 @@ export function enviarFormularioDoCliente(
           agenciaId: link.agenciaId,
           onboardingId: link.onboardingId,
           versaoId: g.versaoId,
+          versaoClienteId: g.versaoClienteId,
           respostas: respostas as Prisma.InputJsonValue,
           enviadaEm: agora,
         },
         update: {
           respostas: respostas as Prisma.InputJsonValue,
+          versaoId: g.versaoId,
+          versaoClienteId: g.versaoClienteId,
           ...(primeiroEnvio ? { enviadaEm: agora } : {}),
         },
       }),

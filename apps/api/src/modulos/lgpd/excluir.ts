@@ -66,6 +66,7 @@ export async function excluirDadosDoCliente(
     prisma.consentimentoCliente.deleteMany({ where: doCliente }),
     prisma.primeiroAcesso.deleteMany({ where: doCliente }),
     prisma.respostaFormulario.deleteMany({ where: doCliente }),
+    prisma.versaoFormularioCliente.deleteMany({ where: doCliente }),
     prisma.acessoPlataforma.deleteMany({ where: doCliente }),
     // Onboardings, etapas, link, agendamentos e histórico de status saem em cascata.
     prisma.cliente.deleteMany({ where: { id: clienteId } }),

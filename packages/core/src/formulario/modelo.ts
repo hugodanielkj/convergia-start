@@ -34,7 +34,9 @@ export type CodigoErroModelo =
   | 'obrigatorio_arquivado'
   | 'sem_campos_ativos'
   | 'tipo_alterado'
-  | 'campo_removido';
+  | 'campo_removido'
+  /** Personalização por cliente remove a pergunta em vez de arquivar (ninguém respondeu ainda). */
+  | 'arquivado_na_personalizacao';
 
 export interface ErroModelo {
   /** `null` quando o erro é do modelo como um todo. */

@@ -46,6 +46,7 @@ model Agencia {
   configAcessos       ConfigAcessos?
   disponibilidades    Disponibilidade[]
   etapasOnboarding    EtapaOnboarding[]
+  formulariosCliente  VersaoFormularioCliente[]
   linksOnboarding     LinkOnboarding[]
   modeloFormulario    ModeloFormulario?
   notificacoes        Notificacao[]
