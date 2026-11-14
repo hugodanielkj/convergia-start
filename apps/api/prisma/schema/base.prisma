@@ -37,8 +37,10 @@ model Agencia {
   // Relações reversas (ordem alfabética)
   auditoria         AuditoriaLog[]
   arquivos          Arquivo[]
+  bloqueios         Bloqueio[]
   clientes          Cliente[]
   config            ConfigAgencia?
+  disponibilidades  Disponibilidade[]
   etapasOnboarding  EtapaOnboarding[]
   linksOnboarding   LinkOnboarding[]
   modeloFormulario  ModeloFormulario?
@@ -61,8 +63,9 @@ model Usuario {
   criadoEm  DateTime @default(now())
 
   // Relações reversas (ordem alfabética)
-  onboardings Onboarding[]
-  sessoes     Sessao[]
+  disponibilidades Disponibilidade[]
+  onboardings      Onboarding[]
+  sessoes          Sessao[]
 
   @@unique([agenciaId, email])
   @@map("usuarios")
