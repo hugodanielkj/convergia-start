@@ -87,3 +87,58 @@ a {
     animation: none !important;
   }
 }
+
+/* Base dos controles (S6-6). `:where` zera a especificidade: o CSS module de cada tela sempre vence. */
+:where(button, input, select, textarea) {
+  font: inherit;
+}
+
+:where(
+  input:not([type='checkbox'], [type='radio'], [type='file'], [type='hidden']),
+  select,
+  textarea
+) {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+:where(input, select, textarea)::placeholder {
+  color: var(--suave);
+  opacity: 0.8;
+}
+
+:where(input[type='checkbox'], input[type='radio']) {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--destaque);
+}
+
+:where(table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+:where(th) {
+  color: var(--suave);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+:where(th, td) {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: top;
+}
+
+::selection {
+  background: var(--peach);
+  color: var(--ink);
+}
