@@ -11,8 +11,8 @@ export const EMAIL_E2E = 'e2e@convergia.test';
 export const URL_WEB = process.env['E2E_BASE_URL'] ?? `http://localhost:${String(PORTA_WEB)}`;
 export const URL_API = process.env['E2E_API_URL'] ?? `http://localhost:${String(PORTA_API)}`;
 
-/** Dados criados pelo `preparar.ts` e lidos pelos testes. Fica fora do git. */
-export const ARQUIVO_DADOS = path.join(import.meta.dirname, '.dados.json');
+/** Dados criados pelo `preparar.ts` e lidos pelos testes. Em .next: fora do git e do Prettier. */
+export const ARQUIVO_DADOS = path.join(import.meta.dirname, '..', '.next', 'e2e-dados.json');
 
 export const esquemaDados = z.object({
   /** Link de um cliente que já aceitou o termo: abre nas etapas. */

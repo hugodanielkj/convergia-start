@@ -62,6 +62,50 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  celular:
+    # Decisão mobile-first (2026-11-14-a-mobile-first): telas a 360, 375 e 768px.
+    name: Telas no celular (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: convergia
+          POSTGRES_PASSWORD: convergia
+          POSTGRES_DB: convergia
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U convergia"
+          --health-interval 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://convergia:convergia@localhost:5432/convergia
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Migrações do banco
+        run: pnpm --filter @convergia/api db:deploy
+      - name: Navegador do Playwright
+        run: pnpm --filter @convergia/web exec playwright install --with-deps chromium-headless-shell
+      - name: Build da web
+        run: pnpm --filter @convergia/web... build
+        env:
+          API_URL: http://localhost:3334
+      - name: Testes de celular
+        run: pnpm --filter @convergia/web test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: relatorio-celular
+          path: apps/web/playwright-report/
+          retention-days: 7
+
   seguranca:
     name: Auditoria de dependências
     runs-on: ubuntu-latest

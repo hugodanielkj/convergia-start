@@ -1,4 +1,5 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { z } from 'zod';
 import { ARQUIVO_DADOS, URL_API, type DadosE2E } from './ambiente';
 
@@ -66,5 +67,6 @@ export default async function preparar(): Promise<void> {
     tokenSemTermo: semTermo.token,
     onboardingId: principal.onboardingId,
   };
+  await mkdir(path.dirname(ARQUIVO_DADOS), { recursive: true });
   await writeFile(ARQUIVO_DADOS, JSON.stringify(dados));
 }
