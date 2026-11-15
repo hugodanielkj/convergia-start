@@ -17,6 +17,8 @@ export interface Dependencias {
   auth: ConfigAuth;
   /** Proxy confiável, HSTS e limites das rotas públicas (RN-76). */
   http: ConfigHttp;
+  /** Webhook do WhatsApp oficial (RN-61); ausente = rota não é registrada. */
+  webhookWhatsapp?: { verifyToken: string; appSecret: string } | null;
 }
 
 declare module 'fastify' {
