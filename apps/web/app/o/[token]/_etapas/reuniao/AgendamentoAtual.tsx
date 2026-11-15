@@ -36,7 +36,8 @@ export function AgendamentoAtual({
         {fuso !== null && <span className={estilos.ajuda}> ({fuso.replaceAll('_', ' ')})</span>}.
       </p>
       <p className={estilos.ajuda}>
-        O link da videochamada chega por mensagem assim que a agência confirmar.
+        {/* Sem Google Meet (decisão 2026-11-15-a-sem-google-calendar): o link vem da agência. */}A
+        agência vai te enviar o link da videochamada.
       </p>
 
       {!reagendando && agendamento.podeReagendar && (
