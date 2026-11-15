@@ -1,5 +1,5 @@
 import { defineConfig } from '@playwright/test';
-import { EMAIL_E2E, PORTA_API, PORTA_WEB, URL_API, URL_WEB } from './e2e/ambiente';
+import { EMAIL_E2E, PORTA_API, PORTA_WEB, URL_API, URL_BANCO, URL_WEB } from './e2e/ambiente';
 
 // Testes de celular (decisão 2026-11-14-a-mobile-first). Sobem uma API e uma web próprias nas
 // portas 3334 e 3100, com o login de desenvolvimento: não precisam do Google nem mexem no
@@ -7,7 +7,6 @@ import { EMAIL_E2E, PORTA_API, PORTA_WEB, URL_API, URL_WEB } from './e2e/ambient
 
 const naCi = Boolean(process.env['CI']);
 const externo = Boolean(process.env['E2E_BASE_URL']);
-const bancoLocal = 'postgresql://convergia:convergia@localhost:55432/convergia';
 
 /** Larguras conferidas. 360px é a referência; 375px é o iPhone comum; 768px, o tablet. */
 const LARGURAS = [
@@ -40,7 +39,7 @@ export default defineConfig({
           reuseExistingServer: !naCi,
           timeout: 60_000,
           env: {
-            DATABASE_URL: process.env['DATABASE_URL'] ?? bancoLocal,
+            DATABASE_URL: URL_BANCO,
             API_PORT: String(PORTA_API),
             APP_URL: URL_WEB,
             AUTH_DEV_USUARIO_EMAIL: EMAIL_E2E,

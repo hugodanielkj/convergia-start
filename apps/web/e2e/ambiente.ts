@@ -11,6 +11,10 @@ export const EMAIL_E2E = 'e2e@convergia.test';
 export const URL_WEB = process.env['E2E_BASE_URL'] ?? `http://localhost:${String(PORTA_WEB)}`;
 export const URL_API = process.env['E2E_API_URL'] ?? `http://localhost:${String(PORTA_API)}`;
 
+/** Banco usado pela API dos testes (o mesmo do playwright.config.ts). */
+export const URL_BANCO =
+  process.env['DATABASE_URL'] ?? 'postgresql://convergia:convergia@localhost:55432/convergia';
+
 /** Dados criados pelo `preparar.ts` e lidos pelos testes. Em .next: fora do git e do Prettier. */
 export const ARQUIVO_DADOS = path.join(import.meta.dirname, '..', '.next', 'e2e-dados.json');
 
@@ -19,6 +23,8 @@ export const esquemaDados = z.object({
   token: z.string(),
   /** Link de um cliente que ainda não aceitou o termo: abre no consentimento. */
   tokenSemTermo: z.string(),
+  /** Link de um onboarding concluído, já vencido: abre o resumo (RN-14). */
+  tokenConcluido: z.string(),
   onboardingId: z.string(),
 });
 
