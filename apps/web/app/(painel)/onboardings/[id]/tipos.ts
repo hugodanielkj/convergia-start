@@ -34,7 +34,6 @@ export interface Detalhe {
     status: string;
     localOuLink: string | null;
   }[];
-  arquivos: { id: string; nomeOriginal: string; tipo: string; tamanho: number; criadoEm: string }[];
   notificacoes: {
     id: string;
     tipo: string;
@@ -156,19 +155,12 @@ export function nomeDoAtor(ator: ItemAuditoria['ator']): string {
   return ator.nome ?? 'Equipe';
 }
 
-/** Valor de uma resposta do formulário em texto; uploads mostram o nome do arquivo. */
-export function textoDaResposta(
-  resposta: { tipo: string; valor: unknown },
-  arquivos: readonly { id: string; nomeOriginal: string }[],
-): string {
+/** Valor de uma resposta do formulário em texto; listas viram itens separados por vírgula. */
+export function textoDaResposta(resposta: { valor: unknown }): string {
   const lista = Array.isArray(resposta.valor) ? resposta.valor : [resposta.valor];
   const itens = lista
     .filter((v): v is string | number => typeof v === 'string' || typeof v === 'number')
-    .map((v) =>
-      resposta.tipo === 'upload'
-        ? (arquivos.find((a) => a.id === v)?.nomeOriginal ?? 'arquivo removido')
-        : String(v),
-    );
+    .map(String);
   return itens.length > 0 ? itens.join(', ') : '—';
 }
 

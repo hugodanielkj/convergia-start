@@ -4,7 +4,6 @@ import {
   type UsuarioAutenticado,
 } from '@convergia/core/base';
 import { garantirConfirmacao, garantirExclusao } from '@convergia/core/lgpd';
-import type { Armazenamento } from '@convergia/core/uploads';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { PrismaDaAgencia } from '../../base/escopo-agencia.js';
 
@@ -20,18 +19,15 @@ declare module '@convergia/core/base' {
 
 export interface ResultadoExclusao {
   readonly onboardings: number;
-  readonly arquivos: number;
 }
 
 /**
  * Exclui de vez os dados de um cliente, a pedido (RN-73). Só o Admin (rota), só com os onboardings
- * cancelados ou concluídos e com o nome da empresa como confirmação. Os arquivos saem do storage
- * antes do banco: se o banco falhar, a exclusão pode ser repetida sem deixar arquivo para trás.
+ * cancelados ou concluídos e com o nome da empresa como confirmação.
  * A auditoria fica (ações e IDs), mas perde os `dados`, que podem ter texto livre do cliente.
  */
 export async function excluirDadosDoCliente(
   prisma: PrismaDaAgencia,
-  armazenamento: Armazenamento,
   eventos: PublicadorEventos,
   usuario: UsuarioAutenticado,
   clienteId: string,
@@ -53,8 +49,6 @@ export async function excluirDadosDoCliente(
 
   const onboardingIds = cliente.onboardings.map((o) => o.id);
   const agendamentoIds = cliente.onboardings.flatMap((o) => o.agendamentos.map((a) => a.id));
-  const arquivos = await prisma.arquivo.findMany({ where: { clienteId }, select: { chave: true } });
-  for (const { chave } of arquivos) await armazenamento.apagar(chave);
 
   const doCliente = { onboardingId: { in: onboardingIds } };
   await prisma.$transaction([
@@ -62,7 +56,6 @@ export async function excluirDadosDoCliente(
       where: { entidadeId: { in: [clienteId, ...onboardingIds, ...agendamentoIds] } },
       data: { dados: Prisma.DbNull },
     }),
-    prisma.arquivo.deleteMany({ where: { clienteId } }),
     prisma.consentimentoCliente.deleteMany({ where: doCliente }),
     prisma.primeiroAcesso.deleteMany({ where: doCliente }),
     prisma.respostaFormulario.deleteMany({ where: doCliente }),
@@ -78,7 +71,7 @@ export async function excluirDadosDoCliente(
         acao: 'cliente.dados_excluidos',
         entidade: 'Cliente',
         entidadeId: clienteId,
-        dados: { onboardings: onboardingIds.length, arquivos: arquivos.length },
+        dados: { onboardings: onboardingIds.length },
         em: agora,
       },
     }),
@@ -90,5 +83,5 @@ export async function excluirDadosDoCliente(
     ocorridoEm: agora,
     dados: { clienteId, onboardingIds },
   });
-  return { onboardings: onboardingIds.length, arquivos: arquivos.length };
+  return { onboardings: onboardingIds.length };
 }

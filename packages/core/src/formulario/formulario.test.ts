@@ -18,7 +18,7 @@ const texto = (chave: string, extra: Partial<CampoFormulario> = {}): CampoFormul
 });
 
 describe('RN-16 tipos de campo suportados', () => {
-  it('suporta exatamente os 8 tipos da spec', () => {
+  it('suporta exatamente os 7 tipos (envio de arquivo removido, decisão 2026-11-14-a-sem-envio-de-arquivos)', () => {
     expect([...TIPOS_CAMPO].sort()).toEqual(
       [
         'data',
@@ -27,7 +27,6 @@ describe('RN-16 tipos de campo suportados', () => {
         'selecao_unica',
         'texto_curto',
         'texto_longo',
-        'upload',
         'url',
       ].sort(),
     );
@@ -127,22 +126,17 @@ describe('RN-19 modelo padrão', () => {
         'restricoes',
         'datas_e_produtos',
         'contato_aprovacao',
-        'logo',
-        'manual_de_marca',
       ]),
     );
   });
 
-  it('só empresa, segmento e contato para aprovação são obrigatórios; logo e manual são upload', () => {
+  it('só empresa, segmento e contato para aprovação são obrigatórios; nenhum pede arquivo', () => {
     expect(campos.filter((c) => c.obrigatorio).map((c) => c.chave)).toEqual([
       'nome_empresa',
       'segmento',
       'contato_aprovacao',
     ]);
-    expect(campos.filter((c) => c.tipo === 'upload').map((c) => c.chave)).toEqual([
-      'logo',
-      'manual_de_marca',
-    ]);
+    expect(campos.map((c) => c.tipo)).not.toContain('upload');
   });
 });
 

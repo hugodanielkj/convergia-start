@@ -43,7 +43,7 @@ const CAMPOS = [
     obrigatorio: true,
     arquivado: false,
   },
-  { chave: 'logo', rotulo: 'Logo', tipo: 'upload', obrigatorio: false, arquivado: false },
+  { chave: 'site', rotulo: 'Site', tipo: 'url', obrigatorio: false, arquivado: false },
   {
     chave: 'sobra',
     rotulo: 'Sem resposta',
@@ -109,27 +109,17 @@ const detalhe = (app: FastifyInstance, id: string) =>
   app.inject({ url: `/onboardings/${id}/detalhe` });
 
 describe('RN-65 detalhe do onboarding', () => {
-  it('mostra cliente, etapas na ordem, respostas com rótulo, acessos, agendamentos e arquivos', async () => {
+  it('mostra cliente, etapas na ordem, respostas com rótulo, acessos e agendamentos', async () => {
     const { id, clienteId } = await criarOnboarding('completo');
     const versao = await prisma.versaoFormulario.create({
       data: { agenciaId, numero: 7, campos: CAMPOS },
-    });
-    const arquivo = await prisma.arquivo.create({
-      data: {
-        agenciaId,
-        clienteId,
-        nomeOriginal: 'logo.png',
-        tipo: 'image/png',
-        tamanho: 10,
-        chave: 'k',
-      },
     });
     await prisma.respostaFormulario.create({
       data: {
         agenciaId,
         onboardingId: id,
         versaoId: versao.id,
-        respostas: { logo: arquivo.id, segmento: 'Moda' },
+        respostas: { site: 'https://loja.example', segmento: 'Moda' },
         enviadaEm: AGORA_TESTE,
       },
     });
@@ -176,14 +166,13 @@ describe('RN-65 detalhe do onboarding', () => {
         versao: 7,
         respostas: [
           { chave: 'segmento', rotulo: 'Segmento', valor: 'Moda' },
-          { chave: 'logo', rotulo: 'Logo', tipo: 'upload', valor: arquivo.id },
+          { chave: 'site', rotulo: 'Site', tipo: 'url', valor: 'https://loja.example' },
         ],
       },
       acessos: { etapa: 'pendente' },
       agendamentos: [
         { tipo: 'reuniao', status: 'agendado', localOuLink: 'https://meet.example/abc' },
       ],
-      arquivos: [{ id: arquivo.id, nomeOriginal: 'logo.png' }],
       notificacoes: [{ tipo: 'convite', status: 'enviada', canal: 'whatsapp', totalTentativas: 1 }],
     });
     expect(JSON.stringify(r.json())).not.toContain('Olá');

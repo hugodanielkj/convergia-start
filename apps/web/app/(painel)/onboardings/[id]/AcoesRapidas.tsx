@@ -113,7 +113,7 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
       case 'excluir':
         return {
           titulo: 'Excluir dados do cliente',
-          aviso: `Apaga de vez o cadastro, as respostas, os arquivos e os agendamentos. Não dá para desfazer. Digite "${cliente.nomeEmpresa}" para confirmar.`,
+          aviso: `Apaga de vez o cadastro, as respostas e os agendamentos. Não dá para desfazer. Digite "${cliente.nomeEmpresa}" para confirmar.`,
           perigo: true,
         };
     }

@@ -26,8 +26,6 @@ export interface ConfigAgencia {
   diasSemAcaoParaAlerta: number; // RN-58
   diasConclusaoAutomatica: number; // RN-52
   plataformasObrigatorias: Plataforma[]; // RN-27, D-06
-  uploadTamanhoMaxMb: number; // RN-20
-  uploadTiposPermitidos: string[]; // RN-20
   permitirCredenciais: boolean; // RN-23, D-05
 }
 
@@ -52,8 +50,6 @@ const padrao: ConfigAgencia = {
   diasSemAcaoParaAlerta: 3,
   diasConclusaoAutomatica: 7,
   plataformasObrigatorias: ['instagram', 'facebook'],
-  uploadTamanhoMaxMb: 20,
-  uploadTiposPermitidos: ['image/png', 'image/jpeg', 'application/pdf'],
   permitirCredenciais: false,
 };
 

@@ -26,7 +26,7 @@ export function DetalheOnboarding({
   linhaDoTempo: ItemAuditoria[];
   prazo: PrazoDoDetalhe;
 }) {
-  const { cliente, formulario, acessos, agendamentos, arquivos } = detalhe;
+  const { cliente, formulario, acessos, agendamentos } = detalhe;
   const contato = [cliente.nomeContato, cliente.whatsapp, cliente.email]
     .filter(Boolean)
     .join(' · ');
@@ -106,7 +106,7 @@ export function DetalheOnboarding({
               {formulario.respostas.map((r) => (
                 <div key={r.chave}>
                   <dt>{r.rotulo}</dt>
-                  <dd>{textoDaResposta(r, arquivos)}</dd>
+                  <dd>{textoDaResposta(r)}</dd>
                 </div>
               ))}
             </dl>
@@ -114,40 +114,22 @@ export function DetalheOnboarding({
         )}
       </section>
 
-      <div className={estilos.grade}>
-        <section className={estilos.secao} aria-labelledby="titulo-agendamentos">
-          <h2 id="titulo-agendamentos">Agendamentos</h2>
-          {agendamentos.length === 0 ? (
-            <p className={estilos.vazio}>Nenhum agendamento ainda.</p>
-          ) : (
-            <ul className={estilos.lista}>
-              {agendamentos.map((a) => (
-                <li key={a.id}>
-                  <strong>{rotuloEtapa(a.tipo)}</strong> · {formatarDataHora(a.inicio)} ·{' '}
-                  {ROTULO_AGENDAMENTO[a.status] ?? a.status}
-                  {a.localOuLink && <small>{a.localOuLink}</small>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className={estilos.secao} aria-labelledby="titulo-arquivos">
-          <h2 id="titulo-arquivos">Arquivos</h2>
-          {arquivos.length === 0 ? (
-            <p className={estilos.vazio}>Nenhum arquivo enviado.</p>
-          ) : (
-            <ul className={estilos.lista}>
-              {arquivos.map((a) => (
-                <li key={a.id}>
-                  <a href={`/api/arquivos/${a.id}`}>{a.nomeOriginal}</a>
-                  <small>{Math.max(1, Math.round(a.tamanho / 1024))} KB</small>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+      <section className={estilos.secao} aria-labelledby="titulo-agendamentos">
+        <h2 id="titulo-agendamentos">Agendamentos</h2>
+        {agendamentos.length === 0 ? (
+          <p className={estilos.vazio}>Nenhum agendamento ainda.</p>
+        ) : (
+          <ul className={estilos.lista}>
+            {agendamentos.map((a) => (
+              <li key={a.id}>
+                <strong>{rotuloEtapa(a.tipo)}</strong> · {formatarDataHora(a.inicio)} ·{' '}
+                {ROTULO_AGENDAMENTO[a.status] ?? a.status}
+                {a.localOuLink && <small>{a.localOuLink}</small>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className={estilos.secao} aria-labelledby="titulo-notificacoes">
         <h2 id="titulo-notificacoes">Notificações</h2>

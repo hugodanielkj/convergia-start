@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import estilos from './formulario.module.css';
-import { MENSAGEM_ARQUIVO, mensagensPorCampo } from './mensagens';
+import { mensagensPorCampo } from './mensagens';
 import type { Campo, ErroResposta, EstadoFormulario, Respostas, ValorResposta } from './tipos';
 import { useAvancoEtapa } from '../../_componentes/avanco';
 
@@ -24,7 +24,6 @@ export function FormularioCliente({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [aviso, setAviso] = useState<Aviso>(null);
   const [salvando, setSalvando] = useState(false);
-  const [nomesArquivo, setNomesArquivo] = useState<Record<string, string>>({});
   const router = useRouter();
   const { avancar } = useAvancoEtapa();
   const sujo = useRef(false);
@@ -57,24 +56,6 @@ export function FormularioCliente({
     sujo.current = true;
     setRespostas((atuais) => ({ ...atuais, [chave]: valor }));
     setAviso(null);
-  }
-
-  async function enviarArquivo(campo: Campo, arquivo: File) {
-    const dados = new FormData();
-    dados.append('arquivo', arquivo);
-    const r = await fetch(`${base}/arquivos`, { method: 'POST', body: dados });
-    if (r.ok) {
-      const { arquivo: criado } = (await r.json()) as { arquivo: { id: string; nome: string } };
-      setNomesArquivo((n) => ({ ...n, [campo.chave]: criado.nome }));
-      alterar(campo.chave, criado.id);
-      setErros((e) => ({ ...e, [campo.chave]: '' }));
-      return;
-    }
-    const corpo = (await r.json().catch(() => ({}))) as { erro?: string };
-    setErros((e) => ({
-      ...e,
-      [campo.chave]: MENSAGEM_ARQUIVO[corpo.erro ?? ''] ?? 'Não foi possível enviar o arquivo.',
-    }));
   }
 
   async function enviar() {
@@ -122,12 +103,8 @@ export function FormularioCliente({
             campo={campo}
             valor={respostas[campo.chave]}
             desabilitado={!editavel}
-            nomeArquivo={nomesArquivo[campo.chave]}
             aoAlterar={(v) => {
               alterar(campo.chave, v);
-            }}
-            aoEscolherArquivo={(f) => {
-              void enviarArquivo(campo, f);
             }}
           />
         </Pergunta>
@@ -185,16 +162,12 @@ function Entrada({
   campo,
   valor,
   desabilitado,
-  nomeArquivo,
   aoAlterar,
-  aoEscolherArquivo,
 }: {
   campo: Campo;
   valor: ValorResposta | undefined;
   desabilitado: boolean;
-  nomeArquivo: string | undefined;
   aoAlterar: (valor: ValorResposta) => void;
-  aoEscolherArquivo: (arquivo: File) => void;
 }) {
   const id = `c-${campo.chave}`;
   const texto = typeof valor === 'string' || typeof valor === 'number' ? String(valor) : '';
@@ -288,23 +261,6 @@ function Entrada({
         </div>
       );
     }
-    case 'upload':
-      return (
-        <div>
-          <input
-            id={id}
-            type="file"
-            disabled={desabilitado}
-            onChange={(e) => {
-              const arquivo = e.target.files?.[0];
-              if (arquivo) aoEscolherArquivo(arquivo);
-            }}
-          />
-          {texto !== '' && (
-            <p className={estilos.ajuda}>Arquivo enviado{nomeArquivo ? `: ${nomeArquivo}` : ''}.</p>
-          )}
-        </div>
-      );
     case 'texto_curto':
       return (
         <input

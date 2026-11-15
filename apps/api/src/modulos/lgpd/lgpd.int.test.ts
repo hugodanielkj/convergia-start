@@ -3,7 +3,6 @@ import { CONFIG_PADRAO, relogioFixo, type UsuarioAutenticado } from '@convergia/
 import { gerarTokenLink } from '@convergia/core/link';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ArmazenamentoEmMemoria } from '../../adapters/storage/em-memoria.js';
 import { construirApp } from '../../app.js';
 import { criarPrisma } from '../../base/prisma.js';
 import {
@@ -15,7 +14,6 @@ import {
 
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const sufixo = randomUUID().slice(0, 8);
-const armazenamento = new ArmazenamentoEmMemoria();
 const excluidosPublicados: string[] = [];
 let agenciaId: string;
 let outraAgenciaId: string;
@@ -32,7 +30,6 @@ function construir(usuario: UsuarioAutenticado): FastifyInstance {
     { LOG_LEVEL: 'silent' },
     dependenciasDeTeste({
       prisma,
-      armazenamento,
       relogio: relogioFixo(AGORA_TESTE),
       resolverSessao: () => Promise.resolve(usuario),
     }),
@@ -95,8 +92,6 @@ async function criarClienteCompleto(
   const versao =
     (await prisma.versaoFormulario.findFirst({ where: { agenciaId } })) ??
     (await prisma.versaoFormulario.create({ data: { agenciaId, numero: 1, campos: [] } }));
-  const chave = `${agenciaId}/${cliente.id}/logo.png`;
-  await armazenamento.guardar(chave, new Uint8Array([1, 2, 3]), 'image/png');
   await prisma.$transaction([
     prisma.primeiroAcesso.create({ data: { agenciaId, onboardingId, em: AGORA_TESTE } }),
     prisma.consentimentoCliente.create({
@@ -113,16 +108,6 @@ async function criarClienteCompleto(
     }),
     prisma.acessoPlataforma.create({
       data: { agenciaId, onboardingId, plataforma: 'instagram', status: 'concedido' },
-    }),
-    prisma.arquivo.create({
-      data: {
-        agenciaId,
-        clienteId: cliente.id,
-        nomeOriginal: 'logo.png',
-        tipo: 'image/png',
-        tamanho: 3,
-        chave,
-      },
     }),
     prisma.auditoriaLog.createMany({
       data: [
@@ -167,7 +152,6 @@ async function criarClienteCompleto(
     clienteId: cliente.id,
     onboardingId,
     agendamentoId: agendamento.id,
-    chave,
     nomeEmpresa: cliente.nomeEmpresa,
   };
 }
@@ -257,7 +241,6 @@ describe('RN-73 exportação dos dados do cliente', () => {
     const dados = r.json<Record<string, unknown>>();
     expect(dados).toMatchObject({
       cliente: { id: c.clienteId, nomeEmpresa: c.nomeEmpresa, nomeContato: 'Maria' },
-      arquivos: [{ nomeOriginal: 'logo.png', tamanho: 3 }],
       onboardings: [
         {
           id: c.onboardingId,
@@ -299,11 +282,11 @@ describe('RN-73 exclusão dos dados do cliente', () => {
       payload: { confirmacao },
     });
 
-  it('apaga tudo, inclusive o arquivo no storage; a auditoria fica sem dados pessoais', async () => {
+  it('apaga tudo; a auditoria fica sem dados pessoais', async () => {
     const c = await criarClienteCompleto('exclui');
     const r = await excluir(appAdmin, c.clienteId, ` ${c.nomeEmpresa.toUpperCase()} `);
     expect(r.statusCode).toBe(200);
-    expect(r.json()).toEqual({ onboardings: 1, arquivos: 1 });
+    expect(r.json()).toEqual({ onboardings: 1 });
 
     const doOnboarding = { where: { onboardingId: c.onboardingId } };
     const restantes = await Promise.all([
@@ -317,16 +300,14 @@ describe('RN-73 exclusão dos dados do cliente', () => {
       prisma.consentimentoCliente.count(doOnboarding),
       prisma.respostaFormulario.count(doOnboarding),
       prisma.acessoPlataforma.count(doOnboarding),
-      prisma.arquivo.count({ where: { clienteId: c.clienteId } }),
     ]);
     expect(restantes).toEqual(Array<number>(restantes.length).fill(0));
-    expect(await armazenamento.ler(c.chave)).toBeNull();
 
     const log = await prisma.auditoriaLog.findMany({
       where: { entidadeId: { in: [c.clienteId, c.onboardingId, c.agendamentoId] } },
     });
     const excluido = log.find((l) => l.acao === 'cliente.dados_excluidos');
-    expect(excluido?.dados).toEqual({ onboardings: 1, arquivos: 1 });
+    expect(excluido?.dados).toEqual({ onboardings: 1 });
     expect(log.filter((l) => l !== excluido).every((l) => l.dados === null)).toBe(true);
     expect(log).toHaveLength(5);
     expect(excluidosPublicados).toContain(c.clienteId);
@@ -343,7 +324,6 @@ describe('RN-73 exclusão dos dados do cliente', () => {
     expect(
       await prisma.cliente.count({ where: { id: { in: [ativo.clienteId, errado.clienteId] } } }),
     ).toBe(2);
-    expect(await armazenamento.ler(errado.chave)).not.toBeNull();
   });
 
   it('só o Admin exclui, e só clientes da própria agência', async () => {

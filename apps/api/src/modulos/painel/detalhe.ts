@@ -48,7 +48,7 @@ function respostasComRotulo(camposJson: unknown, respostas: unknown): RespostaDo
 
 /**
  * Tudo o que a tela de detalhe mostra (RN-65): cliente, status, etapas, link, respostas, acessos,
- * agendamentos, arquivos e as ações que cabem agora para quem está vendo. A linha do tempo vem da
+ * agendamentos e as ações que cabem agora para quem está vendo. A linha do tempo vem da
  * auditoria (`GET /onboardings/:id/auditoria`). Admin ou responsável (RN-02).
  */
 export async function detalharOnboarding(
@@ -85,7 +85,7 @@ export async function detalharOnboarding(
   if (!o) throw new NaoEncontradoError('Onboarding');
   if (!podeVerOnboarding(usuario, o.responsavelId)) throw new ProibidoError('RN-02');
 
-  const [resposta, acessos, arquivos, notificacoes] = await Promise.all([
+  const [resposta, acessos, notificacoes] = await Promise.all([
     prisma.respostaFormulario.findFirst({
       where: { onboardingId },
       select: {
@@ -98,11 +98,6 @@ export async function detalharOnboarding(
       },
     }),
     lerAcessosDaAgencia(prisma, usuario, onboardingId),
-    prisma.arquivo.findMany({
-      where: { clienteId: o.cliente.id },
-      orderBy: { criadoEm: 'asc' },
-      select: { id: true, nomeOriginal: true, tipo: true, tamanho: true, criadoEm: true },
-    }),
     // RN-62: o histórico mostra status, canal, tentativas e erro; o texto fica de fora da lista.
     prisma.notificacao.findMany({
       where: { onboardingId },
@@ -171,7 +166,6 @@ export async function detalharOnboarding(
       : null,
     acessos,
     agendamentos: o.agendamentos,
-    arquivos,
     notificacoes,
     acoes,
   };

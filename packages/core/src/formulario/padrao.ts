@@ -38,7 +38,5 @@ export function modeloPadrao(): CampoFormulario[] {
       obrigatorio: true,
       ajuda: 'Nome e WhatsApp ou e-mail de quem aprova as postagens.',
     }),
-    campo('logo', 'Logo da empresa', 'upload'),
-    campo('manual_de_marca', 'Manual de marca', 'upload'),
   ];
 }

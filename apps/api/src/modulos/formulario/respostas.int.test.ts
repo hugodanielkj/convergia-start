@@ -16,7 +16,6 @@ import {
 const prisma = criarPrisma(URL_BANCO_TESTE);
 const sufixo = randomUUID().slice(0, 8);
 const MS_DIA = 24 * 60 * 60 * 1000;
-const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4]);
 let agenciaId: string;
 let adminId: string;
 let responsavelId: string;
@@ -329,50 +328,19 @@ describe('RN-72 e links', () => {
 });
 const OBRIGATORIA_VAZIA = {};
 
-describe('RN-20 arquivo no formulário', () => {
-  async function subir(token: string) {
-    const limite = '----f';
-    const corpo = Buffer.concat([
-      Buffer.from(
-        `--${limite}\r\nContent-Disposition: form-data; name="arquivo"; filename="logo.png"\r\nContent-Type: image/png\r\n\r\n`,
-      ),
-      PNG,
-      Buffer.from(`\r\n--${limite}--\r\n`),
-    ]);
-    return appPublico.inject({
+describe('sem envio de arquivos pelo link (decisão 2026-11-14-a-sem-envio-de-arquivos)', () => {
+  it('a rota de envio não existe e o formulário padrão não pede logo', async () => {
+    const { token } = await criarOnboarding('q');
+    const r = await appPublico.inject({
       method: 'POST',
       url: `/publico/onboardings/${token}/arquivos`,
-      payload: corpo,
-      headers: { 'content-type': `multipart/form-data; boundary=${limite}` },
+      payload: {},
     });
-  }
-
-  it('o cliente envia o logo pelo link e usa o id na resposta', async () => {
-    const { token, onboardingId } = await criarOnboarding('q');
-    const up = await subir(token);
-    expect(up.statusCode).toBe(201);
-    const { arquivo } = up.json<{ arquivo: { id: string } }>();
-    const salvo = await prisma.auditoriaLog.findFirst({
-      where: { agenciaId, acao: 'arquivo.enviado', entidadeId: arquivo.id },
-    });
-    expect(salvo?.ator).toBe(`cliente:${onboardingId}`);
-    expect((await enviar(token, { ...OBRIGATORIOS, logo: arquivo.id })).statusCode).toBe(200);
-  });
-
-  it('recusa id de arquivo que não é deste cliente ou não existe', async () => {
-    const dono = await criarOnboarding('r');
-    const outro = await criarOnboarding('s');
-    const { arquivo } = (await subir(dono.token)).json<{ arquivo: { id: string } }>();
-    const r = await enviar(outro.token, { ...OBRIGATORIOS, logo: arquivo.id });
-    expect(r.statusCode).toBe(422);
-    expect(r.json<{ erros: unknown[] }>().erros).toEqual([
-      { chave: 'logo', codigo: 'arquivo_invalido' },
+    expect(r.statusCode).toBe(404);
+    const envio = await enviar(token, { ...OBRIGATORIOS, logo: 'qualquer' });
+    expect(envio.statusCode).toBe(422);
+    expect(envio.json<{ erros: unknown[] }>().erros).toEqual([
+      { chave: 'logo', codigo: 'campo_desconhecido' },
     ]);
-    expect((await rascunho(outro.token, { logo: 'nao-existe' })).statusCode).toBe(422);
-  });
-
-  it('upload pelo link exige o termo aceito', async () => {
-    const { token } = await criarOnboarding('t', { consentimento: false });
-    expect((await subir(token)).statusCode).toBe(409);
   });
 });

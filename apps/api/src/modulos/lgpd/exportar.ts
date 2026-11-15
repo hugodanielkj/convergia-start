@@ -12,8 +12,8 @@ const porOnboarding = <T extends { onboardingId: string }>(lista: readonly T[], 
 
 /**
  * Exporta tudo o que a agência guarda de um cliente (RN-73): cadastro, onboardings com etapas,
- * histórico de status, link (sem o token), consentimentos, respostas, acessos, agendamentos, a lista
- * dos arquivos e a auditoria. Os arquivos em si são baixados um a um. Só o Admin (rota).
+ * histórico de status, link (sem o token), consentimentos, respostas, acessos, agendamentos e
+ * a auditoria. Só o Admin (rota).
  */
 export async function exportarDadosDoCliente(
   prisma: PrismaDaAgencia,
@@ -70,7 +70,7 @@ export async function exportarDadosDoCliente(
   });
   const ids = onboardings.map((o) => o.id);
   const doCliente = { onboardingId: { in: ids } };
-  const [primeirosAcessos, consentimentos, respostas, acessos, arquivos] = await Promise.all([
+  const [primeirosAcessos, consentimentos, respostas, acessos] = await Promise.all([
     prisma.primeiroAcesso.findMany({ where: doCliente, select: { onboardingId: true, em: true } }),
     prisma.consentimentoCliente.findMany({
       where: doCliente,
@@ -97,10 +97,6 @@ export async function exportarDadosDoCliente(
         motivo: true,
         informadoEm: true,
       },
-    }),
-    prisma.arquivo.findMany({
-      where: { clienteId },
-      select: { id: true, nomeOriginal: true, tipo: true, tamanho: true, criadoEm: true },
     }),
   ]);
   const entidades = [
@@ -138,7 +134,6 @@ export async function exportarDadosDoCliente(
         formulario: porOnboarding(respostas, o.id)[0] ?? null,
         acessos: porOnboarding(acessos, o.id),
       })),
-      arquivos,
       auditoria,
     },
   };
