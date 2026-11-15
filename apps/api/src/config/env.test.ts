@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { configHttpDoEnv } from '../base/http/config.js';
 import { carregarEnv } from './env.js';
 
 const DATABASE_URL = 'postgresql://u:s@localhost:5432/db';
@@ -14,6 +15,33 @@ describe('carregarEnv', () => {
       SESSAO_DURACAO_HORAS: 168,
       ARMAZENAMENTO_DIR: '.armazenamento',
       EMAIL_ASSUNTO_PADRAO: 'Seu onboarding',
+      CONFIAR_PROXY: 'loopback,linklocal,uniquelocal',
+      LIMITE_JANELA_SEGUNDOS: 60,
+      LIMITE_PUBLICO_POR_IP: 300,
+      LIMITE_PUBLICO_POR_TOKEN: 300,
+      LIMITE_TOKENS_INVALIDOS_POR_IP: 20,
+      LIMITE_BLOQUEIO_MINUTOS: 15,
+    });
+  });
+
+  it('RN-76: limites do link e proxy confiável viram a configuração HTTP', () => {
+    const env = carregarEnv({
+      DATABASE_URL,
+      NODE_ENV: 'production',
+      SESSAO_SEGREDO: 's'.repeat(32),
+      CONFIAR_PROXY: 'nenhum',
+      LIMITE_PUBLICO_POR_IP: '0',
+    });
+    expect(configHttpDoEnv(env)).toEqual({
+      confiarProxy: false,
+      hsts: true,
+      limites: {
+        janelaMs: 60_000,
+        porIp: 0,
+        porToken: 300,
+        tokensInvalidosPorIp: 20,
+        janelaTokensInvalidosMs: 900_000,
+      },
     });
   });
 

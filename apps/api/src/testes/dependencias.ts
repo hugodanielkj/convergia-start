@@ -40,6 +40,8 @@ export function dependenciasDeTeste(parcial: Partial<Dependencias> = {}): Depend
       duracaoSessaoHoras: 168,
       identidade: null,
     },
+    // Sem limite: os testes dos módulos fazem muitas chamadas do mesmo IP. Os do limite ligam.
+    http: { confiarProxy: false, hsts: false, limites: null },
     ...parcial,
   };
 }
