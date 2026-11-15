@@ -14,7 +14,12 @@ import { construirApp } from '../../../app.js';
 import { criarBarramentoEmMemoria } from '../../../base/eventos.js';
 import { escopoAgencia } from '../../../base/escopo-agencia.js';
 import { criarPrisma } from '../../../base/prisma.js';
-import { AGORA_TESTE, URL_BANCO_TESTE, dependenciasDeTeste } from '../../../testes/dependencias.js';
+import { URL_BANCO_TESTE, dependenciasDeTeste } from '../../../testes/dependencias.js';
+
+// Segunda, 2027-11-15, 09:00 em São Paulo: à frente do relógio dos outros arquivos de teste. O worker
+// de envio é global, e com o convite automático (S5-4) os outros testes o disparam: com esta data,
+// ele não pega as mensagens deste arquivo.
+const AGORA_TESTE = new Date('2027-11-15T12:00:00Z');
 import { enfileirarNotificacao, type NovaNotificacao } from './enfileirar.js';
 import { processarNotificacao, processarPendentes } from './processar.js';
 
@@ -320,7 +325,7 @@ describe('RN-61 e RN-53 lembretes', () => {
 
 describe('RN-59 horário permitido', () => {
   // AGORA_TESTE = segunda 09:00 em São Paulo. 23:00 de segunda = terça 02:00 UTC.
-  const noite = new Date('2026-11-17T02:00:00Z');
+  const noite = new Date('2027-11-16T02:00:00Z');
 
   it('mensagem que respeita a janela, gerada às 23h, espera o próximo horário permitido', async () => {
     const o = await criarOnboarding('janela');
@@ -329,11 +334,11 @@ describe('RN-59 horário permitido', () => {
     expect(await processarNotificacao(prisma, m, eventos, id, noite)).toBe('aguardando');
     expect(m.enviadas).toHaveLength(0);
     const n = await ler(id);
-    expect(n.proximaTentativaEm).toEqual(new Date('2026-11-17T11:00:00Z'));
+    expect(n.proximaTentativaEm).toEqual(new Date('2027-11-16T11:00:00Z'));
     expect(n.reservadaAte).toBeNull();
     expect(n.totalTentativas).toBe(0);
     expect(
-      await processarNotificacao(prisma, m, eventos, id, new Date('2026-11-17T11:00:00Z')),
+      await processarNotificacao(prisma, m, eventos, id, new Date('2027-11-16T11:00:00Z')),
     ).toBe('enviada');
   });
 

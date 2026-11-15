@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useActionState, type ReactNode } from 'react';
 import { cadastrarClienteAction } from './actions';
+import { textoDoConvite } from './formatar';
 import { LinkParaCopiar } from './LinkParaCopiar';
 import type { EstadoCadastro } from './processar';
 import estilos from './clientes.module.css';
@@ -17,7 +18,7 @@ export function FormularioCliente({ children }: { children?: ReactNode }) {
     return (
       <section className={estilos.sucesso} aria-live="polite">
         <h2>{estado.nomeEmpresa} foi cadastrado</h2>
-        <p>O onboarding já foi criado. Envie este link ao cliente:</p>
+        <p>{textoDoConvite(estado.convite, new Date())}</p>
         {estado.aviso && (
           <p role="alert" className={estilos.erroGeral}>
             {estado.aviso}
@@ -25,8 +26,7 @@ export function FormularioCliente({ children }: { children?: ReactNode }) {
         )}
         <LinkParaCopiar caminho={estado.link.caminho} expiraEm={estado.link.expiraEm} />
         <p className={estilos.aviso}>
-          Copie agora: por segurança este link não é mostrado de novo. Depois, use “Gerar novo link”
-          na lista de clientes.
+          Depois, o link fica em “Copiar link”, no detalhe do onboarding.
         </p>
         <div className={estilos.acoes}>
           {/* Link comum, não do Next: recarrega a página e zera o formulário. */}
@@ -90,6 +90,18 @@ export function FormularioCliente({ children }: { children?: ReactNode }) {
       />
 
       {children}
+
+      <label className={estilos.opcao}>
+        <input
+          type="checkbox"
+          name="enviarConviteDepois"
+          defaultChecked={valores?.enviarConviteDepois ?? false}
+        />
+        Enviar convite depois
+      </label>
+      <p className={estilos.ajuda}>
+        Sem marcar, o convite sai na hora pelo WhatsApp ou e-mail (no horário permitido de envio).
+      </p>
 
       {estado.tipo === 'duplicado' && (
         <div role="alert" className={estilos.alertaDuplicidade}>

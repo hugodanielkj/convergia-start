@@ -112,3 +112,17 @@ export function textoPendencias(pendentes: readonly TipoEtapa[]): string {
   if (itens.length <= 1) return itens.join('');
   return `${itens.slice(0, -1).join(', ')} e ${String(itens.at(-1))}`;
 }
+
+/**
+ * RN-66: reenvio manual só depois do intervalo mínimo desde a última mensagem do mesmo tipo.
+ * Devolve `null` se pode reenviar agora, ou o instante a partir do qual pode.
+ */
+export function reenvioBloqueadoAte(
+  ultimaMensagemEm: Date | null,
+  intervaloHoras: number,
+  agora: Date,
+): Date | null {
+  if (!ultimaMensagemEm) return null;
+  const libera = new Date(ultimaMensagemEm.getTime() + intervaloHoras * MS_POR_HORA);
+  return libera.getTime() > agora.getTime() ? libera : null;
+}

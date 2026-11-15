@@ -41,6 +41,7 @@ model Onboarding {
   criadoEm      DateTime          @default(now())
   atualizadoEm  DateTime          @updatedAt
   agendamentos  Agendamento[]
+  alertas       AlertaInterno[]
   etapas        EtapaOnboarding[]
   link          LinkOnboarding?
   notificacoes  Notificacao[]

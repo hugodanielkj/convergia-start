@@ -22,8 +22,9 @@ export async function lerFatos(
   tx: TransacaoDaAgencia,
   onboardingId: string,
 ): Promise<FatosOnboarding> {
-  const [primeiroAcesso, etapas, agendamentos, entregueEm] = await Promise.all([
+  const [primeiroAcesso, convites, etapas, agendamentos, entregueEm] = await Promise.all([
     tx.primeiroAcesso.count({ where: { onboardingId } }),
+    tx.notificacao.count({ where: { onboardingId, tipo: 'convite', status: 'enviada' } }),
     tx.etapaOnboarding.findMany({ where: { onboardingId }, select: { tipo: true, status: true } }),
     tx.agendamento.findMany({ where: { onboardingId }, select: { tipo: true, status: true } }),
     dataDaEntrega(tx, onboardingId),
@@ -35,8 +36,8 @@ export async function lerFatos(
 
   return {
     abriuLink: primeiroAcesso > 0,
-    // O convite só é enviado pelo sistema a partir da S5 (D-23); até lá o status não passa por aqui.
-    conviteEnviado: false,
+    // RN-09: vale o convite que saiu de fato, não o que está na fila (decisão do PO, S5-4).
+    conviteEnviado: convites > 0,
     formularioConcluido: concluida('formulario'),
     acessosConcluidos: concluida('acessos'),
     reuniao: doTipo('reuniao'),

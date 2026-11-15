@@ -7,6 +7,7 @@ const dados: DadosCadastro = {
   whatsapp: '(31) 99999-8888',
   email: '',
   confirmarDuplicidade: false,
+  enviarConviteDepois: false,
 };
 const cliente = {
   id: 'c1',
@@ -58,7 +59,7 @@ describe('listar clientes', () => {
 describe('cadastrar cliente', () => {
   it('devolve o cliente e o link quando cria', async () => {
     const { cliente: c, fetcher } = api(201, { cliente, link });
-    expect(await c.cadastrar(dados)).toEqual({ tipo: 'criado', cliente, link });
+    expect(await c.cadastrar(dados)).toEqual({ tipo: 'criado', cliente, link, convite: null });
     const init = fetcher.mock.calls[0]?.[1];
     expect(init?.method).toBe('POST');
     expect(JSON.parse(typeof init?.body === 'string' ? init.body : '')).toEqual(dados);

@@ -23,6 +23,8 @@ export const TELAS: readonly Tela[] = [
   { nome: 'entrar', caminho: () => '/entrar' },
   { nome: 'início', caminho: () => '/' },
   { nome: 'onboardings', caminho: () => '/onboardings' },
+  { nome: 'avisos', caminho: () => '/avisos' },
+  { nome: 'avisos resolvidos', caminho: () => '/avisos?situacao=resolvidos' },
   { nome: 'detalhe do onboarding', caminho: (d) => `/onboardings/${d.onboardingId}` },
   {
     nome: 'acessos do onboarding',

@@ -1,0 +1,35 @@
+// Módulo notificacoes/alertas (S5-4, trilha B). Avisos para a agência (RN-58): aparecem na página
+// Avisos e vão por e-mail ao responsável. Não ficam em `notificacoes`, que é só do cliente.
+enum EmailAlerta {
+  pendente
+  enviado
+  falhou
+  // Sem e-mail: o próprio responsável fez a ação (decisão do PO) ou não há destinatário.
+  dispensado
+}
+
+model AlertaInterno {
+  id                 String      @id @default(uuid(7))
+  agenciaId          String
+  agencia            Agencia     @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  onboardingId       String
+  onboarding         Onboarding  @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  tipo               String
+  // Chave de idempotência: o mesmo fato nunca gera dois avisos.
+  chave              String
+  // Complemento curto, sem dados pessoais (ex.: "instagram", "reunião").
+  detalhe            String?
+  criadoEm           DateTime    @default(now()) @db.Timestamptz(3)
+  resolvidoEm        DateTime?   @db.Timestamptz(3)
+  resolvidoPor       String?
+  email              EmailAlerta @default(pendente)
+  emailTentativas    Int         @default(0)
+  emailProximaEm     DateTime?   @db.Timestamptz(3)
+  emailReservadoAte  DateTime?   @db.Timestamptz(3)
+  emailErro          String?
+
+  @@unique([agenciaId, chave])
+  @@index([agenciaId, resolvidoEm])
+  @@index([email, emailProximaEm])
+  @@map("alertas_internos")
+}

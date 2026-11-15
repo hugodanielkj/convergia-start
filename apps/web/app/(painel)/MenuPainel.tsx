@@ -32,6 +32,16 @@ const MENU: { href: string; rotulo: string; icone: ReactNode }[] = [
     ),
   },
   {
+    href: '/avisos',
+    rotulo: 'Avisos',
+    icone: (
+      <>
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+      </>
+    ),
+  },
+  {
     href: '/config',
     rotulo: 'Configurações',
     icone: (
@@ -48,20 +58,24 @@ const MENU: { href: string; rotulo: string; icone: ReactNode }[] = [
  * polegar e acima da barra de gestos; a partir do tablet fica no topo, ao lado da marca.
  * Só ícones (decisão do PO): o item ativo ganha fundo e traço laranja para não depender de texto.
  */
-export function MenuPainel() {
+export function MenuPainel({ avisos }: { avisos: number }) {
   const caminho = usePathname();
   return (
     <nav aria-label="Menu principal" className={estilos.navegacao}>
       <ul className={estilos.menu}>
         {MENU.map((item) => {
           const ativo = caminho === item.href || caminho.startsWith(`${item.href}/`);
+          // RN-58: o número de avisos abertos aparece no ícone e no nome lido pelo leitor de tela.
+          const contador = item.href === '/avisos' && avisos > 0 ? avisos : 0;
+          const rotulo =
+            contador > 0 ? `${item.rotulo} (${String(contador)} abertos)` : item.rotulo;
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
                 className={estilos.item}
-                aria-label={item.rotulo}
-                title={item.rotulo}
+                aria-label={rotulo}
+                title={rotulo}
                 aria-current={ativo ? 'page' : undefined}
               >
                 <svg
@@ -76,6 +90,11 @@ export function MenuPainel() {
                 >
                   {item.icone}
                 </svg>
+                {contador > 0 && (
+                  <span className={estilos.contador} aria-hidden="true">
+                    {contador > 99 ? '99+' : contador}
+                  </span>
+                )}
               </Link>
             </li>
           );

@@ -37,6 +37,7 @@ model Agencia {
   // Relações reversas (ordem alfabética)
   acessos             AcessoPlataforma[]
   agendamentos        Agendamento[]
+  alertasInternos     AlertaInterno[]
   auditoria           AuditoriaLog[]
   bloqueios           Bloqueio[]
   clientes            Cliente[]

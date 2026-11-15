@@ -30,6 +30,7 @@ const valores = {
   nomeContato: 'Maria',
   whatsapp: '(31) 99999-8888',
   email: '',
+  enviarConviteDepois: false,
 };
 
 describe('lerValores', () => {
@@ -42,7 +43,14 @@ describe('lerValores', () => {
       nomeContato: '',
       whatsapp: '',
       email: '',
+      enviarConviteDepois: false,
     });
+  });
+
+  it('RN-09: lê a marcação "Enviar convite depois"', () => {
+    const dados = new FormData();
+    dados.set('enviarConviteDepois', 'on');
+    expect(lerValores(dados).enviarConviteDepois).toBe(true);
   });
 });
 
@@ -61,12 +69,14 @@ describe('RN-04, RN-05, RN-07 cadastro pela tela', () => {
           onboarding: null,
         },
         link,
+        convite: { enviaEm: '2026-11-16T12:00:00.000Z' },
       }),
     );
     expect(await processarCadastro(preenchido, apiFalsa({ cadastrar }))).toEqual({
       tipo: 'criado',
       nomeEmpresa: 'Padaria',
       link,
+      convite: { enviaEm: '2026-11-16T12:00:00.000Z' },
     });
     expect(cadastrar).toHaveBeenCalledWith({ ...valores, confirmarDuplicidade: false });
   });

@@ -1,6 +1,6 @@
 # Sprint 5 — Envio de mensagens · Lembretes e alertas
 
-**Status:** trilha A concluída (2026-11-14); trilha B em andamento.
+**Status:** trilhas A e B concluídas (2026-11-15).
 
 ## Trilha A — PO
 
@@ -56,4 +56,13 @@ Toca pastas da trilha A (concluída; o PO faz as duas trilhas): `modulos/notific
 
 ### Entregue
 
+As 2 histórias mergeadas na `hml`, com CI verde:
+
+- S5-3 Lembretes (#75): lembretes de pendência (D+1, D+3, D+5) e de compromisso (24h e 2h antes), sempre no horário permitido; link do cliente guardado cifrado e "Copiar link" no detalhe; tela Configurações › Lembretes.
+- S5-4 Convite e alertas (este PR): convite sai sozinho no cadastro (ou "Enviar convite depois"); "Reenviar convite" e "Reenviar lembrete" ligados, com intervalo mínimo; página Avisos com contador no menu e e-mail ao responsável.
+
 ### Retro
+
+- **Funcionou:** regras puras de janela e vencimento no `core`, testadas sem banco; chave de idempotência em cada lembrete e aviso, o que deixa as varreduras rodarem de novo sem duplicar.
+- **Atenção:** o worker de envio é global e os testes rodam em paralelo no mesmo banco. Com o convite automático, qualquer cadastro nos testes dispara o worker: os testes de envio e de convite passaram a usar datas próprias, e as varreduras aceitam uma agência só (`soAgencia`).
+- **Pendências:** configurar `LINK_CHAVE_CIFRA` no `.env` da API (obrigatória em produção; `.env.example` não pôde ser editado); onboardings criados antes da S5-3 não têm o link cifrado e precisam de "Regenerar link" para receber lembretes; credenciais de e-mail (Resend) para os avisos saírem por e-mail.

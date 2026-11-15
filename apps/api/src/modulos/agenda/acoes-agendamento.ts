@@ -22,6 +22,8 @@ interface AgendamentoDoEvento {
   agendamentoId: string;
   onboardingId: string;
   tipo: 'reuniao' | 'captacao';
+  /** Quem marcou, quando foi alguém da agência (o alerta da S5-4 usa, RN-58). */
+  usuarioId?: string;
 }
 
 export type AcaoDaAgencia = 'cancelar' | 'realizado' | 'nao_compareceu';
@@ -90,7 +92,12 @@ export async function mudarStatusDoAgendamento(
     tipo: evento,
     agenciaId: usuario.agenciaId,
     ocorridoEm: agora,
-    dados: { agendamentoId, onboardingId: agendamento.onboardingId, tipo: agendamento.tipo },
+    dados: {
+      agendamentoId,
+      onboardingId: agendamento.onboardingId,
+      tipo: agendamento.tipo,
+      usuarioId: usuario.id,
+    },
   });
   return { id: agendamentoId, status };
 }

@@ -1,3 +1,4 @@
+import { formatarDataHora } from '../../clientes/formatar';
 import { rotuloEtapa, rotuloStatusOnboarding } from '../../clientes/mensagens';
 import type { EstadoAcessos } from './acessos/tipos';
 
@@ -119,6 +120,8 @@ const ROTULO_ACAO: Readonly<Record<string, string>> = {
   'acesso.concedido': 'Acesso confirmado',
   'acesso.invalidado': 'Acesso marcado como inválido',
   'link.regenerado': 'Link regenerado',
+  'convite.reenviado': 'Convite reenviado',
+  'lembrete.reenviado': 'Lembrete reenviado',
   'lembretes.desativados': 'Cliente parou de receber lembretes',
   'agendamento.criado': 'Agendamento feito',
   'agendamento.reagendado': 'Agendamento remarcado',
@@ -206,4 +209,11 @@ export function descreverNotificacao(n: Detalhe['notificacoes'][number]): {
     detalhe = [detalhe, `${String(n.totalTentativas)} tentativas`].filter(Boolean).join(' · ');
   }
   return { titulo: ROTULO_NOTIFICACAO[n.tipo] ?? n.tipo, situacao, detalhe };
+}
+
+/** RN-66 e RN-59: confirmação depois de reenviar convite ou lembrete pelo detalhe. */
+export function textoDoReenvio(oque: 'convite' | 'lembrete', enviaEm: string, agora: Date): string {
+  const nome = oque === 'convite' ? 'Convite' : 'Lembrete';
+  if (new Date(enviaEm).getTime() <= agora.getTime() + 60_000) return `${nome} na fila de envio.`;
+  return `${nome} na fila: sai em ${formatarDataHora(enviaEm)}, no horário permitido de envio.`;
 }
