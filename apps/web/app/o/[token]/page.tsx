@@ -14,6 +14,7 @@ export const metadata: Metadata = { title: 'Seu onboarding' };
 
 interface Visao {
   empresa: string;
+  statusGeral: string;
 }
 interface Termo {
   termo: { versao: string; texto: string };
@@ -25,12 +26,26 @@ interface Etapas {
   atual: EtapaId;
 }
 
+const caminhoResumo = (token: string) => `/o/${encodeURIComponent(token)}/resumo`;
+
+/** Concluído vale mais que vencido (RN-14): o link vencido de um onboarding concluído abre o resumo. */
+async function irParaResumoSeConcluido(token: string): Promise<void> {
+  const resposta = await fetchDoCliente(
+    `${URL_API}/publico/onboardings/${encodeURIComponent(token)}/resumo`,
+    { cache: 'no-store' },
+  );
+  if (resposta.ok) redirect(caminhoResumo(token));
+}
+
 async function chamar(token: string, caminho: string, metodo: 'GET' | 'POST' = 'GET') {
   const resposta = await fetchDoCliente(
     `${URL_API}/publico/onboardings/${encodeURIComponent(token)}${caminho}`,
     { method: metodo, cache: 'no-store' },
   );
-  if (resposta.status === 410) redirect(`/o/${encodeURIComponent(token)}/expirado`);
+  if (resposta.status === 410) {
+    await irParaResumoSeConcluido(token);
+    redirect(`/o/${encodeURIComponent(token)}/expirado`);
+  }
   if (resposta.status === 404) notFound();
   if (!resposta.ok) throw new Error(`API respondeu ${String(resposta.status)} em ${caminho}`);
   return resposta;
@@ -44,6 +59,8 @@ export default async function PaginaOnboarding({ params }: { params: Promise<{ t
   const { token } = await params;
 
   const { onboarding } = (await (await chamar(token, '')).json()) as { onboarding: Visao };
+  // Depois da conclusão, o link mostra só o resumo (RN-14).
+  if (onboarding.statusGeral === 'concluido') redirect(caminhoResumo(token));
   // Abrir o link pela primeira vez inicia o andamento (RN-50); repetir não muda nada.
   await chamar(token, '/abrir', 'POST');
   const consentimento = (await (await chamar(token, '/consentimento')).json()) as Termo;

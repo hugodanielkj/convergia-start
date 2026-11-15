@@ -1,0 +1,99 @@
+/* Mobile-first: uma coluna a 360px; telas maiores só ganham respiro. */
+.pagina {
+  display: grid;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: calc(1.5rem + var(--seguro-topo)) var(--gutter) calc(3rem + var(--seguro-base));
+}
+
+.pagina > h1 {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 2.75rem);
+  overflow-wrap: anywhere;
+}
+
+.selo {
+  justify-self: start;
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--raio-pilula);
+  background: var(--realce-suave);
+  color: var(--destaque);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.subtitulo {
+  margin: -0.5rem 0 0;
+  color: var(--suave);
+}
+
+.destaque {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: var(--raio-grande);
+  background: var(--petrol);
+  color: var(--cream);
+}
+
+.destaque strong {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.destaqueRotulo {
+  font-size: 0.875rem;
+  opacity: 0.85;
+}
+
+.tituloLista {
+  margin: 0.5rem 0 0;
+  font-size: 1.25rem;
+}
+
+.etapas {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etapa {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+}
+
+.etapa > div {
+  display: grid;
+  min-width: 0;
+}
+
+.nome {
+  font-weight: 600;
+}
+
+.data {
+  color: var(--suave);
+  overflow-wrap: anywhere;
+}
+
+.nota {
+  margin: 0.5rem 0 0;
+  color: var(--suave);
+  font-size: 0.875rem;
+}
+
+@media (min-width: 40rem) {
+  .etapas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
