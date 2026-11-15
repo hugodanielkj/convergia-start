@@ -22,6 +22,8 @@ export interface DepsLembretes {
   readonly eventos: PublicadorEventos;
   readonly urlApp: string;
   readonly chaveLink: Uint8Array | null;
+  /** Só esta agência (testes rodam em paralelo no mesmo banco); sem valor, todas. */
+  readonly soAgencia?: string;
 }
 
 const MS_POR_HORA = 60 * 60 * 1000;
@@ -46,7 +48,7 @@ async function jaExiste(prisma: PrismaClient, agenciaId: string, chave: string) 
 }
 
 /** Nomes que os templates usam, lidos na hora (o cadastro pode ter mudado). */
-async function valoresDoOnboarding(
+export async function valoresDoOnboarding(
   prisma: PrismaDaAgencia,
   onboardingId: string,
   link: string,
@@ -79,6 +81,7 @@ export async function varrerPendencias(deps: DepsLembretes, agora: Date): Promis
   );
   const convites = await prisma.notificacao.findMany({
     where: {
+      ...(deps.soAgencia ? { agenciaId: deps.soAgencia } : {}),
       tipo: 'convite',
       status: 'enviada',
       enviadaEm: { gte: desde },
@@ -155,6 +158,7 @@ export async function varrerCompromissos(deps: DepsLembretes, agora: Date): Prom
   );
   const agendamentos = await prisma.agendamento.findMany({
     where: {
+      ...(deps.soAgencia ? { agenciaId: deps.soAgencia } : {}),
       status: { in: ['agendado', 'reagendado'] },
       inicio: { gt: agora, lte: ate },
       onboarding: { statusGeral: { in: STATUS_COM_LEMBRETE } },

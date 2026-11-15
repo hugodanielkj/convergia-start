@@ -37,6 +37,7 @@ const deps = (chaveLink: Uint8Array | null = CHAVE_LINK_TESTE): DepsLembretes =>
   eventos,
   urlApp: URL_APP,
   chaveLink,
+  soAgencia: agenciaId,
 });
 
 type Etapa = 'formulario' | 'acessos' | 'reuniao' | 'captacao';
