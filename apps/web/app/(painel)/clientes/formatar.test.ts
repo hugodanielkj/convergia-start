@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatarDataHora, formatarTelefone, urlCompleta } from './formatar';
+import { formatarDataHora, formatarTelefone, textoDoConvite, urlCompleta } from './formatar';
 import {
   descreverMotivos,
   mensagemDeErroCampo,
@@ -60,5 +60,24 @@ describe('rótulos', () => {
     expect(rotuloEtapa('captacao')).toBe('Captação');
     expect(rotuloStatusOnboarding('em_producao')).toBe('Em produção');
     expect(rotuloStatusOnboarding('status_futuro')).toBe('status_futuro');
+  });
+});
+
+describe('RN-09 e RN-59 texto do convite no cadastro', () => {
+  const agora = new Date('2026-11-16T12:00:00.000Z');
+  it('sem convite, pede para enviar o link', () => {
+    expect(textoDoConvite(null, agora)).toBe(
+      'O convite não foi enviado. Envie este link ao cliente:',
+    );
+  });
+  it('saindo agora', () => {
+    expect(textoDoConvite({ enviaEm: agora.toISOString() }, agora)).toBe(
+      'O convite com este link está sendo enviado ao cliente.',
+    );
+  });
+  it('fora do horário, diz quando sai', () => {
+    expect(textoDoConvite({ enviaEm: '2026-11-17T11:00:00.000Z' }, agora)).toBe(
+      'O convite com este link sai em 17/11/2026, 08:00, no horário permitido de envio.',
+    );
   });
 });

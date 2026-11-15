@@ -295,3 +295,8 @@
   min-height: var(--alvo-toque);
   font-weight: 700;
 }
+
+.ok {
+  margin: 0;
+  color: var(--sucesso);
+}

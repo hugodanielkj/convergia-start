@@ -8,6 +8,7 @@ import {
   lembretePendenciaDevido,
   momentosLembreteCompromisso,
   proximoHorarioPermitido,
+  reenvioBloqueadoAte,
   textoPendencias,
   totalLembretesPendencia,
   ultimoHorarioPermitidoAte,
@@ -190,5 +191,18 @@ describe('RN-57 lembretes de compromisso', () => {
   it('não envia o lembrete que venceria antes de o horário ser marcado', () => {
     expect(devido(sp('2026-11-17T20:00'), sp('2026-11-17T19:00'))).toBeNull();
     expect(devido(sp('2026-11-18T12:00'), sp('2026-11-17T19:00'))?.horas).toBe(2);
+  });
+});
+
+describe('RN-66 intervalo mínimo do reenvio manual', () => {
+  const agora = sp('2026-11-16T10:00');
+  it('sem mensagem anterior, pode reenviar', () => {
+    expect(reenvioBloqueadoAte(null, 24, agora)).toBeNull();
+  });
+  it('dentro do intervalo, informa a partir de quando pode', () => {
+    expect(reenvioBloqueadoAte(sp('2026-11-15T12:00'), 24, agora)).toEqual(sp('2026-11-16T12:00'));
+  });
+  it('passado o intervalo, pode reenviar', () => {
+    expect(reenvioBloqueadoAte(sp('2026-11-15T10:00'), 24, agora)).toBeNull();
   });
 });

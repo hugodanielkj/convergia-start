@@ -37,10 +37,18 @@ export interface DadosCadastro {
   readonly whatsapp: string;
   readonly email: string;
   readonly confirmarDuplicidade: boolean;
+  /** RN-09: marcado, o convite não sai no cadastro. */
+  readonly enviarConviteDepois: boolean;
 }
 
 export type ResultadoCadastro =
-  | { readonly tipo: 'criado'; readonly cliente: ClienteVisao; readonly link: LinkVisao }
+  | {
+      readonly tipo: 'criado';
+      readonly cliente: ClienteVisao;
+      readonly link: LinkVisao;
+      /** Convite na fila (RN-09) e quando ele sai (RN-59); `null` = "enviar convite depois". */
+      readonly convite: { readonly enviaEm: string } | null;
+    }
   | { readonly tipo: 'invalido'; readonly erros: readonly ErroCampo[] }
   | { readonly tipo: 'duplicado'; readonly duplicidades: readonly DuplicidadeVisao[] }
   | { readonly tipo: 'falha'; readonly mensagem: string };
@@ -98,7 +106,14 @@ export function criarClienteApi({
         case 201:
           return {
             tipo: 'criado',
-            ...lerResposta(z.object({ cliente: esquemaCliente, link: esquemaLink }), json),
+            ...lerResposta(
+              z.object({
+                cliente: esquemaCliente,
+                link: esquemaLink,
+                convite: z.object({ enviaEm: z.string() }).nullable().default(null),
+              }),
+              json,
+            ),
           };
         case 409:
           return {

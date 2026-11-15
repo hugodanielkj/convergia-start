@@ -53,6 +53,10 @@ export default function estados(app: FastifyInstance): Promise<void> {
   app.deps.eventos.assinar('onboarding.etapas_mudaram', (e) =>
     recalcularPorEvento(e.agenciaId, e.dados.onboardingId, e.dados.ator),
   );
+  // O convite saiu: "criado" passa a "convite_enviado" (RN-09).
+  app.deps.eventos.assinar('notificacao.enviada', (e) =>
+    recalcularPorEvento(e.agenciaId, e.dados.onboardingId, 'sistema'),
+  );
   app.deps.eventos.assinar('agendamento.criado', (e) =>
     recalcularPorEvento(e.agenciaId, e.dados.onboardingId, `cliente:${e.dados.onboardingId}`),
   );

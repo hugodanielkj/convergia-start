@@ -386,3 +386,33 @@ describe('Configurações › Lembretes (RN-56, RN-57, RN-59)', () => {
     ).toBe(403);
   });
 });
+
+describe('sem link de videochamada (decisão do PO, sem Google Calendar)', () => {
+  it('o lembrete de compromisso não leva o localOuLink do agendamento', async () => {
+    await appAdmin.inject({
+      method: 'PUT',
+      url: '/templates/lembrete_compromisso',
+      payload: {
+        texto:
+          'Lembrete: {{tipo}} em {{data}} às {{hora}}, em {{local_captacao}}. {{link_onboarding}}',
+      },
+    });
+    const { id } = await criarOnboarding('sem-meet');
+    const inicio = sp('2026-11-20T10:07');
+    await prisma.agendamento.create({
+      data: {
+        agenciaId,
+        onboardingId: id,
+        tipo: 'captacao',
+        inicio,
+        fim: new Date(inicio.getTime() + 30_000),
+        criadoEm: AGORA_TESTE,
+        localOuLink: 'https://meet.google.com/abc-defg-hij',
+      },
+    });
+    await varrerCompromissos(deps(), new Date(inicio.getTime() - 24 * MS_HORA));
+    const [l] = await lembretes(id, 'lembrete_compromisso');
+    expect(l?.corpo).not.toContain('meet.google.com');
+    await appAdmin.inject({ method: 'DELETE', url: '/templates/lembrete_compromisso' });
+  });
+});

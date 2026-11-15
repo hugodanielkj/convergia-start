@@ -4,13 +4,20 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LinkParaCopiar } from '../../clientes/LinkParaCopiar';
 import estilos from './detalhe.module.css';
-import { ACOES_STATUS, mensagemDeErro, type AcaoStatus, type Detalhe } from './tipos';
+import {
+  ACOES_STATUS,
+  mensagemDeErro,
+  textoDoReenvio,
+  type AcaoStatus,
+  type Detalhe,
+} from './tipos';
 
 type Painel =
   | { tipo: 'status'; acao: AcaoStatus }
   | { tipo: 'reabrir' }
   | { tipo: 'fechar' }
   | { tipo: 'regenerar' }
+  | { tipo: 'reenviar'; oque: 'convite' | 'lembrete' }
   | { tipo: 'excluir' };
 
 interface Pedido {
@@ -28,6 +35,7 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [novoLink, setNovoLink] = useState<{ caminho: string; expiraEm: string } | null>(null);
+  const [enviado, setEnviado] = useState<string | null>(null);
   const { acoes, id, cliente } = detalhe;
 
   // "Copiar link" monta o link vigente a partir do token cifrado (2026-11-15-b-link-cifrado).
@@ -44,6 +52,7 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
   }
 
   function abrir(p: Painel) {
+    setEnviado(null);
     setPainel(p);
     setMotivo('');
     setConfirmacao('');
@@ -87,6 +96,16 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
             router.refresh();
           },
         };
+      case 'reenviar':
+        return {
+          url: `${base}/${p.oque}/reenviar`,
+          corpo: {},
+          depois: async (r) => {
+            const { enviaEm } = (await r.json()) as { enviaEm: string };
+            setEnviado(textoDoReenvio(p.oque, enviaEm, new Date()));
+            router.refresh();
+          },
+        };
       case 'excluir':
         return {
           url: `/api/clientes/${cliente.id}/exclusao`,
@@ -123,6 +142,19 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
           aviso: 'O link atual para de funcionar na hora.',
           perigo: false,
         };
+      case 'reenviar':
+        return p.oque === 'convite'
+          ? {
+              titulo: 'Reenviar convite',
+              aviso: 'O cliente recebe de novo o convite com o link atual.',
+              perigo: false,
+            }
+          : {
+              titulo: 'Reenviar lembrete',
+              aviso:
+                'O cliente recebe um lembrete com o que falta. Não conta nos lembretes automáticos.',
+              perigo: false,
+            };
       case 'excluir':
         return {
           titulo: 'Excluir dados do cliente',
@@ -209,18 +241,33 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
             Excluir dados (LGPD)
           </button>
         )}
-        {/* O motivo fica no texto visível abaixo: no celular não há hover (decisão mobile-first). */}
-        <button type="button" disabled aria-describedby="dica-acoes-mensagens">
-          Reenviar convite
-        </button>
-        <button type="button" disabled aria-describedby="dica-acoes-mensagens">
-          Reenviar lembrete
-        </button>
+        {acoes.regenerarLink && (
+          <button
+            type="button"
+            onClick={() => {
+              abrir({ tipo: 'reenviar', oque: 'convite' });
+            }}
+          >
+            Reenviar convite
+          </button>
+        )}
+        {acoes.regenerarLink && (
+          <button
+            type="button"
+            onClick={() => {
+              abrir({ tipo: 'reenviar', oque: 'lembrete' });
+            }}
+          >
+            Reenviar lembrete
+          </button>
+        )}
       </div>
-      <p id="dica-acoes-mensagens" className={estilos.dica}>
-        Reenviar convite e lembrete chegam na Sprint 5. O prazo se ajusta na seção “Prazo de
-        liberação”.
-      </p>
+      <p className={estilos.dica}>O prazo se ajusta na seção “Prazo de liberação”.</p>
+      {enviado && (
+        <p className={estilos.ok} role="status">
+          {enviado}
+        </p>
+      )}
 
       {painel && texto && (
         <form

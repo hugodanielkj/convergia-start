@@ -22,6 +22,13 @@ import {
   salvarEscolha,
 } from './acessos.js';
 
+declare module '@convergia/core/base' {
+  interface MapaEventos {
+    /** A agência marcou um acesso como inválido (RN-28): alerta interno da S5-4 (RN-58). */
+    'acesso.marcado_invalido': { onboardingId: string; plataforma: string; usuarioId: string };
+  }
+}
+
 const plataforma = z.string().refine(ehPlataformaAcesso, 'Plataforma desconhecida');
 const parametrosToken = z.object({
   token: z.string().min(1).max(100),
@@ -130,6 +137,14 @@ export default function acessos(app: FastifyInstance): Promise<void> {
         `usuario:${usuario.id}`,
         app.deps.relogio.agora(),
       );
+      if (status === 'invalido') {
+        await app.deps.eventos.publicar({
+          tipo: 'acesso.marcado_invalido',
+          agenciaId: usuario.agenciaId,
+          ocorridoEm: app.deps.relogio.agora(),
+          dados: { onboardingId, plataforma: alvo, usuarioId: usuario.id },
+        });
+      }
       return estado;
     },
   );

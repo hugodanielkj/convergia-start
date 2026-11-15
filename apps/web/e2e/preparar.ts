@@ -20,7 +20,7 @@ const esquemaLista = z.object({
 const esquemaLink = z.object({ link: z.object({ token: z.string() }) });
 const esquemaTermo = z.object({ termo: z.object({ versao: z.string() }) });
 
-async function chamar(caminho: string, metodo: 'GET' | 'POST', corpo?: unknown) {
+async function chamar(caminho: string, metodo: 'GET' | 'POST' | 'PUT', corpo?: unknown) {
   return fetch(`${URL_API}${caminho}`, {
     method: metodo,
     headers: corpo === undefined ? {} : { 'content-type': 'application/json' },
@@ -95,6 +95,12 @@ export default async function preparar(): Promise<void> {
   await aceitarTermo(principal.token);
   const semTermo = await clienteDeTeste('E2E Termo', 'e2e-termo@exemplo.com');
   const tokenConcluido = await concluidoDeTeste();
+  // Acesso marcado como inválido: gera um aviso para a tela Avisos ter um cartão (RN-58).
+  const aviso = await chamar(`/onboardings/${semTermo.onboardingId}/acessos/instagram`, 'PUT', {
+    status: 'invalido',
+    motivo: 'Teste E2E',
+  });
+  if (!aviso.ok) throw new Error(`Marcar acesso respondeu ${String(aviso.status)}`);
 
   const dados: DadosE2E = {
     token: principal.token,

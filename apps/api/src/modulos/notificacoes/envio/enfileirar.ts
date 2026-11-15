@@ -108,6 +108,8 @@ export async function enfileirarNotificacao(
         assunto: nova.assunto ?? null,
         corpo,
         respeitarJanela: nova.respeitarJanela ?? false,
+        // Relógio da aplicação, não do banco: o intervalo de reenvio (RN-66) compara com ele.
+        criadoEm: agora,
         proximaTentativaEm: agora,
       },
     ],

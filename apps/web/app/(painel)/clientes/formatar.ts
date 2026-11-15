@@ -21,3 +21,13 @@ export function formatarDataHora(iso: string): string {
 export function urlCompleta(origem: string, caminho: string): string {
   return `${origem.replace(/\/$/, '')}${caminho}`;
 }
+
+/** RN-09 e RN-59: o que a tela diz sobre o convite automático depois do cadastro. */
+export function textoDoConvite(convite: { enviaEm: string } | null, agora: Date): string {
+  if (!convite) return 'O convite não foi enviado. Envie este link ao cliente:';
+  const enviaEm = new Date(convite.enviaEm);
+  if (enviaEm.getTime() <= agora.getTime() + 60_000) {
+    return 'O convite com este link está sendo enviado ao cliente.';
+  }
+  return `O convite com este link sai em ${formatarDataHora(convite.enviaEm)}, no horário permitido de envio.`;
+}

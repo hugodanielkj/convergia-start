@@ -5,6 +5,7 @@ import {
   nomeDoAtor,
   rotuloAcaoAuditoria,
   textoDaResposta,
+  textoDoReenvio,
 } from './tipos';
 
 describe('linha do tempo do detalhe (RN-65)', () => {
@@ -92,5 +93,17 @@ describe('histórico de notificações no detalhe (RN-62)', () => {
         totalTentativas: 1,
       }).detalhe,
     ).toBe('Erro: numero invalido');
+  });
+});
+
+describe('RN-66 confirmação do reenvio', () => {
+  const agora = new Date('2026-11-16T12:00:00.000Z');
+  it('na janela, entra na fila', () => {
+    expect(textoDoReenvio('convite', agora.toISOString(), agora)).toBe('Convite na fila de envio.');
+  });
+  it('fora da janela, diz quando sai (RN-59)', () => {
+    expect(textoDoReenvio('lembrete', '2026-11-17T11:00:00.000Z', agora)).toBe(
+      'Lembrete na fila: sai em 17/11/2026, 08:00, no horário permitido de envio.',
+    );
   });
 });

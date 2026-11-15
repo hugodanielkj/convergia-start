@@ -6,6 +6,7 @@ export interface Valores {
   readonly nomeContato: string;
   readonly whatsapp: string;
   readonly email: string;
+  readonly enviarConviteDepois: boolean;
 }
 
 export type EstadoCadastro =
@@ -26,6 +27,7 @@ export type EstadoCadastro =
       readonly tipo: 'criado';
       readonly nomeEmpresa: string;
       readonly link: LinkVisao;
+      readonly convite: { readonly enviaEm: string } | null;
       /** Algo da personalização (S6-2/S6-3) não foi salvo; o cliente já existe. */
       readonly aviso?: string;
     };
@@ -48,6 +50,7 @@ export function lerValores(dados: FormData): Valores {
     nomeContato: texto(dados, 'nomeContato'),
     whatsapp: texto(dados, 'whatsapp'),
     email: texto(dados, 'email'),
+    enviarConviteDepois: texto(dados, 'enviarConviteDepois') === 'on',
   };
 }
 
@@ -64,7 +67,12 @@ export async function processarCadastro(dados: FormData, api: ClienteApi): Promi
     });
     switch (resultado.tipo) {
       case 'criado':
-        return { tipo: 'criado', nomeEmpresa: resultado.cliente.nomeEmpresa, link: resultado.link };
+        return {
+          tipo: 'criado',
+          nomeEmpresa: resultado.cliente.nomeEmpresa,
+          link: resultado.link,
+          convite: resultado.convite,
+        };
       case 'invalido':
         return { tipo: 'invalido', valores, erros: primeiroErroPorCampo(resultado.erros) };
       case 'duplicado':

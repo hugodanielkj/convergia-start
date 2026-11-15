@@ -196,3 +196,12 @@
   gap: 0.5rem;
   margin-top: 0.75rem;
 }
+
+/* Linha inteira da caixa de marcar é alvo de toque (mobile-first). */
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: var(--alvo-toque);
+  font-weight: 600;
+}
