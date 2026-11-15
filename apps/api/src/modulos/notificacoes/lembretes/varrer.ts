@@ -172,7 +172,6 @@ export async function varrerCompromissos(deps: DepsLembretes, agora: Date): Prom
       criadoEm: true,
       atualizadoEm: true,
       reagendamentos: true,
-      localOuLink: true,
       dadosCaptacao: { select: { local: true } },
       agencia: { select: { fusoHorario: true, config: true } },
     },
@@ -199,7 +198,8 @@ export async function varrerCompromissos(deps: DepsLembretes, agora: Date): Prom
     const link = await linkAtual(escopo, deps.chaveLink, a.onboardingId);
     if (!link) continue;
     const valores = await valoresDoOnboarding(escopo, a.onboardingId, urlDoLink(deps.urlApp, link));
-    const local = a.dadosCaptacao?.local ?? a.localOuLink;
+    // Só o endereço que o cliente informou: a reunião não tem link no sistema (decisão do PO).
+    const local = a.dadosCaptacao?.local;
     const corpo = preencherTemplate(await textoDoTemplate(escopo, 'lembrete_compromisso'), {
       ...valores,
       tipo: NOME_TIPO[a.tipo],
