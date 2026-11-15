@@ -11,6 +11,8 @@ export default tseslint.config(
       '**/coverage/**',
       '**/next-env.d.ts',
       '**/src/generated/**',
+      // Worktrees das sessões paralelas do Claude ficam dentro do repositório.
+      '.claude/worktrees/**',
     ],
   },
   js.configs.recommended,
