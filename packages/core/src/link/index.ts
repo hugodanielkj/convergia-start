@@ -1,4 +1,10 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  timingSafeEqual,
+} from 'node:crypto';
 
 /** Tamanho do token: 256 bits de entropia (RN-10 pede no mínimo 128; D-13 fixa 256). */
 export const TOKEN_BYTES = 32;
@@ -61,4 +67,50 @@ export function verificarLink(token: string, registro: RegistroLink, agora: Date
 function tokenConfere(token: string, hashGuardado: string): boolean {
   if (!FORMATO_TOKEN.test(token) || !FORMATO_HASH.test(hashGuardado)) return false;
   return timingSafeEqual(Buffer.from(hashToken(token), 'hex'), Buffer.from(hashGuardado, 'hex'));
+}
+
+/** Chave do link cifrado: 256 bits (AES-256-GCM). Fica fora do banco, em variável de ambiente. */
+export const CHAVE_LINK_BYTES = 32;
+const IV_BYTES = 12;
+const TAG_BYTES = 16;
+const ALGORITMO = 'aes-256-gcm';
+
+function exigirChave(chave: Uint8Array): void {
+  if (chave.length !== CHAVE_LINK_BYTES) {
+    throw new Error(`Chave do link precisa ter ${String(CHAVE_LINK_BYTES * 8)} bits`);
+  }
+}
+
+/**
+ * Cifra o token para os lembretes poderem montar o link de novo (decisão 2026-11-15-b-link-cifrado).
+ * IV aleatório a cada chamada; o resultado junta IV, etiqueta de autenticação e texto cifrado.
+ */
+export function cifrarToken(
+  token: string,
+  chave: Uint8Array,
+  gerarBytes: GeradorBytes = randomBytes,
+): string {
+  exigirChave(chave);
+  const iv = gerarBytes(IV_BYTES);
+  const cifra = createCipheriv(ALGORITMO, chave, iv);
+  const corpo = Buffer.concat([cifra.update(token, 'utf8'), cifra.final()]);
+  return Buffer.concat([iv, cifra.getAuthTag(), corpo]).toString('base64url');
+}
+
+/** Decifra o token. `null` se a chave for outra ou o valor tiver sido alterado. */
+export function decifrarToken(cifrado: string, chave: Uint8Array): string | null {
+  exigirChave(chave);
+  const bytes = Buffer.from(cifrado, 'base64url');
+  if (bytes.length <= IV_BYTES + TAG_BYTES) return null;
+  try {
+    const decifra = createDecipheriv(ALGORITMO, chave, bytes.subarray(0, IV_BYTES));
+    decifra.setAuthTag(bytes.subarray(IV_BYTES, IV_BYTES + TAG_BYTES));
+    const token = Buffer.concat([
+      decifra.update(bytes.subarray(IV_BYTES + TAG_BYTES)),
+      decifra.final(),
+    ]).toString('utf8');
+    return FORMATO_TOKEN.test(token) ? token : null;
+  } catch {
+    return null;
+  }
 }

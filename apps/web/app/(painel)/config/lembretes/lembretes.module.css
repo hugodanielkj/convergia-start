@@ -1,0 +1,102 @@
+.pagina {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+.pagina h1 {
+  margin: 0;
+}
+
+.cartao {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+}
+
+.cartao h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.campo input {
+  width: 100%;
+  font-weight: 400;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.dica {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.875rem;
+}
+
+.dias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dias legend {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.dia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--alvo-toque);
+  padding-right: 0.25rem;
+}
+
+.salvar {
+  width: 100%;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--destaque);
+  color: var(--sobre-destaque);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.salvar:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ok {
+  margin: 0;
+  color: var(--sucesso);
+}
+
+.erro {
+  margin: 0;
+  color: var(--erro);
+}
+
+@media (min-width: 40rem) {
+  .salvar {
+    width: auto;
+    justify-self: start;
+    padding: 0 1.5rem;
+  }
+}

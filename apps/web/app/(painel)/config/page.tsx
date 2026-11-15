@@ -13,6 +13,11 @@ const SECOES = [
   { href: '/config/formulario', titulo: 'Formulário', texto: 'Perguntas que o cliente responde.' },
   { href: '/config/acessos', titulo: 'Acessos', texto: 'Identificadores da agência em cada rede.' },
   { href: '/config/templates', titulo: 'Mensagens', texto: 'Textos do WhatsApp e do e-mail.' },
+  {
+    href: '/config/lembretes',
+    titulo: 'Lembretes',
+    texto: 'Quando lembrar o cliente e em que horário enviar.',
+  },
 ] as const;
 
 /** Índice das configurações: no celular, uma lista de cartões grandes para tocar. */

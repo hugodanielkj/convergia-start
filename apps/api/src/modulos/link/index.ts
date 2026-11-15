@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { exigirUsuario, prismaDaRequisicao, usuarioDaRequisicao } from '../../base/auth.js';
 import { consultarLink } from './consultar-link.js';
+import { linkParaCopiar } from './link-atual.js';
 import { regenerarLink } from './regenerar-link.js';
 import { solicitarNovoLink } from './solicitar-novo-link.js';
 
@@ -21,8 +22,26 @@ export default function link(app: FastifyInstance): Promise<void> {
         usuarioDaRequisicao(request),
         onboardingId,
         app.deps.relogio.agora(),
+        app.deps.chaveLink,
       );
       return { link: novo };
+    },
+  );
+
+  // O link vigente, para "Copiar link" no detalhe (2026-11-15-b-link-cifrado).
+  app.get(
+    '/onboardings/:onboardingId/link',
+    { preHandler: exigirUsuario },
+    async (request, reply) => {
+      const { onboardingId } = parametrosOnboarding.parse(request.params);
+      void reply.header('cache-control', 'no-store');
+      const link = await linkParaCopiar(
+        prismaDaRequisicao(app, request),
+        usuarioDaRequisicao(request),
+        app.deps.chaveLink,
+        onboardingId,
+      );
+      return { link };
     },
   );
 

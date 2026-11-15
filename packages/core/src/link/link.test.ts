@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { relogioFixo } from '../base/relogio.js';
 import {
+  cifrarToken,
+  decifrarToken,
   calcularExpiracao,
   gerarTokenLink,
   hashToken,
@@ -113,5 +115,32 @@ describe('RN-11 e RN-12 verificação do link', () => {
   it('rejeita hash guardado em formato inesperado', () => {
     const agora = new Date('2026-11-20T00:00:00.000Z');
     expect(verificarLink(token, { hash: 'nao-e-hash', expiraEm }, agora)).toBe('invalido');
+  });
+});
+
+describe('link cifrado para os lembretes (decisão 2026-11-15-b-link-cifrado)', () => {
+  const chave = new Uint8Array(32).fill(7);
+  const { token } = gerarTokenLink();
+
+  it('decifra o mesmo token com a mesma chave', () => {
+    expect(decifrarToken(cifrarToken(token, chave), chave)).toBe(token);
+  });
+
+  it('gera um valor diferente a cada vez (IV aleatório) e nunca o token em claro', () => {
+    const a = cifrarToken(token, chave);
+    expect(a).not.toBe(cifrarToken(token, chave));
+    expect(a).not.toContain(token);
+  });
+
+  it('com outra chave ou valor alterado não decifra', () => {
+    const cifrado = cifrarToken(token, chave);
+    expect(decifrarToken(cifrado, new Uint8Array(32).fill(8))).toBeNull();
+    const alterado = `${cifrado.slice(0, -2)}${cifrado.endsWith('AA') ? 'BB' : 'AA'}`;
+    expect(decifrarToken(alterado, chave)).toBeNull();
+    expect(decifrarToken('curto', chave)).toBeNull();
+  });
+
+  it('recusa chave com tamanho errado', () => {
+    expect(() => cifrarToken(token, new Uint8Array(16))).toThrow();
   });
 });

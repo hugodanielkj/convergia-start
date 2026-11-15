@@ -17,6 +17,14 @@ const esquemaEnv = z
     GOOGLE_CALENDAR_REFRESH_TOKEN: z.preprocess(vazioParaIndefinido, z.string().optional()),
     GOOGLE_CALENDAR_ID: z.preprocess(vazioParaIndefinido, z.string().optional()),
     SESSAO_SEGREDO: z.preprocess(vazioParaIndefinido, z.string().min(32).optional()),
+    // Chave do link cifrado (32 bytes em base64), para os lembretes levarem o link do cliente.
+    LINK_CHAVE_CIFRA: z.preprocess(
+      vazioParaIndefinido,
+      z
+        .string()
+        .refine((v) => Buffer.from(v, 'base64').length === 32, 'precisa ter 32 bytes em base64')
+        .optional(),
+    ),
     SESSAO_DURACAO_HORAS: z.coerce.number().int().positive().default(168),
     // WhatsApp pela MegaAPI (D-07); sem as três, o WhatsApp fica pendente (S5-2).
     MEGAAPI_HOST: z.preprocess(vazioParaIndefinido, z.string().optional()),
@@ -56,6 +64,10 @@ const esquemaEnv = z
   .refine((env) => env.NODE_ENV !== 'production' || env.SESSAO_SEGREDO !== undefined, {
     message: 'SESSAO_SEGREDO é obrigatório em produção',
     path: ['SESSAO_SEGREDO'],
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || env.LINK_CHAVE_CIFRA !== undefined, {
+    message: 'LINK_CHAVE_CIFRA é obrigatório em produção (lembretes com o link do cliente)',
+    path: ['LINK_CHAVE_CIFRA'],
   })
   .refine(
     (env) => env.GOOGLE_CALENDAR_REFRESH_TOKEN === undefined || env.GOOGLE_CLIENT_ID !== undefined,

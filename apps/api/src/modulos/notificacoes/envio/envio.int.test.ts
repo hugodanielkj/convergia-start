@@ -317,3 +317,31 @@ describe('RN-61 e RN-53 lembretes', () => {
     ).toBe(404);
   });
 });
+
+describe('RN-59 horário permitido', () => {
+  // AGORA_TESTE = segunda 09:00 em São Paulo. 23:00 de segunda = terça 02:00 UTC.
+  const noite = new Date('2026-11-17T02:00:00Z');
+
+  it('mensagem que respeita a janela, gerada às 23h, espera o próximo horário permitido', async () => {
+    const o = await criarOnboarding('janela');
+    const id = await enfileirada(o, { respeitarJanela: true });
+    const m = new MensageriaRoteiro();
+    expect(await processarNotificacao(prisma, m, eventos, id, noite)).toBe('aguardando');
+    expect(m.enviadas).toHaveLength(0);
+    const n = await ler(id);
+    expect(n.proximaTentativaEm).toEqual(new Date('2026-11-17T11:00:00Z'));
+    expect(n.reservadaAte).toBeNull();
+    expect(n.totalTentativas).toBe(0);
+    expect(
+      await processarNotificacao(prisma, m, eventos, id, new Date('2026-11-17T11:00:00Z')),
+    ).toBe('enviada');
+  });
+
+  it('confirmação (sem janela) sai na hora, mesmo às 23h', async () => {
+    const o = await criarOnboarding('sem-janela');
+    const id = await enfileirada(o);
+    expect(await processarNotificacao(prisma, new MensageriaRoteiro(), eventos, id, noite)).toBe(
+      'enviada',
+    );
+  });
+});

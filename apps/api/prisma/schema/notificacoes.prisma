@@ -20,6 +20,8 @@ model Notificacao {
   chave              String
   assunto            String?
   corpo              String
+  // Convite automático, lembretes e reenvios só saem no horário permitido (RN-59).
+  respeitarJanela    Boolean           @default(false)
   status             StatusNotificacao @default(pendente)
   // Canal da última tentativa (ou do envio).
   canal              Canal?

@@ -35,6 +35,8 @@ export interface NovaNotificacao {
   readonly assunto?: string;
   /** Texto final, já com as variáveis preenchidas (`preencherTemplate`). */
   readonly corpo: string;
+  /** RN-59: só sai no horário permitido (convite automático, lembretes, reenvios). */
+  readonly respeitarJanela?: boolean;
 }
 
 export type ResultadoEnfileirar =
@@ -105,6 +107,7 @@ export async function enfileirarNotificacao(
         chave: nova.chave,
         assunto: nova.assunto ?? null,
         corpo,
+        respeitarJanela: nova.respeitarJanela ?? false,
         proximaTentativaEm: agora,
       },
     ],

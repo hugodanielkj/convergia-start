@@ -29,6 +29,7 @@ export default function clientes(app: FastifyInstance): Promise<void> {
         responsavelId: corpo.responsavelId,
       },
       app.deps.relogio.agora(),
+      app.deps.chaveLink,
     );
 
     switch (resultado.tipo) {

@@ -3,6 +3,7 @@ import { configHttpDoEnv } from '../base/http/config.js';
 import { carregarEnv } from './env.js';
 
 const DATABASE_URL = 'postgresql://u:s@localhost:5432/db';
+const CHAVE = Buffer.alloc(32, 1).toString('base64');
 
 describe('carregarEnv', () => {
   it('aplica valores padrão', () => {
@@ -31,6 +32,7 @@ describe('carregarEnv', () => {
       DATABASE_URL,
       NODE_ENV: 'production',
       SESSAO_SEGREDO: 's'.repeat(32),
+      LINK_CHAVE_CIFRA: CHAVE,
       CONFIAR_PROXY: 'nenhum',
       LIMITE_PUBLICO_POR_IP: '0',
     });
@@ -45,6 +47,16 @@ describe('carregarEnv', () => {
         janelaTokensInvalidosMs: 900_000,
       },
     });
+  });
+
+  it('chave do link cifrado: 32 bytes em base64, obrigatória em produção (2026-11-15-b)', () => {
+    expect(carregarEnv({ DATABASE_URL, LINK_CHAVE_CIFRA: CHAVE }).LINK_CHAVE_CIFRA).toBe(CHAVE);
+    expect(() =>
+      carregarEnv({ DATABASE_URL, LINK_CHAVE_CIFRA: Buffer.alloc(16).toString('base64') }),
+    ).toThrow(/LINK_CHAVE_CIFRA/);
+    expect(() =>
+      carregarEnv({ DATABASE_URL, NODE_ENV: 'production', SESSAO_SEGREDO: 's'.repeat(32) }),
+    ).toThrow(/LINK_CHAVE_CIFRA/);
   });
 
   it('credenciais da MegaAPI e do Resend vêm juntas ou não vêm (S5-2)', () => {

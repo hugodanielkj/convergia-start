@@ -8,6 +8,9 @@ model LinkOnboarding {
   onboardingId String     @unique
   onboarding   Onboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
   tokenHash    String     @unique
+  // Token cifrado (AES-256-GCM, chave LINK_CHAVE_CIFRA fora do banco) para os lembretes montarem o
+  // link de novo. Nulo sem a chave ou em links anteriores (2026-11-15-b-link-cifrado).
+  tokenCifrado String?
   expiraEm     DateTime
   criadoEm     DateTime   @default(now())
   regeneradoEm DateTime?

@@ -20,6 +20,7 @@ export default function onboarding(app: FastifyInstance): Promise<void> {
         clienteId,
         responsavelId,
         app.deps.relogio.agora(),
+        app.deps.chaveLink,
       );
       return reply.status(201).send(criado);
     },

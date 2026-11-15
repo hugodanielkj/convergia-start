@@ -7,6 +7,9 @@ import { criarPrisma } from '../base/prisma.js';
 export const URL_BANCO_TESTE =
   process.env['DATABASE_URL'] ?? 'postgresql://convergia:convergia@localhost:55432/convergia';
 
+/** Chave fixa do link cifrado nos testes (nunca usar fora deles). */
+export const CHAVE_LINK_TESTE = new Uint8Array(32).fill(42);
+
 export const AGORA_TESTE = new Date('2026-11-16T12:00:00Z');
 
 export const usuarioTeste = (parcial: Partial<UsuarioAutenticado> = {}): UsuarioAutenticado => ({
@@ -31,6 +34,7 @@ export function dependenciasDeTeste(parcial: Partial<Dependencias> = {}): Depend
     mensageria: new MensageriaEmMemoria(),
     calendario: null,
     relogio: relogioFixo(AGORA_TESTE),
+    chaveLink: CHAVE_LINK_TESTE,
     resolverSessao: () => Promise.resolve(null),
     auth: {
       segredoCookie: 'segredo-de-teste-com-mais-de-32-caracteres',

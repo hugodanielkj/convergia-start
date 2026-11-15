@@ -63,6 +63,7 @@ const app = construirApp(env, {
         })
       : null,
   relogio: relogioSistema,
+  chaveLink: env.LINK_CHAVE_CIFRA ? Buffer.from(env.LINK_CHAVE_CIFRA, 'base64') : null,
   resolverSessao: env.AUTH_DEV_USUARIO_EMAIL
     ? sessaoDeDesenvolvimento(prisma, env.AUTH_DEV_USUARIO_EMAIL)
     : resolvedorSessaoCookie(prisma, relogioSistema),
@@ -96,6 +97,12 @@ const whatsappSemCredencial =
   env.WHATSAPP_PROVEDOR === 'meta' ? !env.META_WHATSAPP_TOKEN : !env.MEGAAPI_TOKEN;
 if (whatsappSemCredencial || !env.RESEND_API_KEY) {
   app.log.warn('WhatsApp ou e-mail sem credenciais: as mensagens desse canal ficam pendentes');
+}
+
+if (!env.LINK_CHAVE_CIFRA) {
+  app.log.warn(
+    'LINK_CHAVE_CIFRA não configurada: lembretes e reenvios sem o link do cliente não saem',
+  );
 }
 
 if (env.AUTH_DEV_USUARIO_EMAIL) {

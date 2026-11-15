@@ -30,6 +30,19 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
   const [novoLink, setNovoLink] = useState<{ caminho: string; expiraEm: string } | null>(null);
   const { acoes, id, cliente } = detalhe;
 
+  // "Copiar link" monta o link vigente a partir do token cifrado (2026-11-15-b-link-cifrado).
+  async function mostrarLink() {
+    setErro(null);
+    const r = await fetch(`/api/onboardings/${id}/link`, { cache: 'no-store' });
+    if (!r.ok) {
+      setErro(await mensagemDeErro(r));
+      return;
+    }
+    const { link } = (await r.json()) as { link: { caminho: string; expiraEm: string } | null };
+    if (link) setNovoLink(link);
+    else setErro('Este link não pode ser recuperado. Use “Regenerar link” para criar um novo.');
+  }
+
   function abrir(p: Painel) {
     setPainel(p);
     setMotivo('');
@@ -166,6 +179,11 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
           </button>
         )}
         {acoes.regenerarLink && (
+          <button type="button" onClick={() => void mostrarLink()}>
+            Copiar link
+          </button>
+        )}
+        {acoes.regenerarLink && (
           <button
             type="button"
             onClick={() => {
@@ -261,6 +279,7 @@ export function AcoesRapidas({ detalhe }: { detalhe: Detalhe }) {
           </div>
         </form>
       )}
+      {!painel && erro && <p className={estilos.erro}>{erro}</p>}
       {novoLink && <LinkParaCopiar caminho={novoLink.caminho} expiraEm={novoLink.expiraEm} />}
     </section>
   );

@@ -78,6 +78,7 @@ export async function criarOnboardingParaCliente(
   clienteId: string,
   responsavelId: string | undefined,
   agora: Date,
+  chaveLink: Uint8Array | null,
 ): Promise<{ onboarding: OnboardingResumo; link: LinkEmitido }> {
   const cliente = await prisma.cliente.findUnique({
     where: { id: clienteId },
@@ -92,7 +93,7 @@ export async function criarOnboardingParaCliente(
   if (ativo) throw segundoOnboardingAtivo();
 
   const responsavel = await resolverResponsavel(prisma, usuario, responsavelId);
-  const link = await prepararLink(prisma, usuario.agenciaId, agora);
+  const link = await prepararLink(prisma, usuario.agenciaId, agora, chaveLink);
   const dados = dadosNovoOnboarding(usuario.agenciaId, responsavel, link.dados);
   try {
     const [criado] = await prisma.$transaction([
