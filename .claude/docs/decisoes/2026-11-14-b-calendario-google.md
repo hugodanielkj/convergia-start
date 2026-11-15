@@ -1,5 +1,7 @@
 # Google Calendar: sincronização com retentativa e o que falta para ligar
 
+> **Desligada** por `2026-11-15-a-sem-google-calendar.md`: Google Calendar e Meet ficam fora do MVP. O código continua no projeto, sem credenciais.
+
 - **Data / trilha:** 2026-11-14 / B
 - **Decisão:** o calendário é uma porta (`Calendario`, em `@convergia/core/calendario`), com adaptador do Google (REST, sem SDK) e um em memória para testes e desenvolvimento. O estado de sincronização vive no próprio agendamento (`calendarioSituacao`: `pendente`, `sincronizado`, `falhou`), e reservar, reagendar, cancelar ou marcar resultado já o põem como `pendente` **na mesma transação**: se o processo cair no meio, nada se perde. Um worker dentro da API sincroniza ao receber os eventos de agendamento e varre as pendências a cada 30 s; cada pendência é "reservada" por 2 minutos para dois workers não a pegarem juntos. Falha do Google nunca desfaz o agendamento (RN-67): ele continua válido com `evento_externo_id` pendente, e a nova tentativa espera 1, 5, 15, 60 e 360 minutos; passando disso, ou em erro definitivo (credencial recusada), vira `falhou`, é auditado e publica `agendamento.calendario_falhou` para o alerta da S5-4. O Google envia o convite ao cliente e gera o link do Meet (reunião online, D-03); o link é guardado em `local_ou_link`. Realizado e não compareceu mantêm o evento como histórico; cancelar o remove.
 - **Sem credenciais:** o app sobe e funciona. Os agendamentos ficam `pendente` e são enviados assim que houver credenciais, sem perder nenhum.

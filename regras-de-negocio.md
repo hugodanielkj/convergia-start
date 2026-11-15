@@ -207,9 +207,9 @@ As etapas A–D são liberadas **em sequência** (RN-79): o cliente pode salvar 
 **RN-31** — Respeitar `antecedencia_minima_horas` **[CONFIGURÁVEL, padrão sugerido: 24h]**: não exibir slots mais próximos que isso.
 **RN-32** — Horários exibidos no fuso do cliente (detectado pelo navegador, com opção de alterar); armazenados em UTC.
 **RN-33** — Nenhum slot pode sofrer **overbooking**: a reserva deve ser atômica (concorrência tratada no banco).
-**RN-34** — Ao confirmar, o sistema: cria o `Agendamento`, cria evento no calendário da agência (e convite ao cliente), gera link de videochamada se o formato for online **[CONFIGURÁVEL]** e envia confirmação.
+**RN-34** — Ao confirmar, o sistema cria o `Agendamento` e envia confirmação. **Sem evento em calendário externo e sem link de videochamada:** o link da reunião online é combinado pela agência por fora (WhatsApp, por exemplo); o sistema mostra só data e hora. _(Revisado em 2026-11-15.)_
 **RN-35** — O cliente pode **reagendar** até `limite_reagendamentos` vezes **[CONFIGURÁVEL, padrão sugerido: 2]** e até X horas antes do horário **[CONFIGURÁVEL]**. Além disso, deve contatar a agência.
-**RN-36** — Reagendar libera o slot antigo e atualiza o evento externo; cancelar apenas via agência após o limite.
+**RN-36** — Reagendar libera o slot antigo; cancelar apenas via agência após o limite. _(Revisado em 2026-11-15: não há evento externo.)_
 **RN-37** — Se o cliente não comparecer, o responsável marca `nao_compareceu`; o sistema envia mensagem automática oferecendo reagendamento e alerta o responsável.
 
 ### 6.6 Etapa D — Primeira captação
@@ -272,7 +272,7 @@ onde `prazo_producao_dias_uteis` é **[CONFIGURÁVEL por agência, padrão suger
 
 ### 6.11 Integrações
 
-**RN-67** — **Calendário:** integração com Google Calendar (mínimo no MVP) para criar/atualizar/cancelar eventos e verificar conflitos reais de agenda. A falha de integração não pode corromper o agendamento interno: marcar `evento_externo_id` como pendente e tentar novamente.
+**RN-67** — **Calendário:** **fora do MVP (decisão do PO, 2026-11-15).** Não há integração com Google Calendar nem Google Meet: nenhum evento é criado, atualizado ou cancelado fora do sistema, e os conflitos de agenda são evitados só pela disponibilidade e pelos bloqueios cadastrados na agência (RN-30, RN-44). O código da integração existe, desligado (sem credenciais).
 **RN-68** — **Mensageria:** WhatsApp (API oficial ou provedor) e e-mail transacional.
 **RN-69** — **Armazenamento:** **removida em 2026-11-14.** O sistema não guarda arquivos do cliente (ver RN-16). A criação de pasta no Drive/Notion do cliente continua como ideia pós-MVP.
 **RN-70** — **Gerenciador de tarefas (pós-MVP):** criar card/projeto do cliente (ClickUp, Trello, Notion etc.) com as tarefas iniciais.
@@ -340,7 +340,7 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 
 - **Usabilidade:** a página do cliente deve ser **mobile-first**, simples, em uma única tela com etapas visíveis (barra de progresso), linguagem leve e sem jargão. Meta: concluir em até 10 minutos.
 - **Desempenho:** páginas principais em menos de 2 s em 4G; geração de slots em menos de 1 s.
-- **Disponibilidade:** tolerância a falha das integrações (fila + retentativa, RN-62 e RN-67).
+- **Disponibilidade:** tolerância a falha das integrações (fila + retentativa, RN-62).
 - **Observabilidade:** logs estruturados, rastreio de erros e métricas de funil (abertura do link, conclusão por etapa, tempo até conclusão).
 - **Acessibilidade:** contraste adequado e navegação por teclado nas telas do cliente.
 - **Testes:** unitários para as regras (RN), integração para agendamento/concorrência e notificações, e ao menos um teste ponta a ponta do fluxo feliz.
@@ -368,7 +368,7 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 
 ## 12. Critérios de aceite (principais cenários)
 
-1. **Fluxo feliz:** dado um cliente cadastrado, quando o cliente abre o link e conclui as quatro etapas, então o onboarding fica com todas as etapas `concluida`, os eventos existem no calendário, o prazo de liberação é calculado conforme RN-43/44, o cliente recebe a confirmação e a agência recebe o alerta de conclusão.
+1. **Fluxo feliz:** dado um cliente cadastrado, quando o cliente abre o link e conclui as quatro etapas, então o onboarding fica com todas as etapas `concluida`, o prazo de liberação é calculado conforme RN-43/44, o cliente recebe a confirmação e a agência recebe o alerta de conclusão.
 2. **Rascunho:** dado um formulário parcialmente preenchido, quando o cliente fecha e reabre o link, então as respostas permanecem (RN-18).
 3. **Dependência:** dado que a reunião não foi agendada, quando o cliente tenta agendar a captação, então a etapa D aparece bloqueada com explicação (RN-39).
 4. **Overbooking:** dados dois clientes escolhendo o mesmo slot simultaneamente, então apenas um é confirmado e o outro recebe nova lista de horários (RN-33).
@@ -402,7 +402,6 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 - Agendamento de reunião e captação com disponibilidade, bloqueios, reagendamento e proteção contra overbooking (RN-30 a RN-42).
 - Cálculo e comunicação do prazo de liberação (RN-43 a RN-48).
 - Notificações por e-mail e WhatsApp, lembretes e alertas internos (RN-55 a RN-62).
-- Integração com Google Calendar (RN-67).
 - Painel básico e tela de detalhe (RN-63 a RN-66).
 - Segurança e LGPD essenciais (RN-72 a RN-77).
 
@@ -450,5 +449,5 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 - **Banco:** PostgreSQL (transações e restrições para evitar overbooking).
 - **Filas/Jobs:** BullMQ/Redis (ou equivalente) para lembretes, retentativas e cálculo agendado.
 - **Frontend:** Next.js/React, mobile-first.
-- **Integrações:** Google Calendar API, API oficial do WhatsApp (ou provedor), e-mail transacional (Resend, Postmark ou similar).
+- **Integrações:** API oficial do WhatsApp (ou provedor), e-mail transacional (Resend, Postmark ou similar).
 - **Alternativa de baixo código para validar rápido:** formulário (Tally/Typeform) + agenda (Cal.com) + automação (n8n/Make) + banco (Airtable/Notion), migrando para código quando o fluxo estiver provado.
