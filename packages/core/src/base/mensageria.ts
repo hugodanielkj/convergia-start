@@ -5,6 +5,8 @@ export interface MensagemSaida {
   /** E.164 para WhatsApp, endereço para e-mail. */
   destinatario: string;
   assunto?: string;
+  /** Tipo da notificação (ex.: "convite"); o WhatsApp oficial escolhe o template aprovado por ele. */
+  tipo?: string;
   corpo: string;
 }
 

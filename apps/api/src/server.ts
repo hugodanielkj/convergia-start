@@ -3,6 +3,7 @@ import { relogioSistema } from '@convergia/core/base';
 import { criarCalendarioGoogle } from './adapters/calendario/google.js';
 import { criarWhatsappMegaApi } from './adapters/mensageria/megaapi.js';
 import { criarEmailResend } from './adapters/mensageria/resend.js';
+import { criarWhatsappMeta, lerMapaDeTemplates } from './adapters/mensageria/whatsapp-meta.js';
 import { criarRoteadorMensageria } from './adapters/mensageria/roteador.js';
 import { construirApp } from './app.js';
 import { sessaoDeDesenvolvimento } from './base/auth.js';
@@ -24,13 +25,24 @@ const app = construirApp(env, {
   // Canal sem credencial: as mensagens ficam pendentes e saem quando configurar (S5-2).
   mensageria: criarRoteadorMensageria({
     whatsapp:
-      env.MEGAAPI_HOST && env.MEGAAPI_INSTANCE_KEY && env.MEGAAPI_TOKEN
-        ? criarWhatsappMegaApi({
-            host: env.MEGAAPI_HOST,
-            instanceKey: env.MEGAAPI_INSTANCE_KEY,
-            token: env.MEGAAPI_TOKEN,
-          })
-        : null,
+      env.WHATSAPP_PROVEDOR === 'meta'
+        ? env.META_WHATSAPP_TOKEN && env.META_WHATSAPP_PHONE_NUMBER_ID
+          ? criarWhatsappMeta({
+              token: env.META_WHATSAPP_TOKEN,
+              phoneNumberId: env.META_WHATSAPP_PHONE_NUMBER_ID,
+              versaoApi: env.META_WHATSAPP_API_VERSION,
+              idioma: env.META_WHATSAPP_IDIOMA,
+              templates: lerMapaDeTemplates(env.META_WHATSAPP_TEMPLATES),
+              templatePadrao: env.META_WHATSAPP_TEMPLATE_PADRAO,
+            })
+          : null
+        : env.MEGAAPI_HOST && env.MEGAAPI_INSTANCE_KEY && env.MEGAAPI_TOKEN
+          ? criarWhatsappMegaApi({
+              host: env.MEGAAPI_HOST,
+              instanceKey: env.MEGAAPI_INSTANCE_KEY,
+              token: env.MEGAAPI_TOKEN,
+            })
+          : null,
     email:
       env.RESEND_API_KEY && env.EMAIL_REMETENTE
         ? criarEmailResend({
@@ -76,7 +88,9 @@ if (!env.GOOGLE_CALENDAR_REFRESH_TOKEN) {
   app.log.warn('Google Calendar não configurado: os agendamentos ficam pendentes no calendário');
 }
 
-if (!env.MEGAAPI_TOKEN || !env.RESEND_API_KEY) {
+const whatsappSemCredencial =
+  env.WHATSAPP_PROVEDOR === 'meta' ? !env.META_WHATSAPP_TOKEN : !env.MEGAAPI_TOKEN;
+if (whatsappSemCredencial || !env.RESEND_API_KEY) {
   app.log.warn('WhatsApp ou e-mail sem credenciais: as mensagens desse canal ficam pendentes');
 }
 

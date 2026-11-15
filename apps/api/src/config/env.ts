@@ -22,6 +22,18 @@ const esquemaEnv = z
     MEGAAPI_HOST: z.preprocess(vazioParaIndefinido, z.string().optional()),
     MEGAAPI_INSTANCE_KEY: z.preprocess(vazioParaIndefinido, z.string().optional()),
     MEGAAPI_TOKEN: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    // Provedor de WhatsApp (D-07): "megaapi" (padrão) ou "meta" (API oficial, Cloud API).
+    WHATSAPP_PROVEDOR: z.enum(['megaapi', 'meta']).default('megaapi'),
+    META_WHATSAPP_TOKEN: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    META_WHATSAPP_PHONE_NUMBER_ID: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    META_WHATSAPP_API_VERSION: z
+      .string()
+      .regex(/^v\d+\.\d+$/)
+      .default('v21.0'),
+    META_WHATSAPP_IDIOMA: z.string().min(2).default('pt_BR'),
+    // "tipo=nome_do_template,..." (tipos do app → templates aprovados na Meta).
+    META_WHATSAPP_TEMPLATES: z.preprocess(vazioParaIndefinido, z.string().optional()),
+    META_WHATSAPP_TEMPLATE_PADRAO: z.preprocess(vazioParaIndefinido, z.string().optional()),
     // E-mail pelo Resend; sem chave e remetente, o e-mail fica pendente (S5-2).
     RESEND_API_KEY: z.preprocess(vazioParaIndefinido, z.string().optional()),
     EMAIL_REMETENTE: z.preprocess(vazioParaIndefinido, z.string().optional()),
@@ -65,6 +77,14 @@ const esquemaEnv = z
     {
       message: 'Defina MEGAAPI_HOST, MEGAAPI_INSTANCE_KEY e MEGAAPI_TOKEN juntos',
       path: ['MEGAAPI_TOKEN'],
+    },
+  )
+  .refine(
+    (env) =>
+      (env.META_WHATSAPP_TOKEN === undefined) === (env.META_WHATSAPP_PHONE_NUMBER_ID === undefined),
+    {
+      message: 'Defina META_WHATSAPP_TOKEN e META_WHATSAPP_PHONE_NUMBER_ID juntos',
+      path: ['META_WHATSAPP_PHONE_NUMBER_ID'],
     },
   )
   .refine((env) => (env.RESEND_API_KEY === undefined) === (env.EMAIL_REMETENTE === undefined), {

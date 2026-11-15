@@ -13,6 +13,9 @@ describe('carregarEnv', () => {
       DATABASE_URL,
       APP_URL: 'http://localhost:3000',
       SESSAO_DURACAO_HORAS: 168,
+      WHATSAPP_PROVEDOR: 'megaapi',
+      META_WHATSAPP_API_VERSION: 'v21.0',
+      META_WHATSAPP_IDIOMA: 'pt_BR',
       EMAIL_ASSUNTO_PADRAO: 'Seu onboarding',
       CONFIAR_PROXY: 'loopback,linklocal,uniquelocal',
       LIMITE_JANELA_SEGUNDOS: 60,
@@ -57,6 +60,22 @@ describe('carregarEnv', () => {
         EMAIL_REMETENTE: 'Ag <a@ag.com>',
       }).MEGAAPI_TOKEN,
     ).toBe('t');
+  });
+
+  it('WhatsApp oficial: provedor padrão é megaapi e token e número vêm juntos (RN-71)', () => {
+    expect(carregarEnv({ DATABASE_URL }).WHATSAPP_PROVEDOR).toBe('megaapi');
+    expect(() => carregarEnv({ DATABASE_URL, META_WHATSAPP_TOKEN: 't' })).toThrow(
+      /META_WHATSAPP_PHONE_NUMBER_ID/,
+    );
+    expect(() => carregarEnv({ DATABASE_URL, WHATSAPP_PROVEDOR: 'x' })).toThrow();
+    const env = carregarEnv({
+      DATABASE_URL,
+      WHATSAPP_PROVEDOR: 'meta',
+      META_WHATSAPP_TOKEN: 't',
+      META_WHATSAPP_PHONE_NUMBER_ID: '1',
+    });
+    expect(env.META_WHATSAPP_API_VERSION).toBe('v21.0');
+    expect(env.META_WHATSAPP_IDIOMA).toBe('pt_BR');
   });
 
   it('exige SESSAO_SEGREDO em produção', () => {

@@ -134,7 +134,13 @@ describe('RN-62 registro e envio', () => {
     const m = new MensageriaRoteiro();
     expect(await processarNotificacao(prisma, m, eventos, id, AGORA_TESTE)).toBe('enviada');
     expect(m.enviadas).toEqual([
-      { canal: 'whatsapp', destinatario: '+5531999998888', corpo: 'Olá!', assunto: 'Bem-vinda' },
+      {
+        canal: 'whatsapp',
+        destinatario: '+5531999998888',
+        corpo: 'Olá!',
+        assunto: 'Bem-vinda',
+        tipo: 'convite',
+      },
     ]);
     expect(await ler(id)).toMatchObject({
       status: 'enviada',
