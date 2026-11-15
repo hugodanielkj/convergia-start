@@ -1,5 +1,7 @@
 # Upload de arquivos com validação no servidor (S2-4)
 
+> **Substituída** por `2026-11-14-a-sem-envio-de-arquivos.md`: o envio de arquivos e o storage foram removidos.
+
 - **Data / trilha:** 2026-11-15 / A
 - **Decisão:**
   - O servidor decide o tipo pelo **conteúdo** (primeiros bytes), não pelo nome nem pelo tipo que o navegador informa (RN-20). Reconhece PNG, JPEG, GIF, WebP e PDF; o que não for reconhecido é recusado. A agência escolhe, em `uploadTiposPermitidos`, quais desses vale aceitar, e o tamanho máximo em `uploadTamanhoMaxMb`.
