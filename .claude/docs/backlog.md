@@ -96,9 +96,9 @@ Entrou depois da conversa do PO com o primeiro cliente (2026-11-14). A trilha B 
 
 ## Sprint 7 — Endurecimento (as duas trilhas)
 
-| Trilha | História                                                              | Pastas                                                                                                                 |
-| ------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| A      | [~] S7-1 Proteções do link público: rate limit, headers, CSRF (RN-76) | `apps/api/src/base/http`, `apps/web/proxy.ts`, `next.config.ts` (PR separado), chamadas de servidor em `app/o/[token]` |
-| A      | [~] S7-2 Tela de resumo após a conclusão (RN-14)                      | `app/o/[token]/resumo`, `modulos/resumo`, casca `app/o/[token]/page.tsx` e `expirado`                                  |
-| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12)   | `e2e/`                                                                                                                 |
-| B      | [ ] S7-4 Correções da homologação final                               | conforme o bug                                                                                                         |
+| Trilha | História                                                              | Pastas                                                                                               |
+| ------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| A      | [x] S7-1 Proteções do link público: rate limit, headers, CSRF (RN-76) | `apps/api/src/base/http`, `apps/web/proxy.ts` (PR separado), chamadas de servidor em `app/o/[token]` |
+| A      | [x] S7-2 Tela de resumo após a conclusão (RN-14)                      | `app/o/[token]/resumo`, `modulos/resumo`, casca `app/o/[token]/page.tsx`                             |
+| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12)   | `e2e/`                                                                                               |
+| B      | [ ] S7-4 Correções da homologação final                               | conforme o bug                                                                                       |

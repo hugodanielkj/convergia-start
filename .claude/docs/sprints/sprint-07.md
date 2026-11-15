@@ -1,6 +1,6 @@
 # Sprint 7 — Endurecimento
 
-**Status:** trilha A em andamento (2026-11-14).
+**Status:** trilha A concluída (2026-11-14).
 
 ## Trilha A — PO
 
@@ -22,13 +22,33 @@
 
 ### Trilha A
 
-(vazio)
+As 2 histórias foram mergeadas na `hml` com CI verde.
+
+- **S7-1:**
+  - API (#64): limite nas rotas `/publico/*` por IP, por token e por tokens errados, com 429 e `Retry-After`; IP só pelo proxy confiável; CSP fechada, `nosniff`, `X-Frame-Options`, HSTS em produção e `no-store` no link; CSRF por `Origin`/`Sec-Fetch-Site`. Sem dependência nova (contadores em memória).
+  - Web (#65): CSP com nonce no `proxy.ts`, cabeçalhos de segurança e `fetchDoCliente`, que repassa o IP do cliente. O e2e confere a CSP em todas as telas.
+  - Revisão de segurança: o token do link de lembretes saía nos logs, e o logout podia ser forjado por outro site; os dois foram corrigidos.
+- **S7-2 (#66):**
+  - `GET /publico/onboardings/:token/resumo` e a tela `/o/[token]/resumo`;
+  - o link vencido de um onboarding concluído abre o resumo;
+  - qualquer alteração pelo link de um concluído recebe 422 `RN-14`;
+  - conferida a 360px e incluída em `e2e/telas.ts`.
 
 ## Retro
 
 ### Trilha A
 
-(vazio)
+- **Funcionou:**
+  - Separar a S7-1 em PR da API e PR da web deixou cada um pequeno.
+  - A trava da RN-14 num gancho único cobre as etapas da trilha B sem mexer nelas.
+- **Atenção:**
+  - Os testes de integração do worker de calendário falham às vezes quando o `pnpm dev` está ligado no mesmo banco, porque o worker do servidor local pega os pendentes. Desligue o dev antes do `test:int`.
+  - O limite por IP só vale em produção se o proxy na frente da web gravar o `X-Forwarded-For`.
+- **Pendências (risco baixo):**
+  - o token de opt-out de lembretes fica sem hash no banco (precisa de migração);
+  - um 429 na página do cliente aparece como erro genérico;
+  - com mais de uma instância da API, os contadores precisam ir para o Redis;
+  - a trilha B pode usar `fetchDoCliente` nas chamadas de servidor dela.
 
 ## Trilha B — colaborador
 
