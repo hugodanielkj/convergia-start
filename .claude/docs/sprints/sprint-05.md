@@ -59,7 +59,7 @@ Toca pastas da trilha A (concluída; o PO faz as duas trilhas): `modulos/notific
 As 2 histórias mergeadas na `hml`, com CI verde:
 
 - S5-3 Lembretes (#75): lembretes de pendência (D+1, D+3, D+5) e de compromisso (24h e 2h antes), sempre no horário permitido; link do cliente guardado cifrado e "Copiar link" no detalhe; tela Configurações › Lembretes.
-- S5-4 Convite e alertas (este PR): convite sai sozinho no cadastro (ou "Enviar convite depois"); "Reenviar convite" e "Reenviar lembrete" ligados, com intervalo mínimo; página Avisos com contador no menu e e-mail ao responsável.
+- S5-4 Convite e alertas (#76): convite sai sozinho no cadastro (ou "Enviar convite depois"); "Reenviar convite" e "Reenviar lembrete" ligados, com intervalo mínimo; página Avisos com contador no menu e e-mail ao responsável. Inclui a correção para o lembrete de compromisso nunca levar link de videochamada (sem Google Calendar, decisão do PO).
 
 ### Retro
 
