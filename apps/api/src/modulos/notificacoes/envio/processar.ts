@@ -60,6 +60,7 @@ export async function processarNotificacao(
             canal,
             destinatario,
             corpo: n.corpo,
+            tipo: n.tipo,
             ...(n.assunto ? { assunto: n.assunto } : {}),
           })
         : ({ ok: false, erro: 'sem_contato', temporario: false } as const);
