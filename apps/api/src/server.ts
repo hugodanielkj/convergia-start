@@ -82,6 +82,10 @@ const app = construirApp(env, {
         : null,
   },
   http: configHttpDoEnv(env),
+  webhookWhatsapp:
+    env.META_WHATSAPP_WEBHOOK_VERIFY_TOKEN && env.META_APP_SECRET
+      ? { verifyToken: env.META_WHATSAPP_WEBHOOK_VERIFY_TOKEN, appSecret: env.META_APP_SECRET }
+      : null,
 });
 
 if (!env.GOOGLE_CALENDAR_REFRESH_TOKEN) {

@@ -10,7 +10,7 @@
   - Contrato novo (opcional, compatível): `MensagemSaida.tipo` em `core/base/mensageria.ts`, preenchido pelo worker.
   - **Erros:** temporários = HTTP 408/429/5xx e códigos Meta 1, 2, 4, 17, 341, 80007, 130429, 131016, 131056 (retentativa). Definitivos = o resto (número sem WhatsApp 131026, fora da janela 131047, template inexistente 132001, parâmetro errado 132000, token 190...) e vão para o e-mail.
   - Variáveis (`.env`): `WHATSAPP_PROVEDOR`, `META_WHATSAPP_TOKEN` e `META_WHATSAPP_PHONE_NUMBER_ID` (juntas), `META_WHATSAPP_API_VERSION` (padrão `v21.0`), `META_WHATSAPP_IDIOMA` (padrão `pt_BR`), `META_WHATSAPP_TEMPLATES`, `META_WHATSAPP_TEMPLATE_PADRAO`. O token nunca vai para log nem para o erro gravado.
-  - Webhook de status e opt-out por "PARAR": PR seguinte.
+  - Webhook `GET/POST /publico/webhooks/meta-whatsapp` (só existe com `META_WHATSAPP_WEBHOOK_VERIFY_TOKEN` e `META_APP_SECRET`, juntas): GET devolve o challenge; POST exige `X-Hub-Signature-256` (HMAC SHA-256 do corpo cru com o app secret, tempo constante). Entrega `failed` de mensagem já `enviada` vira `falhou` e publica `notificacao.falhou`; "PARAR" (parar, pare, sair, stop, cancelar, descadastrar) desativa os lembretes do telefone (RN-61). `delivered`/`read` são ignorados (não há coluna para isso). Limite: telefone brasileiro sem o 9º dígito no retorno da Meta não casa com o cadastro.
 - **Plano de migração:** (1) PO cria tudo na Meta (abaixo); (2) coloca as variáveis no ambiente de teste com seu próprio número, mantém `megaapi` em produção; (3) envia um convite de teste; (4) troca `WHATSAPP_PROVEDOR=meta`; (5) a MegaAPI fica de reserva e, depois de uma semana sem problemas, é desligada.
 - **Motivo:** risco de banimento do número não oficial; D-07 já previa trocar só o adaptador.
 
@@ -26,5 +26,5 @@
    - `convergia_lembrete_compromisso`: "Lembrete de compromisso: {{1}}"
      Depois da aprovação, configure `META_WHATSAPP_TEMPLATES=convite=convergia_convite,confirmacao_prazo=convergia_confirmacao,lembrete_pendencia=convergia_lembrete_pendencia,lembrete_compromisso=convergia_lembrete_compromisso`. Dica: a Meta pode recusar modelo que seja só a variável; mantenha o texto fixo em volta.
 5. **Opt-in:** só envie a quem aceitou receber (o termo do onboarding cobre; mantenha o link "parar lembretes" nos lembretes).
-6. **Webhook** (quando o PR do webhook entrar): em WhatsApp → Configuração, informe a URL `https://<sua-api>/webhooks/meta-whatsapp`, o token de verificação e assine `messages`.
+6. **Webhook:** em WhatsApp → Configuração, informe a URL `https://<sua-api>/publico/webhooks/meta-whatsapp`, um token de verificação inventado por você (`META_WHATSAPP_WEBHOOK_VERIFY_TOKEN`), coloque o App Secret (Configurações do app → Básico) em `META_APP_SECRET` e assine o campo `messages`.
 7. **Testar:** `WHATSAPP_PROVEDOR=meta`, reinicie a API, crie um onboarding com seu WhatsApp e envie o convite; veja a notificação `enviada` na tabela `notificacoes` (coluna `idExterno` começa com `wamid.`). Em modo de teste da Meta, só números cadastrados como destinatários de teste recebem.
