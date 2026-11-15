@@ -1,5 +1,6 @@
 import type { Canal, Mensageria, PublicadorEventos } from '@convergia/core/base';
 import { ordemDosCanais, proximoPasso, type EstadoEnvio } from '@convergia/core/envio';
+import { janelaDaConfig, proximoHorarioPermitido } from '@convergia/core/lembretes';
 import type { PrismaClient } from '../../../base/prisma.js';
 
 /** Por quanto tempo uma tentativa "reserva" a mensagem, para dois workers não a pegarem juntos. */
@@ -37,10 +38,35 @@ export async function processarNotificacao(
     where: { id },
     include: {
       onboarding: { select: { cliente: { select: { whatsapp: true, email: true } } } },
-      agencia: { select: { config: { select: { canalNotificacaoPadrao: true } } } },
+      agencia: {
+        select: {
+          fusoHorario: true,
+          config: {
+            select: {
+              canalNotificacaoPadrao: true,
+              janelaEnvioInicio: true,
+              janelaEnvioFim: true,
+              diasEnvioPermitidos: true,
+            },
+          },
+        },
+      },
     },
   });
-  const padrao: Canal = n.agencia.config?.canalNotificacaoPadrao ?? 'whatsapp';
+  const config = n.agencia.config;
+  // RN-59: fora do horário permitido, a mensagem espera (vale também para retentativas).
+  const permitidoEm =
+    n.respeitarJanela && config
+      ? proximoHorarioPermitido(agora, janelaDaConfig(config, n.agencia.fusoHorario))
+      : agora;
+  if (permitidoEm && permitidoEm.getTime() > agora.getTime()) {
+    await prisma.notificacao.update({
+      where: { id },
+      data: { proximaTentativaEm: permitidoEm, reservadaAte: null },
+    });
+    return 'aguardando';
+  }
+  const padrao: Canal = config?.canalNotificacaoPadrao ?? 'whatsapp';
   const contatos = n.onboarding.cliente;
   const canais = ordemDosCanais(contatos, padrao);
   let estado: EstadoEnvio = {

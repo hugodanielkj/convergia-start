@@ -13,6 +13,8 @@ export interface Dependencias {
   /** Calendário externo da agência (RN-67); `null` quando não há credenciais e os agendamentos ficam pendentes. */
   calendario: Calendario | null;
   relogio: Relogio;
+  /** Chave do link cifrado (`LINK_CHAVE_CIFRA`); `null` = o link só aparece na criação (D-13). */
+  chaveLink: Uint8Array | null;
   resolverSessao: ResolvedorSessao;
   auth: ConfigAuth;
   /** Proxy confiável, HSTS e limites das rotas públicas (RN-76). */

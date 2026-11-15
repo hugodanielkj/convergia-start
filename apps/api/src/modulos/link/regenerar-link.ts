@@ -19,6 +19,7 @@ export async function regenerarLink(
   usuario: UsuarioAutenticado,
   onboardingId: string,
   agora: Date,
+  chaveLink: Uint8Array | null,
 ): Promise<LinkEmitido> {
   const onboarding = await prisma.onboarding.findUnique({
     where: { id: onboardingId },
@@ -32,12 +33,17 @@ export async function regenerarLink(
     throw new RegraVioladaError('RN-12', 'Onboarding encerrado não tem link ativo');
   }
 
-  const { emitido, dados } = await prepararLink(prisma, usuario.agenciaId, agora);
+  const { emitido, dados } = await prepararLink(prisma, usuario.agenciaId, agora, chaveLink);
   await prisma.$transaction([
     prisma.linkOnboarding.upsert({
       where: { onboardingId },
       create: { ...dados, onboardingId },
-      update: { tokenHash: dados.tokenHash, expiraEm: dados.expiraEm, regeneradoEm: agora },
+      update: {
+        tokenHash: dados.tokenHash,
+        tokenCifrado: dados.tokenCifrado,
+        expiraEm: dados.expiraEm,
+        regeneradoEm: agora,
+      },
     }),
     prisma.auditoriaLog.create({
       data: {

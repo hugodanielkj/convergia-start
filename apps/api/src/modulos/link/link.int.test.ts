@@ -8,6 +8,7 @@ import { construirApp } from '../../app.js';
 import { criarPrisma } from '../../base/prisma.js';
 import {
   AGORA_TESTE,
+  CHAVE_LINK_TESTE,
   URL_BANCO_TESTE,
   dependenciasDeTeste,
   usuarioTeste,
@@ -28,11 +29,16 @@ let appOutroMembro: FastifyInstance;
 let appAdminB: FastifyInstance;
 let appPublico: FastifyInstance;
 
-function construir(usuario: UsuarioAutenticado | null, agora = AGORA_TESTE): FastifyInstance {
+function construir(
+  usuario: UsuarioAutenticado | null,
+  agora = AGORA_TESTE,
+  chaveLink: Uint8Array | null = CHAVE_LINK_TESTE,
+): FastifyInstance {
   const deps = dependenciasDeTeste({
     prisma,
     relogio: relogioFixo(agora),
     resolverSessao: () => Promise.resolve(usuario),
+    chaveLink,
   });
   const app = construirApp({ LOG_LEVEL: 'silent' }, deps);
   apps.push(app);
@@ -424,5 +430,72 @@ describe('RN-11 pedido de novo link pelo cliente', () => {
       expect(resposta.statusCode).toBe(404);
       expect(resposta.json()).toEqual({ erro: 'LINK_INVALIDO', mensagem: 'Link inválido' });
     }
+  });
+});
+
+describe('link cifrado para copiar e para os lembretes (2026-11-15-b-link-cifrado)', () => {
+  const copiar = (app: FastifyInstance, onboardingId: string) =>
+    app.inject({ method: 'GET', url: `/onboardings/${onboardingId}/link` });
+
+  it('guarda o token cifrado, nunca em claro, e devolve o mesmo link depois', async () => {
+    const c = await cadastrar('Loja Copia');
+    const gravado = await prisma.linkOnboarding.findUniqueOrThrow({
+      where: { onboardingId: c.onboardingId },
+    });
+    expect(gravado.tokenCifrado).not.toBeNull();
+    expect(gravado.tokenCifrado).not.toContain(c.token);
+    const resposta = await copiar(appAdmin, c.onboardingId);
+    expect(resposta.statusCode).toBe(200);
+    expect(resposta.headers['cache-control']).toBe('no-store');
+    expect(resposta.json()).toEqual({ link: { caminho: c.caminho, expiraEm: c.expiraEm } });
+  });
+
+  it('depois de regenerar, devolve o link novo', async () => {
+    const c = await cadastrar('Loja Copia Nova');
+    const { link } = (
+      await appAdmin.inject({
+        method: 'POST',
+        url: `/onboardings/${c.onboardingId}/link/regenerar`,
+      })
+    ).json<{ link: { caminho: string } }>();
+    const { link: copiado } = (await copiar(appAdmin, c.onboardingId)).json<{
+      link: { caminho: string };
+    }>();
+    expect(copiado.caminho).toBe(link.caminho);
+  });
+
+  it('só o Admin e o responsável copiam (RN-02); outra agência não alcança (RN-75)', async () => {
+    const { onboardingId } = await cadastrar('Loja Copia Resp', appAdmin, {
+      responsavelId: responsavelA,
+    });
+    expect((await copiar(appResponsavel, onboardingId)).statusCode).toBe(200);
+    expect((await copiar(appOutroMembro, onboardingId)).statusCode).toBe(403);
+    expect((await copiar(appAdminB, onboardingId)).statusCode).toBe(404);
+    expect((await copiar(appPublico, onboardingId)).statusCode).toBe(401);
+  });
+
+  it('sem a chave configurada, não guarda o cifrado e não há link para copiar', async () => {
+    const semChave = construir(
+      usuarioTeste({ agenciaId: agenciaA, id: adminA }),
+      AGORA_TESTE,
+      null,
+    );
+    await semChave.ready();
+    const c = await cadastrar('Loja Sem Chave', semChave);
+    const gravado = await prisma.linkOnboarding.findUniqueOrThrow({
+      where: { onboardingId: c.onboardingId },
+    });
+    expect(gravado.tokenCifrado).toBeNull();
+    expect((await copiar(appAdmin, c.onboardingId)).json()).toEqual({ link: null });
+    expect((await copiar(semChave, c.onboardingId)).json()).toEqual({ link: null });
+  });
+
+  it('onboarding encerrado não tem link para copiar', async () => {
+    const c = await cadastrar('Loja Copia Fim');
+    await prisma.onboarding.update({
+      where: { id: c.onboardingId },
+      data: { statusGeral: 'cancelado' },
+    });
+    expect((await copiar(appAdmin, c.onboardingId)).json()).toEqual({ link: null });
   });
 });

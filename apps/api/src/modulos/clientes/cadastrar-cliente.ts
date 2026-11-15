@@ -64,6 +64,7 @@ export async function cadastrarCliente(
   usuario: UsuarioAutenticado,
   entrada: EntradaCadastro,
   agora: Date,
+  chaveLink: Uint8Array | null,
 ): Promise<ResultadoCadastroCliente> {
   const validacao = validarCadastroCliente(entrada);
   if (!validacao.ok) return { tipo: 'invalido', erros: validacao.erros };
@@ -76,7 +77,7 @@ export async function cadastrarCliente(
 
   const responsavelId = await resolverResponsavel(prisma, usuario, entrada.responsavelId);
   const id = randomUUID();
-  const link = await prepararLink(prisma, usuario.agenciaId, agora);
+  const link = await prepararLink(prisma, usuario.agenciaId, agora, chaveLink);
   const onboarding = dadosNovoOnboarding(usuario.agenciaId, responsavelId, link.dados);
   const ator = `usuario:${usuario.id}`;
   const [criado] = await prisma.$transaction([
