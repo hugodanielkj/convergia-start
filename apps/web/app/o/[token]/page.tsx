@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
+import { fetchDoCliente } from '../../_lib/fetch-do-cliente';
 import { URL_API } from '../../_lib/url-api';
 import { NavegacaoEtapas, type EtapaId, type EtapaNavegacao } from './_componentes/NavegacaoEtapas';
 import { Consentimento } from './_consentimento/Consentimento';
@@ -25,7 +26,7 @@ interface Etapas {
 }
 
 async function chamar(token: string, caminho: string, metodo: 'GET' | 'POST' = 'GET') {
-  const resposta = await fetch(
+  const resposta = await fetchDoCliente(
     `${URL_API}/publico/onboardings/${encodeURIComponent(token)}${caminho}`,
     { method: metodo, cache: 'no-store' },
   );

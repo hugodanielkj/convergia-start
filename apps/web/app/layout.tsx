@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces } from 'next/font/google';
+import { connection } from 'next/server';
 import type { ReactNode } from 'react';
 import './globals.css';
 
@@ -25,7 +26,9 @@ export const viewport: Viewport = {
   themeColor: '#f8ebdd',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // A CSP com nonce (proxy.ts, RN-76) só funciona em página renderizada a cada pedido.
+  await connection();
   return (
     <html lang="pt-BR" className={fraunces.variable}>
       <body>{children}</body>

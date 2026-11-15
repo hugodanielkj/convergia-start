@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { fetchDoCliente } from '../../../_lib/fetch-do-cliente';
 import { URL_API } from '../../../_lib/url-api';
 import { aceitarTermo, type EstadoAceite } from './aceitar-termo';
 
@@ -13,7 +14,10 @@ export async function aceitarTermoAction(
   if (typeof token !== 'string' || typeof versao !== 'string') {
     return { tipo: 'falha', mensagem: 'Não foi possível registrar agora.' };
   }
-  const resultado = await aceitarTermo(token, versao, { baseUrl: URL_API, fetcher: fetch });
+  const resultado = await aceitarTermo(token, versao, {
+    baseUrl: URL_API,
+    fetcher: fetchDoCliente,
+  });
   if (resultado.tipo === 'aceito') redirect(`/o/${encodeURIComponent(token)}`);
   if (resultado.tipo === 'expirado') redirect(`/o/${encodeURIComponent(token)}/expirado`);
   return resultado;
