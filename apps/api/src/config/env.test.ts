@@ -13,7 +13,6 @@ describe('carregarEnv', () => {
       DATABASE_URL,
       APP_URL: 'http://localhost:3000',
       SESSAO_DURACAO_HORAS: 168,
-      ARMAZENAMENTO_DIR: '.armazenamento',
       EMAIL_ASSUNTO_PADRAO: 'Seu onboarding',
       CONFIAR_PROXY: 'loopback,linklocal,uniquelocal',
       LIMITE_JANELA_SEGUNDOS: 60,

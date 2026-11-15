@@ -18,7 +18,6 @@ const esquemaEnv = z
     GOOGLE_CALENDAR_ID: z.preprocess(vazioParaIndefinido, z.string().optional()),
     SESSAO_SEGREDO: z.preprocess(vazioParaIndefinido, z.string().min(32).optional()),
     SESSAO_DURACAO_HORAS: z.coerce.number().int().positive().default(168),
-    ARMAZENAMENTO_DIR: z.string().min(1).default('.armazenamento'),
     // WhatsApp pela MegaAPI (D-07); sem as três, o WhatsApp fica pendente (S5-2).
     MEGAAPI_HOST: z.preprocess(vazioParaIndefinido, z.string().optional()),
     MEGAAPI_INSTANCE_KEY: z.preprocess(vazioParaIndefinido, z.string().optional()),

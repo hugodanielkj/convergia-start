@@ -1,13 +1,6 @@
 // Espelha o contrato público da API do formulário (RN-16). As regras vivem na API e no core.
 export type TipoCampo =
-  | 'texto_curto'
-  | 'texto_longo'
-  | 'numero'
-  | 'selecao_unica'
-  | 'multipla_escolha'
-  | 'data'
-  | 'upload'
-  | 'url';
+  'texto_curto' | 'texto_longo' | 'numero' | 'selecao_unica' | 'multipla_escolha' | 'data' | 'url';
 
 export interface Campo {
   chave: string;

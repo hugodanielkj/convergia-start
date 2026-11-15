@@ -4,7 +4,6 @@ import { criarCalendarioGoogle } from './adapters/calendario/google.js';
 import { criarWhatsappMegaApi } from './adapters/mensageria/megaapi.js';
 import { criarEmailResend } from './adapters/mensageria/resend.js';
 import { criarRoteadorMensageria } from './adapters/mensageria/roteador.js';
-import { ArmazenamentoLocal } from './adapters/storage/local.js';
 import { construirApp } from './app.js';
 import { sessaoDeDesenvolvimento } from './base/auth.js';
 import { criarBarramentoEmMemoria } from './base/eventos.js';
@@ -22,7 +21,6 @@ const app = construirApp(env, {
   eventos: criarBarramentoEmMemoria((erro, evento) => {
     app.log.error({ err: erro, evento: evento.tipo }, 'falha ao tratar evento');
   }),
-  armazenamento: new ArmazenamentoLocal(env.ARMAZENAMENTO_DIR),
   // Canal sem credencial: as mensagens ficam pendentes e saem quando configurar (S5-2).
   mensageria: criarRoteadorMensageria({
     whatsapp:

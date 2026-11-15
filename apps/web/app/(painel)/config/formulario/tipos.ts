@@ -1,13 +1,6 @@
 // Espelha o contrato da API do módulo formulario (RN-16). As regras vivem na API e no core.
 export type TipoCampo =
-  | 'texto_curto'
-  | 'texto_longo'
-  | 'numero'
-  | 'selecao_unica'
-  | 'multipla_escolha'
-  | 'data'
-  | 'upload'
-  | 'url';
+  'texto_curto' | 'texto_longo' | 'numero' | 'selecao_unica' | 'multipla_escolha' | 'data' | 'url';
 
 export interface Campo {
   chave?: string;
@@ -32,7 +25,6 @@ export const ROTULO_TIPO: Record<TipoCampo, string> = {
   selecao_unica: 'Seleção única',
   multipla_escolha: 'Múltipla escolha',
   data: 'Data',
-  upload: 'Envio de arquivo',
   url: 'Link (URL)',
 };
 

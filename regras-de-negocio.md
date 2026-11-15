@@ -176,11 +176,11 @@ As etapas A–D são liberadas **em sequência** (RN-79): o cliente pode salvar 
 ### 6.3 Etapa A — Formulário de dados da empresa
 
 **RN-15** — A agência possui um **modelo de formulário padrão** editável. Alterações no modelo criam nova versão; respostas já enviadas permanecem vinculadas à versão com que foram respondidas. Ao cadastrar o cliente (ou depois, pelo detalhe do onboarding), a agência pode **personalizar as perguntas só para aquele cliente**: parte do modelo padrão vigente e adiciona, remove ou edita perguntas sem alterar o modelo padrão. Cada alteração da personalização gera uma nova versão própria daquele onboarding. A personalização **trava** quando o cliente começa a responder (primeiro rascunho salvo com alguma resposta; só abrir a página não conta). _(Revisado em 2026-11-14.)_
-**RN-16** — Campos suportados: texto curto, texto longo, número, seleção única, múltipla escolha, data, upload de arquivo (logo, manual de marca), URL.
+**RN-16** — Campos suportados: texto curto, texto longo, número, seleção única, múltipla escolha, data, URL. O cliente **não envia arquivos** pelo link (logo, manual de marca etc. ficam fora do onboarding). _(Revisado em 2026-11-14.)_
 **RN-17** — Campos podem ser obrigatórios ou opcionais. A etapa só é considerada `concluida` quando todos os campos obrigatórios estiverem preenchidos e válidos.
 **RN-18** — O formulário permite **salvar rascunho automaticamente**; o cliente pode sair e voltar pelo mesmo link sem perder o que preencheu.
 **RN-19** — Conteúdo sugerido para o modelo padrão (editável): dados da empresa, segmento, público-alvo, concorrentes, tom de voz, redes sociais atuais, objetivos com o conteúdo, pontos proibidos/restrições, datas e produtos importantes, contato para aprovação de conteúdo.
-**RN-20** — Uploads: limite de tamanho e tipos permitidos **[CONFIGURÁVEL]**; arquivos devem passar por verificação de tipo/tamanho no servidor.
+**RN-20** — ~~Uploads: limite de tamanho e tipos permitidos~~ **Removida em 2026-11-14:** não há envio de arquivos no onboarding (ver RN-16).
 **RN-21** — Após o envio final, o cliente pode editar as respostas até a agência marcar a etapa como "fechada" ou até a reunião ocorrer; toda edição gera registro de auditoria.
 
 ### 6.4 Etapa B — Acessos aos perfis
@@ -274,7 +274,7 @@ onde `prazo_producao_dias_uteis` é **[CONFIGURÁVEL por agência, padrão suger
 
 **RN-67** — **Calendário:** integração com Google Calendar (mínimo no MVP) para criar/atualizar/cancelar eventos e verificar conflitos reais de agenda. A falha de integração não pode corromper o agendamento interno: marcar `evento_externo_id` como pendente e tentar novamente.
 **RN-68** — **Mensageria:** WhatsApp (API oficial ou provedor) e e-mail transacional.
-**RN-69** — **Armazenamento:** arquivos enviados pelo cliente ficam em storage seguro, organizados por cliente; a criação de pasta no Drive/Notion do cliente é opcional e **[CONFIGURÁVEL]** (pós-MVP).
+**RN-69** — **Armazenamento:** **removida em 2026-11-14.** O sistema não guarda arquivos do cliente (ver RN-16). A criação de pasta no Drive/Notion do cliente continua como ideia pós-MVP.
 **RN-70** — **Gerenciador de tarefas (pós-MVP):** criar card/projeto do cliente (ClickUp, Trello, Notion etc.) com as tarefas iniciais.
 **RN-71** — Integrações devem ser isoladas por interface/adaptador, para trocar de provedor sem alterar regras de negócio.
 
@@ -450,6 +450,5 @@ Variáveis disponíveis: `{{nome_contato}}`, `{{nome_empresa}}`, `{{nome_agencia
 - **Banco:** PostgreSQL (transações e restrições para evitar overbooking).
 - **Filas/Jobs:** BullMQ/Redis (ou equivalente) para lembretes, retentativas e cálculo agendado.
 - **Frontend:** Next.js/React, mobile-first.
-- **Storage de arquivos:** S3-compatível.
 - **Integrações:** Google Calendar API, API oficial do WhatsApp (ou provedor), e-mail transacional (Resend, Postmark ou similar).
 - **Alternativa de baixo código para validar rápido:** formulário (Tally/Typeform) + agenda (Cal.com) + automação (n8n/Make) + banco (Airtable/Notion), migrando para código quando o fluxo estiver provado.

@@ -145,9 +145,9 @@ describe('RN-15 rascunho e publicação de versões', () => {
       { chave: 'segmento', codigo: 'tipo_alterado' },
     ]);
 
-    const apagado = rascunho.filter((c) => c.chave !== 'logo');
+    const apagado = rascunho.filter((c) => c.chave !== 'contato_aprovacao');
     expect((await salvar(admin, apagado)).json<{ erros: unknown[] }>().erros).toEqual([
-      { chave: 'logo', codigo: 'campo_removido' },
+      { chave: 'contato_aprovacao', codigo: 'campo_removido' },
     ]);
   });
 

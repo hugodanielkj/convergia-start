@@ -15,9 +15,7 @@ export type CodigoErroResposta =
   | 'data_invalida'
   | 'url_invalida'
   | 'texto_longo_demais'
-  | 'campo_desconhecido'
-  /** Arquivo citado não existe ou não é deste cliente; conferido pela API. */
-  | 'arquivo_invalido';
+  | 'campo_desconhecido';
 
 export interface ErroResposta {
   readonly chave: string;
@@ -60,8 +58,6 @@ function erroDoValor(campo: CampoFormulario, valor: ValorResposta): CodigoErroRe
       return texto(valor, LIMITES_RESPOSTA.textoCurto);
     case 'texto_longo':
       return texto(valor, LIMITES_RESPOSTA.textoLongo);
-    case 'upload':
-      return typeof valor === 'string' ? null : 'tipo_invalido';
     case 'numero':
       return typeof valor === 'number' && Number.isFinite(valor) ? null : 'numero_invalido';
     case 'data':

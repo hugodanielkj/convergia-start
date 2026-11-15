@@ -24,7 +24,6 @@ const campos: CampoFormulario[] = [
   campo('canais', { tipo: 'multipla_escolha', opcoes: ['Instagram', 'TikTok', 'Site'] }),
   campo('fundacao', { tipo: 'data' }),
   campo('site', { tipo: 'url' }),
-  campo('logo', { tipo: 'upload' }),
   campo('antigo', { obrigatorio: true, arquivado: true }),
 ];
 
@@ -110,11 +109,6 @@ describe('RN-16 cada tipo valida o seu valor, até no rascunho', () => {
     expect(rascunho({ sobre: 'a'.repeat(LIMITES_RESPOSTA.textoLongo + 1) })).toEqual([
       { chave: 'sobre', codigo: 'texto_longo_demais' },
     ]);
-  });
-
-  it('upload guarda o id do arquivo como texto', () => {
-    expect(rascunho({ logo: 'a1b2' })).toEqual([]);
-    expect(rascunho({ logo: 42 })).toEqual([{ chave: 'logo', codigo: 'tipo_invalido' }]);
   });
 
   it('recusa resposta para campo que não existe no modelo', () => {

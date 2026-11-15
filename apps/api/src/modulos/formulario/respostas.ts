@@ -129,23 +129,6 @@ export function lerFormularioDoCliente(prisma: PrismaClient, link: LinkLocalizad
   });
 }
 
-/** Cada arquivo citado precisa existir e ser deste cliente (RN-20, RN-75). */
-async function errosDeArquivo(
-  escopo: PrismaDaAgencia,
-  clienteId: string,
-  campos: readonly CampoFormulario[],
-  respostas: Respostas,
-): Promise<ErroResposta[]> {
-  const erros: ErroResposta[] = [];
-  for (const campo of campos) {
-    const id = respostas[campo.chave];
-    if (campo.tipo !== 'upload' || typeof id !== 'string' || id === '') continue;
-    const arquivo = await escopo.arquivo.findFirst({ where: { id, clienteId } });
-    if (!arquivo) erros.push({ chave: campo.chave, codigo: 'arquivo_invalido' });
-  }
-  return erros;
-}
-
 interface Gravacao {
   readonly resposta: {
     id: string;
@@ -159,24 +142,16 @@ interface Gravacao {
   readonly campos: CampoFormulario[];
   readonly versaoId: string;
   readonly versaoClienteId: string | null;
-  readonly clienteId: string;
 }
 
 async function prepararGravacao(escopo: PrismaDaAgencia, onboardingId: string): Promise<Gravacao> {
-  const [resposta, onboarding] = await Promise.all([
-    escopo.respostaFormulario.findFirst({ where: { onboardingId } }),
-    escopo.onboarding.findFirstOrThrow({
-      where: { id: onboardingId },
-      select: { clienteId: true },
-    }),
-  ]);
+  const resposta = await escopo.respostaFormulario.findFirst({ where: { onboardingId } });
   const versao = await versaoDoCliente(escopo, onboardingId, resposta);
   return {
     resposta,
     campos: versao.campos,
     versaoId: versao.versaoId,
     versaoClienteId: versao.versaoClienteId,
-    clienteId: onboarding.clienteId,
   };
 }
 
@@ -192,10 +167,7 @@ export function salvarRascunhoDoCliente(
     const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta);
     if (bloqueio) return { tipo: 'bloqueado', motivo: bloqueio };
 
-    const erros = [
-      ...validarRespostas(g.campos, respostas, { completo: false }),
-      ...(await errosDeArquivo(escopo, g.clienteId, g.campos, respostas)),
-    ];
+    const erros = validarRespostas(g.campos, respostas, { completo: false });
     if (erros.length > 0) return { tipo: 'invalido', erros };
 
     await escopo.$transaction([
@@ -247,10 +219,7 @@ export function enviarFormularioDoCliente(
     const bloqueio = await motivoBloqueio(escopo, link.onboardingId, g.resposta);
     if (bloqueio) return { tipo: 'bloqueado', motivo: bloqueio };
 
-    const erros = [
-      ...validarRespostas(g.campos, respostas, { completo: true }),
-      ...(await errosDeArquivo(escopo, g.clienteId, g.campos, respostas)),
-    ];
+    const erros = validarRespostas(g.campos, respostas, { completo: true });
     if (erros.length > 0) return { tipo: 'invalido', erros };
 
     const anteriores = lerRespostas(g.resposta?.respostas);

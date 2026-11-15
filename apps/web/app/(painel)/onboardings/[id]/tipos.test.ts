@@ -32,15 +32,11 @@ describe('linha do tempo do detalhe (RN-65)', () => {
 });
 
 describe('respostas do formulário no detalhe', () => {
-  const arquivos = [{ id: 'a1', nomeOriginal: 'logo.png' }];
-
-  it('mostra texto, listas e o nome do arquivo enviado', () => {
-    expect(textoDaResposta({ tipo: 'texto_curto', valor: 'Moda' }, arquivos)).toBe('Moda');
-    expect(textoDaResposta({ tipo: 'multipla_escolha', valor: ['A', 'B'] }, arquivos)).toBe('A, B');
-    expect(textoDaResposta({ tipo: 'upload', valor: ['a1', 'x'] }, arquivos)).toBe(
-      'logo.png, arquivo removido',
-    );
-    expect(textoDaResposta({ tipo: 'numero', valor: null }, arquivos)).toBe('—');
+  it('mostra texto, números e listas', () => {
+    expect(textoDaResposta({ valor: 'Moda' })).toBe('Moda');
+    expect(textoDaResposta({ valor: 12 })).toBe('12');
+    expect(textoDaResposta({ valor: ['A', 'B'] })).toBe('A, B');
+    expect(textoDaResposta({ valor: null })).toBe('—');
   });
 });
 

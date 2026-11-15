@@ -13,4 +13,4 @@ paths:
 - Nunca pedir ou registrar senha de rede social (D-05, RN-29).
 - Logs sem dados pessoais completos: mascarar e-mail, telefone e conteúdo de formulário.
 - Auditar: criação/edição de cliente, mudança de status, ajuste de prazo, regeneração de link (RN-77).
-- Uploads: validar tipo real (magic bytes) e tamanho no servidor (RN-20).
+- Sem envio de arquivos pelo link (decisão `2026-11-14-a-sem-envio-de-arquivos.md`). Não reintroduza upload sem decisão nova do PO.

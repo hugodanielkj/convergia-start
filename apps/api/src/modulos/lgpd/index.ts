@@ -63,7 +63,6 @@ export default function lgpd(app: FastifyInstance): Promise<void> {
     const { confirmacao } = corpoExclusao.parse(request.body);
     return excluirDadosDoCliente(
       prismaDaRequisicao(app, request),
-      app.deps.armazenamento,
       app.deps.eventos,
       usuarioDaRequisicao(request),
       clienteId,

@@ -6,7 +6,6 @@ export const TIPOS_CAMPO = [
   'selecao_unica',
   'multipla_escolha',
   'data',
-  'upload',
   'url',
 ] as const;
 
