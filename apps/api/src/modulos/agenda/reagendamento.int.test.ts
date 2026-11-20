@@ -180,6 +180,7 @@ describe('RN-35 e RN-36 o cliente reagenda o próprio horário', () => {
           status: 'agendado',
           reagendamentosRestantes: 2,
           podeReagendar: true,
+          pedidoEnviado: false,
         },
       ],
     });
