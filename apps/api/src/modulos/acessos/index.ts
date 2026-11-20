@@ -18,7 +18,9 @@ import {
   lerEscolha,
   lerEscolhaPadrao,
   marcarAcesso,
+  plataformasPadrao,
   salvarConfigAcessos,
+  salvarPlataformasPadrao,
   salvarEscolha,
 } from './acessos.js';
 
@@ -47,6 +49,8 @@ const corpoConfig = z.object({
   identificadores: z.object(
     Object.fromEntries(PLATAFORMAS_ACESSO.map((p) => [p, z.string().max(200).optional()])),
   ),
+  /** RN-27: marcadas por padrão para cada cliente novo (S8-2). Ausente = não muda. */
+  plataformasPadrao: z.array(z.string().max(20)).max(10).optional(),
 });
 
 function recusarLink(reply: FastifyReply, tipo: 'invalido' | 'expirado') {
@@ -198,17 +202,23 @@ export default function acessos(app: FastifyInstance): Promise<void> {
     },
   );
 
-  app.get('/acessos/config', { preHandler: exigirAdmin }, async (request) => ({
-    identificadores: await lerConfigAcessos(prismaDaRequisicao(app, request)),
-  }));
+  app.get('/acessos/config', { preHandler: exigirAdmin }, async (request) => {
+    const prisma = prismaDaRequisicao(app, request);
+    return {
+      identificadores: await lerConfigAcessos(prisma),
+      plataformasPadrao: await plataformasPadrao(prisma),
+    };
+  });
 
-  app.put('/acessos/config', { preHandler: exigirAdmin }, async (request) => {
-    const { identificadores } = corpoConfig.parse(request.body);
-    await salvarConfigAcessos(
-      prismaDaRequisicao(app, request),
-      usuarioDaRequisicao(request),
-      identificadores,
-    );
+  app.put('/acessos/config', { preHandler: exigirAdmin }, async (request, reply) => {
+    const { identificadores, plataformasPadrao: padrao } = corpoConfig.parse(request.body);
+    const prisma = prismaDaRequisicao(app, request);
+    const usuario = usuarioDaRequisicao(request);
+    if (padrao) {
+      const erro = await salvarPlataformasPadrao(prisma, usuario, padrao);
+      if (erro) return reply.status(422).send({ erro: 'RN-27', motivo: erro });
+    }
+    await salvarConfigAcessos(prisma, usuario, identificadores);
     return { ok: true };
   });
 

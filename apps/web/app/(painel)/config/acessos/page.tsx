@@ -19,8 +19,9 @@ export default async function ConfigAcessos() {
     );
   }
   if (!resposta.ok) throw new Error(`API respondeu ${String(resposta.status)} em /acessos/config`);
-  const { identificadores } = (await resposta.json()) as {
+  const { identificadores, plataformasPadrao } = (await resposta.json()) as {
     identificadores: Record<string, string>;
+    plataformasPadrao: string[];
   };
-  return <FormularioIdentificadores inicial={identificadores} />;
+  return <FormularioIdentificadores inicial={identificadores} padraoInicial={plataformasPadrao} />;
 }

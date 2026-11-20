@@ -41,3 +41,29 @@
   margin: 0;
   color: var(--erro);
 }
+
+.padrao {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.padrao legend {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--alvo-toque);
+}
+
+.dica {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.875rem;
+}

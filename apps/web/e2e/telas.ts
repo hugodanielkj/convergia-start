@@ -44,6 +44,7 @@ export const TELAS: readonly Tela[] = [
   { nome: 'config: mensagens', caminho: () => '/config/templates' },
   { nome: 'config: lembretes', caminho: () => '/config/lembretes' },
   { nome: 'config: equipe', caminho: () => '/config/equipe' },
+  { nome: 'config: geral', caminho: () => '/config/geral' },
   { nome: 'cliente: termo', caminho: (d) => `/o/${d.tokenSemTermo}` },
   { nome: 'cliente: link expirado', caminho: (d) => `/o/${d.token}/expirado` },
   { nome: 'cliente: resumo', caminho: (d) => `/o/${d.tokenConcluido}/resumo` },

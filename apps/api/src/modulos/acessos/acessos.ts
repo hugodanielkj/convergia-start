@@ -288,6 +288,28 @@ export async function salvarConfigAcessos(
   });
 }
 
+/** RN-27: plataformas marcadas por padrão nos clientes novos (S8-2); pelo menos uma. */
+export async function salvarPlataformasPadrao(
+  prisma: PrismaDaAgencia,
+  usuario: UsuarioAutenticado,
+  plataformas: readonly string[],
+): Promise<'nenhuma_plataforma' | 'plataforma_desconhecida' | null> {
+  const escolha = validarEscolha(plataformas);
+  if (!escolha.ok) return escolha.erro;
+  const antes = await plataformasPadrao(prisma);
+  if (antes.join() === escolha.plataformas.join()) return null;
+  await prisma.configAgencia.updateMany({ data: { plataformasObrigatorias: escolha.plataformas } });
+  await registrarAuditoria(prisma, {
+    agenciaId: usuario.agenciaId,
+    ator: `usuario:${usuario.id}`,
+    acao: 'config.plataformas_padrao_alteradas',
+    entidade: 'Agencia',
+    entidadeId: usuario.agenciaId,
+    dados: { antes: antes.join(', '), depois: escolha.plataformas.join(', ') },
+  });
+  return null;
+}
+
 export interface EstadoEscolha {
   readonly plataformas: { plataforma: PlataformaAcesso; nome: string; escolhida: boolean }[];
   /** RN-27: a etapa já começou; a escolha não muda mais. */

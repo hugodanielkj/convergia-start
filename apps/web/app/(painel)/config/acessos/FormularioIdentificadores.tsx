@@ -4,30 +4,48 @@ import { useState, type SyntheticEvent } from 'react';
 import estilos from './acessos.module.css';
 
 const CAMPOS = [
-  { chave: 'instagram', rotulo: 'Instagram (e-mail ou ID do Business Manager)' },
-  { chave: 'facebook', rotulo: 'Facebook (e-mail ou ID do Business Manager)' },
-  { chave: 'tiktok', rotulo: 'TikTok (e-mail ou ID do Business Center)' },
-  { chave: 'google', rotulo: 'Google (e-mail do gerente)' },
+  { chave: 'instagram', nome: 'Instagram', rotulo: 'Instagram (e-mail ou ID do Business Manager)' },
+  { chave: 'facebook', nome: 'Facebook', rotulo: 'Facebook (e-mail ou ID do Business Manager)' },
+  { chave: 'tiktok', nome: 'TikTok', rotulo: 'TikTok (e-mail ou ID do Business Center)' },
+  { chave: 'google', nome: 'Google', rotulo: 'Google (e-mail do gerente)' },
 ];
 
-export function FormularioIdentificadores({ inicial }: { inicial: Record<string, string> }) {
+export function FormularioIdentificadores({
+  inicial,
+  padraoInicial,
+}: {
+  inicial: Record<string, string>;
+  padraoInicial: string[];
+}) {
   const [valores, setValores] = useState(inicial);
+  const [padrao, setPadrao] = useState(padraoInicial);
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
   async function salvar(e: SyntheticEvent) {
     e.preventDefault();
+    if (padrao.length === 0) {
+      setAviso({ ok: false, texto: 'Marque pelo menos uma rede para pedir por padrão.' });
+      return;
+    }
     setOcupado(true);
     const r = await fetch('/api/acessos/config', {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ identificadores: valores }),
+      body: JSON.stringify({ identificadores: valores, plataformasPadrao: padrao }),
     });
     setOcupado(false);
     setAviso(
       r.ok
-        ? { ok: true, texto: 'Salvo. Os clientes já veem o novo identificador.' }
+        ? { ok: true, texto: 'Salvo. Vale para os clientes cadastrados daqui para frente.' }
         : { ok: false, texto: 'Não foi possível salvar.' },
+    );
+  }
+
+  function alternar(chave: string) {
+    setAviso(null);
+    setPadrao((atual) =>
+      atual.includes(chave) ? atual.filter((p) => p !== chave) : [...atual, chave],
     );
   }
 
@@ -50,6 +68,24 @@ export function FormularioIdentificadores({ inicial }: { inicial: Record<string,
           />
         </label>
       ))}
+      <fieldset className={estilos.padrao}>
+        <legend>Redes pedidas por padrão aos clientes novos</legend>
+        {CAMPOS.map((c) => (
+          <label key={c.chave} className={estilos.opcao}>
+            <input
+              type="checkbox"
+              checked={padrao.includes(c.chave)}
+              onChange={() => {
+                alternar(c.chave);
+              }}
+            />
+            {c.nome}
+          </label>
+        ))}
+        <p className={estilos.dica}>
+          No cadastro de cada cliente dá para desmarcar ou incluir outras.
+        </p>
+      </fieldset>
       <button type="submit" disabled={ocupado} className={estilos.botao}>
         Salvar
       </button>
