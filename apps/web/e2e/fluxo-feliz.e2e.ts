@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { z } from 'zod';
 import { URL_API } from './ambiente';
 
@@ -53,12 +53,7 @@ async function garantirAgenda(): Promise<void> {
 }
 
 /** Preenche cada campo do formulário do cliente conforme o tipo, para não depender do modelo. */
-async function preencherFormulario(page: Page): Promise<void> {
-  // Os campos são controlados pelo React: preencher antes de a página ficar ativa não vale.
-  await page.waitForLoadState('networkidle');
-  const form = page
-    .locator('form')
-    .filter({ has: page.getByRole('button', { name: 'Enviar respostas' }) });
+async function preencherCampos(form: Locator): Promise<void> {
   const valores: Record<string, string> = {
     email: 'contato@exemplo.com',
     tel: '(31) 99999-8888',
@@ -79,7 +74,23 @@ async function preencherFormulario(page: Page): Promise<void> {
       await campo.fill(valores[tipo] ?? 'Teste E2E');
     }
   }
-  await form.getByRole('button', { name: 'Enviar respostas' }).click();
+}
+
+/** Formulário guiado: responde uma pergunta por vez até o botão de envio aparecer. */
+async function preencherFormulario(page: Page): Promise<void> {
+  // Os campos são controlados pelo React: preencher antes de a página ficar ativa não vale.
+  await page.waitForLoadState('networkidle');
+  const form = page.getByRole('region', { name: 'Formulário', exact: true }).locator('form');
+  const enviar = form.getByRole('button', { name: 'Enviar respostas' });
+  const contador = form.getByText(/^Pergunta \d+ de \d+$/);
+  while (!(await enviar.isVisible())) {
+    const antes = await contador.textContent();
+    await preencherCampos(form);
+    await form.getByRole('button', { name: /^(Continuar|Pular)$/ }).click();
+    await expect(contador).not.toHaveText(antes ?? '');
+  }
+  await preencherCampos(form);
+  await enviar.click();
 }
 
 /** Escolhe o primeiro horário livre e confirma (RN-30 a RN-33). */
