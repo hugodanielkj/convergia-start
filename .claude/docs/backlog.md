@@ -96,14 +96,16 @@ Entrou depois da conversa do PO com o primeiro cliente (2026-11-14). A trilha B 
 
 ## Sprint 7 — Endurecimento (as duas trilhas)
 
-| Trilha | História                                                                                  | Pastas                                                                                                                                               |
-| ------ | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A      | [x] S7-1 Proteções do link público: rate limit, headers, CSRF (RN-76)                     | `apps/api/src/base/http`, `apps/web/proxy.ts` (PR separado), chamadas de servidor em `app/o/[token]`                                                 |
-| A      | [x] S7-2 Tela de resumo após a conclusão (RN-14)                                          | `app/o/[token]/resumo`, `modulos/resumo`, casca `app/o/[token]/page.tsx`                                                                             |
-| A      | [x] Ajuste do PO: sem envio de arquivos pelo link (RN-16, RN-20, RN-69)                   | `modulos/uploads`, `adapters/storage`, `modulos/formulario`, `modulos/painel`, `modulos/lgpd`, `_etapas/formulario`, `app/(painel)/onboardings/[id]` |
-| A      | [x] Ajuste do PO: sem Google Calendar e Meet (RN-34, RN-36, RN-67); código fica desligado | docs, `_etapas/reuniao/AgendamentoAtual.tsx` (texto)                                                                                                 |
-| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12) → foi para a Sprint 8 | `e2e/`                                                                                                                                               |
-| B      | [ ] S7-4 Correções da homologação final → Sprint 9, com cliente piloto                    | conforme o bug                                                                                                                                       |
+| Trilha | História                                                                                     | Pastas                                                                                                                                               |
+| ------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A      | [x] S7-1 Proteções do link público: rate limit, headers, CSRF (RN-76)                        | `apps/api/src/base/http`, `apps/web/proxy.ts` (PR separado), chamadas de servidor em `app/o/[token]`                                                 |
+| A      | [x] S7-2 Tela de resumo após a conclusão (RN-14)                                             | `app/o/[token]/resumo`, `modulos/resumo`, casca `app/o/[token]/page.tsx`                                                                             |
+| A      | [x] Ajuste do PO: sem envio de arquivos pelo link (RN-16, RN-20, RN-69)                      | `modulos/uploads`, `adapters/storage`, `modulos/formulario`, `modulos/painel`, `modulos/lgpd`, `_etapas/formulario`, `app/(painel)/onboardings/[id]` |
+| A      | [x] Ajuste do PO: sem Google Calendar e Meet (RN-34, RN-36, RN-67); código fica desligado    | docs, `_etapas/reuniao/AgendamentoAtual.tsx` (texto)                                                                                                 |
+| A      | [x] S8-3 Etapa concluída ao agendar e confirmação final com prazo (seção 12, RN-46, RN-58)   | `core/estados`, `modulos/onboarding/estados`, `modulos/notificacoes/confirmacao`                                                                     |
+| A      | [ ] S8-4 Pedido de reagendamento pelo cliente e horário alterado pela agência (RN-35, RN-46) | `modulos/agenda`, `_etapas/reuniao`, `_etapas/captacao`, `app/(painel)/onboardings/[id]`                                                             |
+| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12) → foi para a Sprint 8    | `e2e/`                                                                                                                                               |
+| B      | [ ] S7-4 Correções da homologação final → Sprint 9, com cliente piloto                       | conforme o bug                                                                                                                                       |
 
 ## Sprint 8 — Equipe, configurações gerais e teste do fluxo completo
 
