@@ -102,5 +102,21 @@ Entrou depois da conversa do PO com o primeiro cliente (2026-11-14). A trilha B 
 | A      | [x] S7-2 Tela de resumo após a conclusão (RN-14)                                          | `app/o/[token]/resumo`, `modulos/resumo`, casca `app/o/[token]/page.tsx`                                                                             |
 | A      | [x] Ajuste do PO: sem envio de arquivos pelo link (RN-16, RN-20, RN-69)                   | `modulos/uploads`, `adapters/storage`, `modulos/formulario`, `modulos/painel`, `modulos/lgpd`, `_etapas/formulario`, `app/(painel)/onboardings/[id]` |
 | A      | [x] Ajuste do PO: sem Google Calendar e Meet (RN-34, RN-36, RN-67); código fica desligado | docs, `_etapas/reuniao/AgendamentoAtual.tsx` (texto)                                                                                                 |
-| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12)                       | `e2e/`                                                                                                                                               |
-| B      | [ ] S7-4 Correções da homologação final                                                   | conforme o bug                                                                                                                                       |
+| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (critérios da seção 12) → foi para a Sprint 8 | `e2e/`                                                                                                                                               |
+| B      | [ ] S7-4 Correções da homologação final → Sprint 9, com cliente piloto                    | conforme o bug                                                                                                                                       |
+
+## Sprint 8 — Equipe, configurações gerais e teste do fluxo completo
+
+O PO faz as duas trilhas. Detalhes em `sprints/sprint-08.md`.
+
+| Trilha | História                                                                           | Pastas                                                                                                                                     |
+| ------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| A      | [ ] S8-1 Cadastro da equipe e escolha do responsável (RN-02, RN-03, RN-08)         | `modulos/equipe`, `core/equipe`, `app/(painel)/config/equipe`, `app/(painel)/clientes` (seletor), `app/(painel)/onboardings/[id]` (trocar) |
+| A      | [ ] S8-2 Configurações gerais da agência (RN-03, D-09)                             | `modulos/config`, `core/config`, `app/(painel)/config/geral`, `app/(painel)/config/acessos` e `modulos/acessos` (plataformas padrão)       |
+| B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (seção 12, critério 1, sem calendário) | `apps/web/e2e/`                                                                                                                            |
+
+## Sprint 9 — Homologação com cliente piloto
+
+| Trilha | História                                                  | Pastas         |
+| ------ | --------------------------------------------------------- | -------------- |
+| B      | [ ] S7-4 Homologação final com cliente piloto e correções | conforme o bug |
