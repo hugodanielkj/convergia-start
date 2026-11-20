@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import estilos from './acessos.module.css';
 import type { AcessoVisao, EstadoAcessos } from './tipos';
 import { useAvancoEtapa } from '../../_componentes/avanco';
@@ -44,22 +44,34 @@ export function AcessosCliente({ token, inicial }: { token: string; inicial: Est
     if (todas) avancar();
   }
 
+  const avisadas = estado.plataformas.filter((a) => a.status === 'concedido' || a.informado);
+
   return (
     <div className={estilos.lista}>
       <p className={estilos.intro}>
-        Adicione a agência como parceira em cada rede. <strong>Sem senhas.</strong>
+        <strong>
+          {avisadas.length} de {estado.plataformas.length}
+        </strong>{' '}
+        {estado.plataformas.length === 1 ? 'rede avisada' : 'redes avisadas'}. Abra cada rede e siga
+        os passos.
       </p>
       {estado.plataformas.map((a) => (
         <details
           key={a.plataforma}
           className={estilos.item}
+          data-status={a.status}
           // Aberto só o que ainda pede ação do cliente; o resto fica recolhido (menos texto).
           open={a.status === 'invalido' || (a.status === 'pendente' && !a.informado)}
         >
           <summary className={estilos.resumo}>
-            <span className={estilos.nome}>{a.nome}</span>
-            <span className={estilos.selo} data-status={a.status}>
-              {rotulo(a)}
+            <span className={estilos.monograma} aria-hidden="true">
+              {a.nome.slice(0, 1)}
+            </span>
+            <span className={estilos.nomeESelo}>
+              <span className={estilos.nome}>{a.nome}</span>
+              <span className={estilos.selo} data-status={a.status} data-informado={a.informado}>
+                {rotulo(a)}
+              </span>
             </span>
           </summary>
           {a.status === 'invalido' && a.motivo ? (
@@ -72,11 +84,7 @@ export function AcessosCliente({ token, inicial }: { token: string; inicial: Est
                   <li key={p}>{p}</li>
                 ))}
               </ol>
-              {a.identificador ? (
-                <p className={estilos.identificador}>
-                  Adicione: <code>{a.identificador}</code>
-                </p>
-              ) : null}
+              {a.identificador ? <Identificador valor={a.identificador} /> : null}
               <button
                 type="button"
                 className={estilos.botao}
@@ -92,6 +100,42 @@ export function AcessosCliente({ token, inicial }: { token: string; inicial: Est
         </details>
       ))}
       {erro ? <p className={estilos.erro}>{erro}</p> : null}
+    </div>
+  );
+}
+
+/** Quem o cliente deve adicionar, com um botão para copiar (menos erro de digitação). */
+function Identificador({ valor }: { valor: string }) {
+  const [copiado, setCopiado] = useState(false);
+
+  useEffect(() => {
+    if (!copiado) return;
+    const espera = setTimeout(() => {
+      setCopiado(false);
+    }, 2500);
+    return () => {
+      clearTimeout(espera);
+    };
+  }, [copiado]);
+
+  return (
+    <div className={estilos.identificador}>
+      <span className={estilos.rotuloIdentificador}>Adicione</span>
+      <code>{valor}</code>
+      <button
+        type="button"
+        className={estilos.copiar}
+        onClick={() => {
+          void navigator.clipboard.writeText(valor).then(() => {
+            setCopiado(true);
+          });
+        }}
+      >
+        {copiado ? 'Copiado' : 'Copiar'}
+      </button>
+      <span className={estilos.somenteLeitor} role="status">
+        {copiado ? 'Copiado para a área de transferência.' : ''}
+      </span>
     </div>
   );
 }

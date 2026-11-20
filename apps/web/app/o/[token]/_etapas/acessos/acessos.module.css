@@ -1,65 +1,195 @@
+/* Um cartão por rede, com passos numerados (decisão 2026-11-19-a-tela-cliente-visual). */
 .lista {
   display: grid;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+}
+
+.intro {
+  margin: 0;
+  color: var(--suave);
+}
+
+.intro strong {
+  color: var(--texto);
 }
 
 .item {
   border: 1px solid var(--borda);
   border-radius: var(--raio);
-  padding: 0.75rem 0.9rem;
+  background: var(--fundo);
+}
+
+.item[open] {
+  border-color: color-mix(in srgb, var(--realce) 45%, var(--borda));
+}
+
+.item[data-status='concedido'] {
+  background: transparent;
 }
 
 .resumo {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  cursor: pointer;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  list-style: none;
+}
+
+.resumo::-webkit-details-marker {
+  display: none;
+}
+
+/* Seta de abrir/fechar, à direita. */
+.resumo::after {
+  content: '';
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-left: auto;
+  border-right: 2px solid var(--suave);
+  border-bottom: 2px solid var(--suave);
+  transform: rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.item[open] > .resumo::after {
+  transform: rotate(-135deg);
+}
+
+.monograma {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--raio);
+  background: var(--petrol);
+  color: var(--cream);
+  font-family: var(--serif);
+  font-size: 1.15rem;
+}
+
+.item[data-status='concedido'] .monograma {
+  background: var(--sucesso);
+}
+
+.nomeESelo {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
 }
 
 .nome {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .selo {
+  color: var(--suave);
   font-size: 0.8rem;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid var(--borda);
+}
+
+.selo[data-informado='true'] {
+  color: var(--aviso);
 }
 
 .selo[data-status='concedido'] {
-  border-color: var(--sucesso);
   color: var(--sucesso);
+  font-weight: 700;
 }
 
 .selo[data-status='invalido'] {
-  border-color: var(--erro);
   color: var(--erro);
+  font-weight: 700;
 }
 
+.item > :not(summary) {
+  margin-inline: 0.85rem;
+}
+
+.item > :last-child {
+  margin-bottom: 0.85rem;
+}
+
+/* Passos com número em círculo, mais fáceis de acompanhar que uma lista simples. */
 .passos {
-  margin: 0.75rem 0;
-  padding-left: 1.2rem;
   display: grid;
-  gap: 0.3rem;
+  gap: 0.6rem;
+  margin-block: 0.5rem 0.85rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: passo;
+}
+
+.passos li {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  counter-increment: passo;
+}
+
+.passos li::before {
+  content: counter(passo);
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--realce-suave);
+  color: var(--destaque);
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .identificador {
-  margin: 0 0 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.85rem;
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+}
+
+.rotuloIdentificador {
+  flex-basis: 100%;
+  color: var(--suave);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .identificador code {
-  padding: 0.15rem 0.4rem;
-  border-radius: var(--raio);
-  background: var(--borda);
+  flex: 1 1 10rem;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 700;
   user-select: all;
 }
 
+.copiar {
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--destaque);
+  font-weight: 700;
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .alerta {
-  margin: 0.75rem 0 0;
+  margin-top: 0.25rem;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--erro);
   border-radius: var(--raio);
@@ -72,7 +202,7 @@
 }
 
 .botao {
-  width: 100%;
+  width: calc(100% - 1.7rem);
   min-height: var(--alvo-toque);
   padding: 0.7rem 1rem;
   border: 0;
@@ -80,18 +210,12 @@
   background: var(--destaque);
   color: var(--sobre-destaque);
   font: inherit;
-  font-weight: 600;
-  cursor: pointer;
+  font-weight: 700;
 }
 
 .botao:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.intro {
-  margin: 0;
-  color: var(--suave);
 }
 
 /* Mobile-first: ação principal larga, fácil de alcançar com o polegar. */

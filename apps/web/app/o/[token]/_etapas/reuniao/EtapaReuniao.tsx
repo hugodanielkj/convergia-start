@@ -30,11 +30,10 @@ export async function EtapaReuniao({ token }: { token: string }) {
         <AgendamentoAtual agendamento={atual} token={token} />
       ) : (
         <>
-          <p>
-            {faltou
-              ? 'Não conseguimos nos encontrar na última reunião. Escolha um novo horário.'
-              : 'Escolha o melhor horário para a nossa reunião online de alinhamento.'}
-          </p>
+          {/* O cartão já explica o passo; aqui só o que muda depois de uma falta (RN-37). */}
+          {faltou && (
+            <p>Não conseguimos nos encontrar na última reunião. Escolha um novo horário.</p>
+          )}
           <SeletorHorario token={token} modo={{ tipo: 'novo' }} />
         </>
       )}
