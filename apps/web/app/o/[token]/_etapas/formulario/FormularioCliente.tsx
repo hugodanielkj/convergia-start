@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import estilos from './formulario.module.css';
+import { indiceInicial, primeiroComErro, respondida } from './guiado';
 import { mensagensPorCampo } from './mensagens';
 import type { Campo, ErroResposta, EstadoFormulario, Respostas, ValorResposta } from './tipos';
 import { useAvancoEtapa } from '../../_componentes/avanco';
@@ -28,6 +29,22 @@ export function FormularioCliente({
   const { avancar } = useAvancoEtapa();
   const sujo = useRef(false);
   const editavel = inicial.editavel && situacao !== 'fechado';
+  const campos = inicial.campos;
+  // Primeiro preenchimento: uma pergunta por vez (decisão 2026-11-19-a-tela-cliente-visual).
+  // Depois de enviado, a edição mostra tudo junto, como uma ficha.
+  const guiado = editavel && situacao === 'rascunho' && campos.length > 1;
+  const [indice, setIndice] = useState(() => indiceInicial(campos, inicial.respostas));
+  const navegou = useRef(false);
+  const atual = campos[indice];
+  const ultimo = indice === campos.length - 1;
+
+  // Ao trocar de pergunta, o foco vai para a resposta (não na abertura da página: no celular,
+  // focar abre o teclado sem o cliente pedir).
+  useEffect(() => {
+    if (!navegou.current || !atual) return;
+    const alvo = document.getElementById(`c-${atual.chave}`);
+    (alvo?.matches('input, textarea, select') ? alvo : alvo?.querySelector('input'))?.focus();
+  }, [atual]);
 
   // Rascunho automático (RN-18): salva pouco depois da última digitação.
   useEffect(() => {
@@ -51,6 +68,22 @@ export function FormularioCliente({
       clearTimeout(espera);
     };
   }, [respostas, situacao, base]);
+
+  function irPara(novo: number) {
+    navegou.current = true;
+    setIndice(novo);
+    setAviso(null);
+  }
+
+  function continuar() {
+    if (!atual) return;
+    if (atual.obrigatorio && !respondida(respostas[atual.chave])) {
+      setErros({ [atual.chave]: 'Responda esta pergunta para continuar.' });
+      return;
+    }
+    setErros({});
+    irPara(indice + 1);
+  }
 
   function alterar(chave: string, valor: ValorResposta) {
     sujo.current = true;
@@ -80,13 +113,87 @@ export function FormularioCliente({
     }
     const corpo = (await r.json().catch(() => ({}))) as { erros?: ErroResposta[]; erro?: string };
     if (corpo.erros) {
-      setErros(mensagensPorCampo(corpo.erros));
+      const porCampo = mensagensPorCampo(corpo.erros);
+      setErros(porCampo);
+      const comErro = guiado ? primeiroComErro(campos, porCampo) : null;
+      if (comErro !== null) {
+        irPara(comErro);
+        return;
+      }
       setAviso({ tom: 'erro', texto: 'Confira os campos destacados.' });
     } else if (corpo.erro === 'FORMULARIO_FECHADO' || corpo.erro === 'REUNIAO_REALIZADA') {
       setSituacao('fechado');
     } else {
       setAviso({ tom: 'erro', texto: 'Não foi possível enviar agora. Tente de novo.' });
     }
+  }
+
+  if (guiado && atual) {
+    const vazia = !respondida(respostas[atual.chave]);
+    return (
+      <form
+        className={estilos.form}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (ultimo) void enviar();
+          else continuar();
+        }}
+      >
+        <div className={estilos.guia}>
+          <p className={estilos.contador}>
+            Pergunta {indice + 1} de {campos.length}
+          </p>
+          {/* O rascunho salvo vira um selo discreto: o aviso não empurra os botões. */}
+          <p role="status" className={estilos.salvo}>
+            {aviso?.tom === 'ok' ? 'Rascunho salvo' : ''}
+          </p>
+          <progress
+            className={estilos.barra}
+            value={indice + 1}
+            max={campos.length}
+            aria-label="Andamento do formulário"
+          />
+        </div>
+        <Pergunta key={atual.chave} campo={atual} erro={erros[atual.chave]} destaque>
+          <Entrada
+            campo={atual}
+            valor={respostas[atual.chave]}
+            desabilitado={false}
+            aoAlterar={(v) => {
+              alterar(atual.chave, v);
+            }}
+          />
+        </Pergunta>
+        {aviso?.tom === 'erro' && (
+          <p role="alert" className={estilos.erro}>
+            {aviso.texto}
+          </p>
+        )}
+        <div className={estilos.navegacao}>
+          {indice > 0 && (
+            <button
+              type="button"
+              className={estilos.voltar}
+              onClick={() => {
+                setErros({});
+                irPara(indice - 1);
+              }}
+            >
+              Voltar
+            </button>
+          )}
+          <button type="submit" className={estilos.botao} disabled={salvando}>
+            {ultimo
+              ? salvando
+                ? 'Enviando…'
+                : 'Enviar respostas'
+              : vazia && !atual.obrigatorio
+                ? 'Pular'
+                : 'Continuar'}
+          </button>
+        </div>
+      </form>
+    );
   }
 
   return (
@@ -135,14 +242,17 @@ export function FormularioCliente({
 function Pergunta({
   campo,
   erro,
+  destaque = false,
   children,
 }: {
   campo: Campo;
   erro?: string | undefined;
+  /** Pergunta sozinha na tela (formulário guiado): rótulo maior. */
+  destaque?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className={estilos.pergunta}>
+    <div className={destaque ? `${estilos.pergunta} ${estilos.destaque}` : estilos.pergunta}>
       <label htmlFor={`c-${campo.chave}`} className={estilos.rotulo}>
         {campo.rotulo}
         {campo.obrigatorio && <span aria-label="obrigatório"> *</span>}

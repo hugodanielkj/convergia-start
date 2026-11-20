@@ -95,9 +95,121 @@
   cursor: wait;
 }
 
+/* Formulário guiado: uma pergunta por vez (decisão 2026-11-19-a-tela-cliente-visual). */
+.guia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+}
+
+.contador {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.salvo {
+  margin: 0;
+  color: var(--sucesso);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.guia .barra {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 0.35rem;
+  appearance: none;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: var(--borda);
+  overflow: hidden;
+}
+
+.guia .barra::-webkit-progress-bar {
+  background: var(--borda);
+}
+
+.guia .barra::-webkit-progress-value {
+  background: var(--realce);
+  border-radius: var(--raio-pilula);
+  transition: width 0.3s var(--ease);
+}
+
+.guia .barra::-moz-progress-bar {
+  background: var(--realce);
+  border-radius: var(--raio-pilula);
+}
+
+.destaque {
+  gap: 0.6rem;
+  padding-block: 0.5rem 0.25rem;
+  animation: entrar 0.25s var(--ease);
+}
+
+.destaque .rotulo {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.destaque .marcar {
+  min-height: var(--alvo-toque);
+  padding: 0 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--fundo);
+}
+
+.destaque .marcar:has(:checked) {
+  border-color: var(--destaque);
+  background: var(--realce-suave);
+}
+
+.navegacao {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+/* Sem "Voltar" (primeira pergunta), o botão principal ocupa a linha toda. */
+.navegacao > .botao:only-child {
+  grid-column: 1 / -1;
+}
+
+.voltar {
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--texto);
+  font-weight: 600;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}
+
 /* Mobile-first: ação principal larga, fácil de alcançar com o polegar. */
 @media (min-width: 40rem) {
   .botao {
     width: auto;
+  }
+
+  .navegacao {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .navegacao > .botao {
+    min-width: 10rem;
   }
 }
