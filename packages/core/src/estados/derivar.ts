@@ -26,6 +26,17 @@ export function situacaoAgendamento(status: readonly StatusDoAgendamento[]): Sit
   return 'nenhum';
 }
 
+/**
+ * Etapa reunião ou captação para o cliente: concluída quando há um horário marcado (ou já
+ * realizado). Cancelado ou não comparecimento sem novo horário volta a pendente
+ * (decisão 2026-11-19-a-etapa-concluida-ao-agendar).
+ */
+export function statusEtapaAgendada(
+  status: readonly StatusDoAgendamento[],
+): 'concluida' | 'pendente' {
+  return situacaoAgendamento(status) === 'nenhum' ? 'pendente' : 'concluida';
+}
+
 /** Status da jornada que as etapas e os agendamentos indicam (RN-49 a RN-52). */
 export function derivarStatus(f: FatosOnboarding): StatusOnboarding {
   if (f.entregueEm) return 'primeiro_conteudo_entregue';

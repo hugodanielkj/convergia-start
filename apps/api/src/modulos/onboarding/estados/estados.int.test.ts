@@ -209,7 +209,8 @@ describe('RN-49 a RN-51 status automático', () => {
 
     const caminho = await prisma.transicaoStatus.findMany({
       where: { onboardingId: id },
-      orderBy: { em: 'asc' },
+      // O relógio é fixo: todas têm o mesmo `em`. O id (UUID v7) desempata pela ordem de criação.
+      orderBy: [{ em: 'asc' }, { id: 'asc' }],
     });
     expect(caminho.map((t) => t.para)).toEqual([
       'aguardando_agendamentos',

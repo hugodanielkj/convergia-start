@@ -13,6 +13,7 @@ import {
   proximoStatusAutomatico,
   recebeLembretes,
   situacaoAgendamento,
+  statusEtapaAgendada,
   transicaoPermitida,
   venceuConclusaoAutomatica,
   type FatosOnboarding,
@@ -280,5 +281,18 @@ describe('RN-54 reabrir etapa', () => {
     expect(() => {
       garantirReabertura('formulario', 'concluida', 'concluido');
     }).toThrow(RegraVioladaError);
+  });
+});
+
+describe('etapa reunião/captação concluída ao agendar (2026-11-19)', () => {
+  it('agendado, reagendado ou realizado: concluída', () => {
+    expect(statusEtapaAgendada(['agendado'])).toBe('concluida');
+    expect(statusEtapaAgendada(['cancelado', 'reagendado'])).toBe('concluida');
+    expect(statusEtapaAgendada(['realizado'])).toBe('concluida');
+  });
+
+  it('sem horário, cancelado ou não compareceu: pendente', () => {
+    expect(statusEtapaAgendada([])).toBe('pendente');
+    expect(statusEtapaAgendada(['cancelado', 'nao_compareceu'])).toBe('pendente');
   });
 });
