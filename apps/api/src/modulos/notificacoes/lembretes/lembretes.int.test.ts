@@ -300,6 +300,8 @@ describe('RN-57 lembretes de compromisso', () => {
         fim: new Date(novoInicio.getTime() + 30_000),
         status: 'reagendado',
         reagendamentos: 1,
+        // Sem isto o banco grava a hora real, e o teste quebra quando o relógio passa das datas fixas.
+        atualizadoEm: AGORA_TESTE,
       },
     });
     await varrerCompromissos(deps(), new Date(novoInicio.getTime() - 24 * MS_HORA));
