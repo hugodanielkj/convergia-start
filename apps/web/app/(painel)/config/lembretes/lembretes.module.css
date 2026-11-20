@@ -100,3 +100,12 @@
     padding: 0 1.5rem;
   }
 }
+
+/* Nota abaixo de um campo dentro de `.campo` (tela Geral): sem o negrito do rótulo. */
+.notaCampo {
+  font-weight: 400;
+}
+
+.campo input[aria-invalid='true'] {
+  border-color: var(--erro);
+}
