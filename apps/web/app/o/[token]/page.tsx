@@ -73,8 +73,14 @@ export default async function PaginaOnboarding({ params }: { params: Promise<{ t
   const { etapas, atual } = (await (await chamar(token, '/etapas')).json()) as Etapas;
   return (
     <main className={estilos.pagina}>
-      <h1>Olá, {onboarding.empresa}!</h1>
-      <p className={estilos.subtitulo}>4 passos para começarmos o seu conteúdo.</p>
+      <header className={estilos.boasVindas}>
+        <p className={estilos.chamada}>Seu onboarding</p>
+        <h1>Olá, {onboarding.empresa}!</h1>
+        <p className={estilos.subtitulo}>
+          São {etapas.length} passos para começarmos o seu conteúdo. Seu progresso fica salvo: você
+          pode parar e voltar pelo mesmo link.
+        </p>
+      </header>
       <NavegacaoEtapas
         etapas={etapas}
         atual={atual}

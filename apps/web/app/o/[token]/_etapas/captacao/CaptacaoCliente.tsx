@@ -19,7 +19,6 @@ export function NovaCaptacao({ token }: { token: string }) {
 
   return (
     <div className={estilos.formulario}>
-      <p>Conte onde será a captação e escolha o melhor dia.</p>
       <label className={estilos.opcao}>
         <input
           type="checkbox"

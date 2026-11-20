@@ -1,45 +1,90 @@
+/* Linha do tempo dos 4 passos, presa no topo (decisão 2026-11-19-a-tela-cliente-visual). */
 .topo {
   position: sticky;
   top: 0;
   z-index: 2;
   margin: 0 calc(-1 * var(--gutter));
   padding: calc(0.75rem + var(--seguro-topo)) var(--gutter) 0.5rem;
-  background: var(--fundo);
+  background: color-mix(in srgb, var(--fundo) 92%, transparent);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--borda);
   scroll-margin-top: 0;
 }
 
-.botoes {
+.progresso {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.passos {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.25rem;
-  margin: 0.75rem 0 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0.5rem 0 0;
   padding: 0;
   list-style: none;
 }
 
+.passo {
+  position: relative;
+}
+
+/* Trilho entre um passo e o anterior, no centro dos círculos. Verde quando o anterior acabou. */
+.passo + .passo::before {
+  content: '';
+  position: absolute;
+  top: calc(0.35rem + 0.95rem);
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--borda);
+}
+
+.passo[data-estado='concluida'] + .passo::before {
+  background: var(--sucesso);
+}
+
 .botao {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
-  gap: 0.25rem;
+  align-content: start;
+  gap: 0.3rem;
   width: 100%;
-  min-height: 3.5rem;
-  padding: 0.4rem 0.25rem;
+  min-height: 3.75rem;
+  padding: 0.35rem 0.1rem;
   border: 0;
   border-radius: var(--raio);
   background: transparent;
   color: var(--suave);
   font: inherit;
   font-size: 0.8rem;
-  cursor: pointer;
   overflow-wrap: normal;
 }
 
+/* Fundo em volta do círculo para o trilho não passar por dentro dele. */
+.marco {
+  display: inline-grid;
+  padding: 0.15rem;
+  border-radius: 50%;
+  background: var(--fundo);
+}
+
 .botao[aria-current='step'] {
-  background: var(--superficie);
   color: var(--texto);
   font-weight: 700;
-  box-shadow: inset 0 -3px 0 var(--realce);
+}
+
+.botao[aria-current='step'] .marco {
+  box-shadow: 0 0 0 3px var(--realce-suave);
+}
+
+/* O passo aberto que ainda não começou ganha a cor de destaque: "você está aqui". */
+.botao[aria-current='step'] [data-estado='pendente'] {
+  color: var(--destaque);
 }
 
 .rotulo {
@@ -51,11 +96,28 @@
 }
 
 .alerta {
+  display: grid;
+  gap: 0.75rem;
   margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--aviso) 30%, transparent);
   border-radius: var(--raio);
-  background: color-mix(in srgb, var(--aviso, #8a4b00) 12%, transparent);
+  background: color-mix(in srgb, var(--aviso) 8%, transparent);
   color: var(--texto);
+}
+
+.alerta p {
+  margin: 0;
+}
+
+.atalho {
+  justify-self: start;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: var(--raio-pilula);
+  background: var(--superficie);
+  color: var(--destaque);
+  font-weight: 700;
 }
 
 .inerte {

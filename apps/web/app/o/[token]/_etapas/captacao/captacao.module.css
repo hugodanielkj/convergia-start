@@ -35,8 +35,13 @@
 }
 
 .prazo {
-  margin: 0;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid var(--borda);
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
   border-radius: var(--raio);
+  background: var(--realce-suave);
+  color: var(--texto);
+}
+
+.prazo strong {
+  color: var(--destaque);
 }

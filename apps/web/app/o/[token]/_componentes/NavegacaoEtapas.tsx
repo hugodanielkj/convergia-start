@@ -3,12 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ContextoAvanco, type AvancoEtapa } from './avanco';
-import { BarraProgresso } from './BarraProgresso';
+import { ContextoPasso, type EtapaId } from './passo';
 import { estadoDaEtapa } from '../../../_componentes/estado-etapa';
 import { descreverEtapa, IconeEtapa } from '../../../_componentes/IconeEtapa';
 import estilos from './navegacao.module.css';
 
-export type EtapaId = 'formulario' | 'acessos' | 'reuniao' | 'captacao';
+export type { EtapaId } from './passo';
 
 export interface EtapaNavegacao {
   etapa: EtapaId;
@@ -33,9 +33,15 @@ const ALERTA: Record<EtapaId, string> = {
   captacao: 'Agende a reunião para liberar esta etapa.',
 };
 
+/** Etapa anterior que ainda pede ação do cliente: é para lá que o botão do alerta leva. */
+function pendenteAntes(etapas: EtapaNavegacao[], etapa: EtapaId): EtapaNavegacao | undefined {
+  const indice = etapas.findIndex((e) => e.etapa === etapa);
+  return etapas.slice(0, indice).find((e) => e.liberada && !e.feita && e.status !== 'concluida');
+}
+
 /**
- * Casca da página do cliente (S6-4, RN-79): barra de progresso e um botão por etapa no topo; mostra
- * uma etapa por vez. Etapa bloqueada abre só para leitura, com alerta. As etapas chamam
+ * Casca da página do cliente (S6-4, RN-79): linha do tempo com os 4 passos no topo e uma etapa por
+ * vez. Etapa bloqueada abre só para leitura, com alerta e atalho para o que falta. As etapas chamam
  * `useAvancoEtapa().avancar()` ao concluir e a casca leva o cliente para a próxima.
  */
 export function NavegacaoEtapas({
@@ -52,6 +58,11 @@ export function NavegacaoEtapas({
   const topo = useRef<HTMLDivElement>(null);
   // Pedido de avanço feito com estes dados; só age quando o refresh trouxer dados novos.
   const pedido = useRef<{ de: EtapaId; antes: EtapaNavegacao[] } | null>(null);
+
+  const abrir = (etapa: EtapaId) => {
+    setAberta(etapa);
+    topo.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   useEffect(() => {
     const p = pedido.current;
@@ -81,13 +92,15 @@ export function NavegacaoEtapas({
   return (
     <>
       <div ref={topo} className={estilos.topo}>
-        <BarraProgresso concluidas={concluidas} total={etapas.length} />
+        <p className={estilos.progresso}>
+          {concluidas} de {etapas.length} etapas concluídas
+        </p>
         <nav aria-label="Etapas">
-          <ol className={estilos.botoes}>
+          <ol className={estilos.passos}>
             {etapas.map((e, i) => {
               const estado = estadoDaEtapa(e);
               return (
-                <li key={e.etapa}>
+                <li key={e.etapa} className={estilos.passo} data-estado={estado}>
                   <button
                     type="button"
                     className={estilos.botao}
@@ -98,12 +111,14 @@ export function NavegacaoEtapas({
                       setAberta(e.etapa);
                     }}
                   >
-                    <IconeEtapa
-                      estado={estado}
-                      numero={i + 1}
-                      rotulo={ROTULO[e.etapa]}
-                      decorativo
-                    />
+                    <span className={estilos.marco}>
+                      <IconeEtapa
+                        estado={estado}
+                        numero={i + 1}
+                        rotulo={ROTULO[e.etapa]}
+                        decorativo
+                      />
+                    </span>
                     <span className={estilos.rotulo} aria-hidden="true">
                       {ROTULO[e.etapa]}
                     </span>
@@ -115,26 +130,43 @@ export function NavegacaoEtapas({
         </nav>
       </div>
 
-      {etapas.map((e) => (
-        <section
-          key={e.etapa}
-          hidden={aberta !== e.etapa}
-          aria-label={ROTULO[e.etapa]}
-          className={estilos.painel}
-        >
-          {!e.liberada && (
-            <p role="status" className={estilos.alerta}>
-              <span aria-hidden="true">🔒</span> {ALERTA[e.etapa]} As etapas anteriores precisam ser
-              concluídas.
-            </p>
-          )}
-          <ContextoAvanco.Provider value={contextos.get(e.etapa) ?? SEM_AVANCO}>
-            <div inert={!e.liberada} className={e.liberada ? undefined : estilos.inerte}>
-              {paineis[e.etapa]}
-            </div>
-          </ContextoAvanco.Provider>
-        </section>
-      ))}
+      {etapas.map((e, i) => {
+        const falta = e.liberada ? undefined : pendenteAntes(etapas, e.etapa);
+        return (
+          <section
+            key={e.etapa}
+            hidden={aberta !== e.etapa}
+            aria-label={ROTULO[e.etapa]}
+            className={estilos.painel}
+          >
+            {!e.liberada && (
+              <div role="status" className={estilos.alerta}>
+                <p>
+                  <span aria-hidden="true">🔒</span> {ALERTA[e.etapa]}
+                </p>
+                {falta && (
+                  <button
+                    type="button"
+                    className={estilos.atalho}
+                    onClick={() => {
+                      abrir(falta.etapa);
+                    }}
+                  >
+                    Ir para {ROTULO[falta.etapa]}
+                  </button>
+                )}
+              </div>
+            )}
+            <ContextoPasso.Provider value={{ etapa: e.etapa, numero: i + 1, total: etapas.length }}>
+              <ContextoAvanco.Provider value={contextos.get(e.etapa) ?? SEM_AVANCO}>
+                <div inert={!e.liberada} className={e.liberada ? undefined : estilos.inerte}>
+                  {paineis[e.etapa]}
+                </div>
+              </ContextoAvanco.Provider>
+            </ContextoPasso.Provider>
+          </section>
+        );
+      })}
     </>
   );
 }
