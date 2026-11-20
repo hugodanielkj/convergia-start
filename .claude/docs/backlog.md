@@ -112,7 +112,7 @@ O PO faz as duas trilhas. Detalhes em `sprints/sprint-08.md`.
 | Trilha | História                                                                           | Pastas                                                                                                                                     |
 | ------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | A      | [x] S8-1 Cadastro da equipe e escolha do responsável (RN-02, RN-03, RN-08)         | `modulos/equipe`, `core/equipe`, `app/(painel)/config/equipe`, `app/(painel)/clientes` (seletor), `app/(painel)/onboardings/[id]` (trocar) |
-| A      | [ ] S8-2 Configurações gerais da agência (RN-03, D-09)                             | `modulos/config`, `core/config`, `app/(painel)/config/geral`, `app/(painel)/config/acessos` e `modulos/acessos` (plataformas padrão)       |
+| A      | [x] S8-2 Configurações gerais da agência (RN-03, D-09)                             | `modulos/config`, `core/config`, `app/(painel)/config/geral`, `app/(painel)/config/acessos` e `modulos/acessos` (plataformas padrão)       |
 | B      | [ ] S7-3 Teste ponta a ponta do fluxo feliz (seção 12, critério 1, sem calendário) | `apps/web/e2e/`                                                                                                                            |
 
 ## Sprint 9 — Homologação com cliente piloto
