@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import type { AgendamentoDoCliente } from '../reuniao/api';
-import { formatarDiaEHora, fusoDoNavegador } from '../reuniao/formatar';
+import { fusoDoNavegador } from '../reuniao/formatar';
+import { HorarioMarcado } from '../reuniao/HorarioMarcado';
 import reuniao from '../reuniao/reuniao.module.css';
 import { PedirReagendamento } from '../reuniao/PedirReagendamento';
 import { SeletorHorario } from '../reuniao/SeletorHorario';
@@ -19,6 +20,8 @@ export function NovaCaptacao({ token }: { token: string }) {
 
   return (
     <div className={estilos.formulario}>
+      {/* Dois blocos curtos, "onde" e "quando", em vez de uma coluna única de campos. */}
+      <h3 className={estilos.bloco}>Onde vamos gravar</h3>
       <label className={estilos.opcao}>
         <input
           type="checkbox"
@@ -66,6 +69,7 @@ export function NovaCaptacao({ token }: { token: string }) {
       {faltaLocal && (
         <p className={reuniao.ajuda}>Informe o local para poder confirmar o horário.</p>
       )}
+      <h3 className={estilos.bloco}>Quando</h3>
       <SeletorHorario
         token={token}
         modo={{ tipo: 'novo' }}
@@ -96,19 +100,32 @@ export function CaptacaoMarcada({
   const [fuso] = useState(() => fusoDoNavegador());
   return (
     <div className={reuniao.agendado}>
-      <p>
-        Sua captação está marcada para{' '}
-        <strong>
-          <time dateTime={agendamento.inicio}>{formatarDiaEHora(agendamento.inicio, fuso)}</time>
-        </strong>{' '}
-        <span className={reuniao.ajuda}>({fuso.replaceAll('_', ' ')})</span>.
-      </p>
+      <HorarioMarcado
+        rotulo="Sua captação está marcada para"
+        instante={agendamento.inicio}
+        fuso={fuso}
+      />
       {dados && (
-        <ul className={estilos.dados}>
-          {dados.local && <li>Local: {dados.local}</li>}
-          {dados.contatoLocal && <li>Contato no local: {dados.contatoLocal}</li>}
-          {dados.observacoes && <li>Observações: {dados.observacoes}</li>}
-        </ul>
+        <dl className={estilos.dados}>
+          {dados.local && (
+            <div>
+              <dt>Local</dt>
+              <dd>{dados.local}</dd>
+            </div>
+          )}
+          {dados.contatoLocal && (
+            <div>
+              <dt>Contato no local</dt>
+              <dd>{dados.contatoLocal}</dd>
+            </div>
+          )}
+          {dados.observacoes && (
+            <div>
+              <dt>Observações</dt>
+              <dd>{dados.observacoes}</dd>
+            </div>
+          )}
+        </dl>
       )}
       {!reagendando && agendamento.podeReagendar && (
         <div className={reuniao.acoes}>

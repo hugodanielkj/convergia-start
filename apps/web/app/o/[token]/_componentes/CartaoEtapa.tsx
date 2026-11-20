@@ -58,7 +58,10 @@ export function CartaoEtapa({
           <h2 className={estilos.titulo}>{titulo}</h2>
         </div>
       </header>
-      {passo && <p className={estilos.contexto}>{CONTEXTO[passo.etapa]}</p>}
+      {/* Concluída, o porquê já não ajuda: fica só o resultado. */}
+      {passo && status !== 'concluida' && (
+        <p className={estilos.contexto}>{CONTEXTO[passo.etapa]}</p>
+      )}
       <div className={estilos.corpo}>{children}</div>
     </section>
   );

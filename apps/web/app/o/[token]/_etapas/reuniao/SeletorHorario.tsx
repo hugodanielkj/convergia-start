@@ -8,12 +8,22 @@ import {
   type ListaDeHorarios,
   type TipoAtendimento,
 } from './api';
-import { formatarDia, fusoDoNavegador, fusosDisponiveis } from './formatar';
+import {
+  formatarDia,
+  fusoDoNavegador,
+  fusosDisponiveis,
+  partesDoDia,
+  periodoDaHora,
+  type Periodo,
+} from './formatar';
 import estilos from './reuniao.module.css';
 import { useAvancoEtapa } from '../../_componentes/avanco';
 
 export type ModoSeletor =
   { readonly tipo: 'novo' } | { readonly tipo: 'reagendar'; readonly agendamentoId: string };
+
+/** Dias à mostra antes de "Ver mais dias": duas linhas de botões no celular. */
+const DIAS_VISIVEIS = 8;
 
 interface Mensagem {
   readonly tipo: 'erro' | 'aviso';
@@ -60,6 +70,8 @@ export function SeletorHorario({
   const [mensagem, setMensagem] = useState<Mensagem | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  const [diaAberto, setDiaAberto] = useState<string | null>(null);
+  const [todosOsDias, setTodosOsDias] = useState(false);
 
   const irParaLinkExpirado = () => {
     window.location.assign(`/o/${encodeURIComponent(token)}/expirado`);
@@ -136,28 +148,24 @@ export function SeletorHorario({
   }
 
   const rotuloBotao = modo.tipo === 'novo' ? 'Confirmar horário' : 'Confirmar novo horário';
+  const dias = lista?.dias ?? [];
+  // Abre no primeiro dia com vaga (padrão de agendas como o Calendly) ou no que o cliente tocou.
+  const dia = dias.find((d) => d.data === diaAberto) ?? dias[0];
+  const visiveis =
+    todosOsDias || dias.length <= DIAS_VISIVEIS ? dias : dias.slice(0, DIAS_VISIVEIS);
+  // Se o dia aberto ficou escondido (lista atualizada), ele continua à mostra.
+  const diasNaFaixa = dia && !visiveis.includes(dia) ? [...visiveis, dia] : visiveis;
+  const periodos = new Map<Periodo, NonNullable<typeof dia>['slots']>();
+  for (const slot of dia?.slots ?? []) {
+    const periodo = periodoDaHora(slot.hora);
+    periodos.set(periodo, [...(periodos.get(periodo) ?? []), slot]);
+  }
+  const selecionado = dias
+    .flatMap((d) => d.slots.map((slot) => ({ data: d.data, slot })))
+    .find((x) => x.slot.inicio === escolhido);
 
   return (
     <div className={estilos.seletor}>
-      {fuso !== null && (
-        <div className={estilos.fuso}>
-          <label htmlFor="fuso-cliente">Horários no fuso</label>
-          <select
-            id="fuso-cliente"
-            value={fuso}
-            onChange={(evento) => {
-              setFuso(evento.target.value);
-            }}
-          >
-            {fusosDisponiveis(fuso).map((opcao) => (
-              <option key={opcao} value={opcao}>
-                {opcao.replaceAll('_', ' ')}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       <div aria-live="polite">
         {mensagem && (
           <p
@@ -172,32 +180,102 @@ export function SeletorHorario({
       {carregando && <p className={estilos.ajuda}>Buscando horários…</p>}
 
       {!carregando && lista !== null && lista.dias.length === 0 && (
-        <p>Não há horários livres nas próximas semanas. Entre em contato com a agência.</p>
+        <p className={estilos.vazio}>
+          Não há horários livres nas próximas semanas. Entre em contato com a agência.
+        </p>
       )}
 
-      {!carregando &&
-        lista?.dias.map((dia) => (
-          <fieldset key={dia.data} className={estilos.dia}>
-            <legend>{formatarDia(dia.data)}</legend>
-            <div className={estilos.horarios}>
-              {dia.slots.map((slot) => (
+      {!carregando && dia && (
+        <>
+          <div role="group" aria-label="Dias com horário livre" className={estilos.faixa}>
+            {diasNaFaixa.map((d) => {
+              const p = partesDoDia(d.data);
+              const quantos = `${String(d.slots.length)} ${d.slots.length === 1 ? 'horário' : 'horários'}`;
+              return (
                 <button
-                  key={slot.inicio}
+                  key={d.data}
                   type="button"
-                  className={estilos.horario}
-                  aria-pressed={escolhido === slot.inicio}
+                  className={estilos.diaBotao}
+                  aria-pressed={d.data === dia.data}
+                  aria-label={`${formatarDia(d.data)}, ${quantos}`}
                   onClick={() => {
-                    setEscolhido(slot.inicio);
+                    setDiaAberto(d.data);
                   }}
                 >
-                  {slot.hora}
+                  <span className={estilos.semana}>{p.semana}</span>
+                  <span className={estilos.numero}>{p.dia}</span>
+                  <span className={estilos.mes}>{p.mes}</span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </div>
+          {dias.length > diasNaFaixa.length && (
+            <button
+              type="button"
+              className={estilos.maisDias}
+              onClick={() => {
+                setTodosOsDias(true);
+              }}
+            >
+              Ver mais dias
+            </button>
+          )}
+
+          <fieldset className={estilos.dia}>
+            <legend>{formatarDia(dia.data)}</legend>
+            {[...periodos].map(([periodo, slots]) => (
+              <div key={periodo} className={estilos.periodo}>
+                <p className={estilos.nomePeriodo}>{periodo}</p>
+                <div className={estilos.horarios}>
+                  {slots.map((slot) => (
+                    <button
+                      key={slot.inicio}
+                      type="button"
+                      className={estilos.horario}
+                      aria-pressed={escolhido === slot.inicio}
+                      onClick={() => {
+                        setEscolhido(slot.inicio);
+                      }}
+                    >
+                      {slot.hora}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </fieldset>
-        ))}
+        </>
+      )}
+
+      {fuso !== null && (
+        <details className={estilos.fuso}>
+          <summary>
+            Horários no fuso <strong>{fuso.replaceAll('_', ' ')}</strong>
+            <span className={estilos.trocar}>Trocar</span>
+          </summary>
+          <label htmlFor="fuso-cliente">Trocar o fuso</label>
+          <select
+            id="fuso-cliente"
+            value={fuso}
+            onChange={(evento) => {
+              setFuso(evento.target.value);
+            }}
+          >
+            {fusosDisponiveis(fuso).map((opcao) => (
+              <option key={opcao} value={opcao}>
+                {opcao.replaceAll('_', ' ')}
+              </option>
+            ))}
+          </select>
+        </details>
+      )}
 
       <div className={estilos.acoes}>
+        {selecionado && (
+          <p className={estilos.selecionado} aria-live="polite">
+            {formatarDia(selecionado.data)}, às <strong>{selecionado.slot.hora}</strong>
+          </p>
+        )}
         <button
           type="button"
           className={estilos.botao}
