@@ -1,6 +1,6 @@
 # Sprint 8 — Equipe, configurações gerais e teste do fluxo completo
 
-**Status:** em andamento (início 2026-11-19). O PO faz as duas trilhas.
+**Status:** concluída (2026-11-19). O PO faz as duas trilhas.
 
 **Objetivo:** a agência funciona sozinha, sem depender do seed: o Admin cadastra a equipe, escolhe o responsável de cada cliente e ajusta prazos e regras em tela. Um teste automático percorre o fluxo feliz inteiro antes do piloto.
 
@@ -44,8 +44,31 @@ Ficam de fora: fuso (segue São Paulo), logo e cor, login e senha (`permitirCred
 
 ## Entregue
 
-(a preencher)
+As 5 histórias foram mergeadas na `hml` com CI verde (2026-11-19).
+
+- **S8-1 Equipe (#80):** em Configurações › Equipe, o Admin cadastra pessoas pelo e-mail Google, escolhe o papel, edita, desativa (escolhendo quem assume os onboardings em andamento; a pessoa perde o acesso na hora) e reativa. No Novo cliente, o Admin escolhe o responsável; no detalhe do onboarding, troca o responsável.
+- **S8-2 Configurações gerais (#81):** em Configurações › Geral, o Admin ajusta nome da agência, canal padrão, prazos, regras de agenda e avisos, dentro dos limites aprovados. Em Configurações › Acessos, escolhe as redes pedidas por padrão aos clientes novos.
+- **S8-3 Etapa concluída e confirmação (#82):** reunião e captação ficam "concluída" quando o cliente marca o horário. Com as 4 etapas concluídas, a agência recebe o aviso "concluiu" e o cliente, na hora, a confirmação final com datas e prazo. Captação remarcada gera confirmação nova.
+- **S8-4 Pedido de reagendamento e horário pela agência (#83):** o cliente sem reagendamentos disponíveis pede à agência, com um motivo, e o pedido vira aviso. A agência altera o horário no detalhe do onboarding, sem gastar o limite do cliente, e o cliente recebe o aviso do novo horário.
+- **S7-3 Teste do fluxo feliz (#84):** um teste automático no celular percorre o fluxo completo: cadastro, termo, formulário, acessos, reunião e captação. Ele confere etapas, prazo, confirmação e aviso.
+- **Fora do plano (#79):** a auditoria de dependências passou a acusar uma falha de segurança numa biblioteca usada pelo Prisma (`effect`) e um teste de lembretes quebrou com a data real. Os dois foram corrigidos.
+
+### Não entregue
+
+- S7-4 (homologação com cliente piloto) foi para a Sprint 9, como combinado.
+- "Admin liberar um onboarding para outro membro" (parte final da RN-02) ficou para depois, por decisão do PO.
 
 ## Retro
 
-(a preencher)
+- **Manter:**
+  - Planejar o teste ponta a ponta antes de escrevê-lo encontrou duas falhas reais (etapas que nunca concluíam e confirmação que nunca saía).
+  - Perguntas ao PO num bloco só, com recomendação: as respostas vieram rápido e viraram decisões registradas.
+  - Regras puras no `core` (limites, etapa concluída, equipe), testadas sem banco.
+- **Melhorar:**
+  - Um `gh pr checks --watch | tail` escondeu o código de saída, e o PR de planejamento entrou antes de a CI terminar. A regra agora é não usar pipe e conferir o código (`git-e-ci.md`).
+  - Mudança de contrato da API quebrou dois testes antigos na CI: rodar `pnpm test:int` inteiro antes do PR (`git-e-ci.md`).
+  - Testes com relógio fixo ainda pegam a hora real em `@updatedAt` e empatam em `em`. Ao gravar no teste, fixe `atualizadoEm` e desempate a ordem pelo id.
+- **Pendências:**
+  - Onboardings antigos com horário marcado só ficam com a etapa "concluída" no próximo evento de agendamento (reagendar, cancelar ou marcar realizado).
+  - Credenciais do Resend e da MegaAPI (PO) para as mensagens saírem de fato.
+  - A limpeza de dados entre testes de integração às vezes dá impasse no banco (deadlock) na CI; rodar o job de novo resolve. Vale isolar a limpeza numa sprint futura.

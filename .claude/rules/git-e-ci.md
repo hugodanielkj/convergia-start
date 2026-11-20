@@ -12,8 +12,8 @@
 
 1. `git switch hml && git pull && git switch -c feat/<ID>-<slug>`.
 2. Commits em Conventional Commits, em português: `feat(api): cadastro de cliente (RN-04, RN-05)`.
-3. `pnpm check` antes de commitar. O pre-commit roda Prettier e ESLint nos arquivos alterados.
-4. PR `feat/* → hml` com o template. CI verde → Claude faz merge (squash) e apaga a branch.
+3. `pnpm check` antes de commitar. O pre-commit roda Prettier e ESLint nos arquivos alterados. Mudou rota, evento ou resposta da API? Rode `pnpm test:int` inteiro antes do PR.
+4. PR `feat/* → hml` com o template. CI verde → Claude faz merge (squash) e apaga a branch. Espere com `gh pr checks <n> --watch` **sem pipe** e confira o código de saída (0 = tudo verde).
 5. Ao fim da sprint (ou quando o PO pedir): PR `hml → main` com o resumo do que entra. Claude **não** faz esse merge; o PO aprova e faz o merge.
 6. Se `main` receber hotfix, trazer de volta para `hml` (`main → hml`).
 
