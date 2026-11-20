@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { exigirUsuario, prismaDaRequisicao, usuarioDaRequisicao } from '../../../base/auth.js';
 import { escopoAgencia } from '../../../base/escopo-agencia.js';
 import { reabrirFormulario } from '../../formulario/respostas.js';
+import { sincronizarEtapaAgendada } from './etapas-agendadas.js';
 import { concluirVencidos, executarAcao, recalcularStatus } from './status.js';
 
 const parametros = z.object({ id: z.string().min(1).max(64) });
@@ -57,9 +58,26 @@ export default function estados(app: FastifyInstance): Promise<void> {
   app.deps.eventos.assinar('notificacao.enviada', (e) =>
     recalcularPorEvento(e.agenciaId, e.dados.onboardingId, 'sistema'),
   );
-  app.deps.eventos.assinar('agendamento.criado', (e) =>
-    recalcularPorEvento(e.agenciaId, e.dados.onboardingId, `cliente:${e.dados.onboardingId}`),
-  );
+  // Agendar conclui a etapa; cancelar ou faltar a reabre (2026-11-19-a-etapa-concluida-ao-agendar).
+  const sincronizarEtapa = (
+    e: { agenciaId: string; dados: { onboardingId: string; tipo: 'reuniao' | 'captacao' } },
+    ator: string,
+  ) =>
+    sincronizarEtapaAgendada(
+      escopoAgencia(app.deps.prisma, e.agenciaId),
+      app.deps.eventos,
+      e.agenciaId,
+      e.dados.onboardingId,
+      e.dados.tipo,
+      ator,
+      app.deps.relogio.agora(),
+    );
+
+  app.deps.eventos.assinar('agendamento.criado', async (e) => {
+    const ator = `cliente:${e.dados.onboardingId}`;
+    await sincronizarEtapa(e, ator);
+    await recalcularPorEvento(e.agenciaId, e.dados.onboardingId, ator);
+  });
   // Ações da agenda (trilha B): realizado leva à produção (RN-51); cancelar, faltar ou remarcar pode
   // devolver o onboarding a "aguardando agendamentos". Os eventos não trazem quem agiu.
   for (const tipo of [
@@ -68,9 +86,10 @@ export default function estados(app: FastifyInstance): Promise<void> {
     'agendamento.nao_compareceu',
     'agendamento.reagendado',
   ] as const) {
-    app.deps.eventos.assinar(tipo, (e) =>
-      recalcularPorEvento(e.agenciaId, e.dados.onboardingId, 'sistema'),
-    );
+    app.deps.eventos.assinar(tipo, async (e) => {
+      await sincronizarEtapa(e, 'sistema');
+      await recalcularPorEvento(e.agenciaId, e.dados.onboardingId, 'sistema');
+    });
   }
 
   // Pausar, retomar, cancelar (Admin, RN-53), registrar entrega e encerrar (RN-52).
