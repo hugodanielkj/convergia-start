@@ -17,6 +17,10 @@ pnpm --filter @convergia/web test:e2e --project=celular-360   # só uma largura
 
 Não precisa parar o `pnpm dev`: os testes usam portas e pasta de build próprias (`.next/e2e`). A API de teste entra com o login de desenvolvimento (`e2e@convergia.test`, criado pelo seed) e o `preparar.ts` cria ou reaproveita dois clientes de teste: "E2E Celular" (termo aceito) e "E2E Termo" (sem termo).
 
+## Fluxo feliz (S7-3)
+
+`fluxo-feliz.e2e.ts` percorre o critério 1 da seção 12 a 360px: a agência cadastra um cliente novo, o cliente aceita o termo e conclui as 4 etapas, e o teste confere etapas concluídas, prazo, confirmação e o aviso "concluiu". Se a agência de teste não tiver horários de reunião ou de captação, o teste cria e apaga no fim. Cada execução cria um cliente com nome único e ocupa dois horários.
+
 ## Tela nova
 
 Inclua a rota em `telas.ts`. Se a tela tem partes recolhidas, passe `abrir` para mostrá-las antes da verificação.
