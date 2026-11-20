@@ -9,12 +9,13 @@ import {
 } from './index.js';
 
 describe('RN-55 templates padrão da seção 8', () => {
-  it('há um texto padrão para cada um dos 4 tipos', () => {
+  it('há um texto padrão para cada um dos 5 tipos (o 5º é o horário alterado pela agência)', () => {
     expect(TIPOS_TEMPLATE).toEqual([
       'convite',
       'confirmacao_prazo',
       'lembrete_pendencia',
       'lembrete_compromisso',
+      'horario_alterado',
     ]);
     for (const tipo of TIPOS_TEMPLATE) expect(TEMPLATES_PADRAO[tipo].length).toBeGreaterThan(20);
   });

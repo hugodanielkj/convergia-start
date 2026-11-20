@@ -4,6 +4,8 @@ import { fusoValido } from '@convergia/core/base';
 import { exigirUsuario, prismaDaRequisicao, usuarioDaRequisicao } from '../../base/auth.js';
 import { localizarLink } from '../link/localizar-link.js';
 import { mudarStatusDoAgendamento, type AcaoDaAgencia } from './acoes-agendamento.js';
+import { HorarioOcupadoError, alterarHorarioPelaAgencia } from './horario-agencia.js';
+import { pedirReagendamento } from './pedido-reagendamento.js';
 import { listarAgendamentosDoCliente, reagendarAgendamento } from './reagendar.js';
 
 const idDaRota = z.string().min(1).max(64);
@@ -13,6 +15,11 @@ const corpoReagendar = z.object({
   fuso: z.string().max(64).refine(fusoValido, 'Fuso inválido').optional(),
 });
 const corpoCancelar = z.object({ motivo: z.string().trim().min(1).max(200) });
+const corpoPedido = z.object({ motivo: z.string().trim().min(1).max(300) });
+const corpoHorario = z.object({
+  data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  hora: z.string().regex(/^\d{2}:\d{2}$/),
+});
 
 const MENSAGEM_NEGADO = {
   limite_atingido: 'Você não pode mais reagendar por aqui. Entre em contato com a agência.',
@@ -90,6 +97,67 @@ export function registrarRotasAgendamento(app: FastifyInstance): void {
         return reply
           .status(404)
           .send({ erro: 'AGENDAMENTO_NAO_ENCONTRADO', mensagem: 'Agendamento não encontrado' });
+    }
+  });
+
+  // O cliente que não pode mais reagendar sozinho pede à agência (S8-4, RN-35).
+  app.post(
+    '/publico/onboardings/:token/agendamentos/:id/pedir-reagendamento',
+    async (request, reply) => {
+      const { token, id } = paramsDoCliente.parse(request.params);
+      const { motivo } = corpoPedido.parse(request.body);
+      void reply.header('cache-control', 'no-store');
+      const valido = await comLinkValido(token);
+      if (!valido.ok) {
+        return valido.situacao === 'expirado'
+          ? reply.status(410).send({ erro: 'LINK_EXPIRADO', mensagem: 'Este link expirou' })
+          : reply.status(404).send({ erro: 'LINK_INVALIDO', mensagem: 'Link inválido' });
+      }
+      const r = await pedirReagendamento(
+        app.deps.prisma,
+        app.deps.eventos,
+        valido.link,
+        idDaRota.parse(id),
+        motivo,
+        app.deps.relogio.agora(),
+      );
+      switch (r.tipo) {
+        case 'pedido':
+          return { pedido: true };
+        case 'ainda_pode':
+          return reply.status(422).send({
+            erro: 'RN-35',
+            mensagem: 'Você ainda pode reagendar por aqui, no botão Reagendar.',
+          });
+        case 'nao_encontrado':
+          return reply
+            .status(404)
+            .send({ erro: 'AGENDAMENTO_NAO_ENCONTRADO', mensagem: 'Agendamento não encontrado' });
+      }
+    },
+  );
+
+  // A agência muda o horário (S8-4): Admin ou responsável (RN-02); não gasta o limite do cliente.
+  app.put('/agendamentos/:id/horario', { preHandler: exigirUsuario }, async (request, reply) => {
+    const { id } = z.object({ id: idDaRota }).parse(request.params);
+    try {
+      const agendamento = await alterarHorarioPelaAgencia(
+        prismaDaRequisicao(app, request),
+        app.deps.eventos,
+        usuarioDaRequisicao(request),
+        id,
+        corpoHorario.parse(request.body),
+        app.deps.relogio.agora(),
+      );
+      return { agendamento };
+    } catch (erro) {
+      if (erro instanceof HorarioOcupadoError) {
+        return reply.status(409).send({
+          erro: 'HORARIO_OCUPADO',
+          mensagem: 'Já existe outro agendamento neste horário.',
+        });
+      }
+      throw erro;
     }
   });
 

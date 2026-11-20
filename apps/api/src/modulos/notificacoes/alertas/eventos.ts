@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '../../../base/prisma.js';
+import { chavePedidoReagendamento } from '../../agenda/pedido-reagendamento.js';
 import { registrarAlerta } from './registrar.js';
 
 const NOME_TIPO = { reuniao: 'reunião', captacao: 'captação' } as const;
@@ -71,6 +72,21 @@ export function assinarEventosDeAlerta(app: FastifyInstance): void {
         onboardingId: e.dados.onboardingId,
         tipo: 'mensagem_falhou',
         chave: `mensagem_falhou:${e.dados.notificacaoId}`,
+      },
+      e.ocorridoEm,
+    ).then(() => undefined),
+  );
+
+  // S8-4: o cliente pediu para reagendar. O motivo vai no aviso para a agência poder agir.
+  eventos.assinar('agendamento.reagendamento_pedido', (e) =>
+    registrarAlerta(
+      prisma,
+      {
+        agenciaId: e.agenciaId,
+        onboardingId: e.dados.onboardingId,
+        tipo: 'pedido_reagendamento',
+        chave: chavePedidoReagendamento(e.dados.agendamentoId, new Date(e.dados.inicio)),
+        detalhe: `${NOME_TIPO[e.dados.tipo]}: ${e.dados.motivo}`,
       },
       e.ocorridoEm,
     ).then(() => undefined),

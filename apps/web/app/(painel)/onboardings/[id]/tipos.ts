@@ -179,6 +179,7 @@ const ROTULO_NOTIFICACAO: Readonly<Record<string, string>> = {
   confirmacao_prazo: 'Confirmação com prazo',
   lembrete_pendencia: 'Lembrete de pendência',
   lembrete_compromisso: 'Lembrete de compromisso',
+  horario_alterado: 'Aviso de horário alterado',
 };
 const ROTULO_STATUS_NOTIFICACAO: Readonly<Record<string, string>> = {
   pendente: 'Na fila',

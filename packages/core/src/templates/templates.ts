@@ -4,6 +4,7 @@ export const TIPOS_TEMPLATE = [
   'confirmacao_prazo',
   'lembrete_pendencia',
   'lembrete_compromisso',
+  'horario_alterado',
 ] as const;
 export type TipoTemplate = (typeof TIPOS_TEMPLATE)[number];
 
@@ -43,6 +44,8 @@ export const TEMPLATES_PADRAO: Readonly<Record<TipoTemplate, string>> = {
     'Oi, {{nome_contato}}! Faltam só alguns passos para começarmos: {{pendencias}}. Você conclui por aqui: {{link_onboarding}}',
   lembrete_compromisso:
     'Lembrete: {{tipo}} da {{nome_empresa}} em {{data}} às {{hora}}. Precisa reagendar? {{link_onboarding}}',
+  horario_alterado:
+    'Olá, {{nome_contato}}! A {{tipo}} da {{nome_empresa}} mudou para {{data}} às {{hora}}. Qualquer dúvida, é só falar com a gente.',
 };
 
 /** Templates que mandam o cliente de volta ao sistema; sem o link, não há como agir (RN-29). */

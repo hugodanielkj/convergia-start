@@ -1,11 +1,15 @@
 export type TipoTemplate =
-  'convite' | 'confirmacao_prazo' | 'lembrete_pendencia' | 'lembrete_compromisso';
+  | 'convite'
+  | 'confirmacao_prazo'
+  | 'lembrete_pendencia'
+  | 'lembrete_compromisso'
+  | 'horario_alterado';
 
 export const ROTULO_TEMPLATE: Record<TipoTemplate, { titulo: string; quando: string }> = {
   convite: { titulo: 'Convite inicial', quando: 'Enviado ao cliente com o link do onboarding.' },
   confirmacao_prazo: {
     titulo: 'Confirmação final com prazo',
-    quando: 'Enviado quando reunião e captação estão marcadas.',
+    quando: 'Enviado quando o cliente conclui as 4 etapas, com o prazo de liberação.',
   },
   lembrete_pendencia: {
     titulo: 'Lembrete de pendência',
@@ -14,6 +18,10 @@ export const ROTULO_TEMPLATE: Record<TipoTemplate, { titulo: string; quando: str
   lembrete_compromisso: {
     titulo: 'Lembrete de compromisso',
     quando: 'Enviado antes da reunião e da captação.',
+  },
+  horario_alterado: {
+    titulo: 'Horário alterado pela agência',
+    quando: 'Enviado quando a agência muda o horário da reunião ou da captação.',
   },
 };
 

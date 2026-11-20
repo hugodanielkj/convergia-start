@@ -16,6 +16,8 @@ const esquemaAgendamento = z.object({
   reagendamentosRestantes: z.number(),
   podeReagendar: z.boolean(),
   motivoNegado: z.string().optional(),
+  /** O cliente já pediu à agência para reagendar este horário (S8-4). */
+  pedidoEnviado: z.boolean().default(false),
 });
 const esquemaNegado = z.object({ mensagem: z.string() });
 
@@ -39,6 +41,11 @@ export type ResultadoHorarios =
   { readonly tipo: 'ok'; readonly lista: ListaDeHorarios } | SituacaoDoLink | Falha;
 export type ResultadoAgendamentos =
   { readonly tipo: 'ok'; readonly agendamentos: AgendamentoDoCliente[] } | SituacaoDoLink | Falha;
+export type ResultadoPedido =
+  | { readonly tipo: 'ok' }
+  | { readonly tipo: 'negado'; readonly mensagem: string }
+  | SituacaoDoLink
+  | Falha;
 export type ResultadoEscolha =
   | { readonly tipo: 'ok' }
   | { readonly tipo: 'indisponivel'; readonly lista: ListaDeHorarios }
@@ -63,6 +70,12 @@ export interface ApiReuniao {
     inicio: string,
     fuso: string,
   ): Promise<ResultadoEscolha>;
+  /** Passou do limite ou da antecedência (RN-35): pede à agência, com um motivo (S8-4). */
+  pedirReagendamento(
+    token: string,
+    agendamentoId: string,
+    motivo: string,
+  ): Promise<ResultadoPedido>;
 }
 
 export interface OpcoesApiReuniao {
@@ -171,6 +184,20 @@ export function criarApiReuniao({ baseUrl, fetcher }: OpcoesApiReuniao): ApiReun
       }
       const link = resposta === null ? null : doLink(resposta.status);
       return link ?? desfecho(resposta, true);
+    },
+
+    async pedirReagendamento(token, agendamentoId, motivo) {
+      const resposta = await chamar(
+        `${base(token)}/agendamentos/${encodeURIComponent(agendamentoId)}/pedir-reagendamento`,
+        { motivo },
+      );
+      if (resposta === null) return { tipo: 'falha', mensagem: FALHA_DE_REDE };
+      if (resposta.status === 200) return { tipo: 'ok' };
+      if (resposta.status === 422) {
+        const negado = esquemaNegado.safeParse(resposta.json);
+        return negado.success ? { tipo: 'negado', mensagem: negado.data.mensagem } : FALHA;
+      }
+      return doLink(resposta.status) ?? FALHA;
     },
   };
 }

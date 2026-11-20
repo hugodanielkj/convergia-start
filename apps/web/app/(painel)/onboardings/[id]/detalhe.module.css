@@ -306,3 +306,10 @@
   margin: 0;
   color: var(--sucesso);
 }
+
+/* Alterar horário (S8-4): data e hora lado a lado, cada uma com metade da largura. */
+.dataHora {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}

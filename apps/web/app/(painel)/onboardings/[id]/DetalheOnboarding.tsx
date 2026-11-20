@@ -3,6 +3,7 @@ import { formatarDataHora } from '../../clientes/formatar';
 import { rotuloEtapa, rotuloStatusEtapa, rotuloStatusOnboarding } from '../../clientes/mensagens';
 import { rotuloAcesso } from './acessos/tipos';
 import { AcoesRapidas } from './AcoesRapidas';
+import { AlterarHorario } from './AlterarHorario';
 import estilos from './detalhe.module.css';
 import { LinhaDoTempo } from './LinhaDoTempo';
 import { PrazoDoOnboarding, type PrazoDoDetalhe } from './PrazoDoOnboarding';
@@ -137,6 +138,9 @@ export function DetalheOnboarding({
                 <strong>{rotuloEtapa(a.tipo)}</strong> · {formatarDataHora(a.inicio)} ·{' '}
                 {ROTULO_AGENDAMENTO[a.status] ?? a.status}
                 {a.localOuLink && <small>{a.localOuLink}</small>}
+                {(a.status === 'agendado' || a.status === 'reagendado') && (
+                  <AlterarHorario agendamentoId={a.id} />
+                )}
               </li>
             ))}
           </ul>

@@ -7,6 +7,7 @@ import {
 import type { PublicadorEventos } from '@convergia/core/base';
 import type { PrismaClient } from '../../base/prisma.js';
 import type { LinkLocalizado } from '../link/localizar-link.js';
+import { chavePedidoReagendamento } from './pedido-reagendamento.js';
 import { restricaoViolada } from './reservar.js';
 import { carregarContexto, listarSlots, slotsLivres, type ListaDeSlots } from './slots-publicos.js';
 
@@ -19,6 +20,8 @@ declare module '@convergia/core/base' {
       inicioAnterior: string;
       inicio: string;
       fim: string;
+      /** A agência mudou o horário (S8-4): o cliente é avisado do novo horário. */
+      porAgencia?: boolean;
     };
   }
 }
@@ -172,6 +175,8 @@ export interface AgendamentoDoCliente extends AgendamentoVisao {
   readonly podeReagendar: boolean;
   /** Por que não pode reagendar, para a tela mandar o cliente falar com a agência. */
   readonly motivoNegado?: MotivoReagendamentoNegado;
+  /** O cliente já pediu à agência para reagendar este horário (S8-4). */
+  readonly pedidoEnviado: boolean;
 }
 
 /** Agendamentos do onboarding do link, com o que o cliente pode fazer com cada um (RN-35). */
@@ -186,6 +191,14 @@ export async function listarAgendamentosDoCliente(
     where: { onboardingId: link.onboardingId },
     orderBy: [{ inicio: 'asc' }],
   });
+  const pedidos = await prisma.alertaInterno.findMany({
+    where: {
+      onboardingId: link.onboardingId,
+      chave: { in: agendamentos.map((a) => chavePedidoReagendamento(a.id, a.inicio)) },
+    },
+    select: { chave: true },
+  });
+  const pedidas = new Set(pedidos.map((p) => p.chave));
   return agendamentos.map((a) => {
     const avaliacao = avaliarReagendamento({
       status: a.status,
@@ -207,6 +220,7 @@ export async function listarAgendamentosDoCliente(
       ),
       podeReagendar: avaliacao.ok,
       ...(avaliacao.ok ? {} : { motivoNegado: avaliacao.motivo }),
+      pedidoEnviado: pedidas.has(chavePedidoReagendamento(a.id, a.inicio)),
     };
   });
 }

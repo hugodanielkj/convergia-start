@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { AgendamentoDoCliente } from '../reuniao/api';
 import { formatarDiaEHora, fusoDoNavegador } from '../reuniao/formatar';
 import reuniao from '../reuniao/reuniao.module.css';
+import { PedirReagendamento } from '../reuniao/PedirReagendamento';
 import { SeletorHorario } from '../reuniao/SeletorHorario';
 import estilos from './captacao.module.css';
 import type { SituacaoCaptacao } from './api';
@@ -126,12 +127,7 @@ export function CaptacaoMarcada({
           </span>
         </div>
       )}
-      {!agendamento.podeReagendar && (
-        <p className={reuniao.ajuda}>
-          Precisa remarcar? Os reagendamentos por aqui já acabaram ou o prazo passou. Entre em
-          contato com a agência.
-        </p>
-      )}
+      {!agendamento.podeReagendar && <PedirReagendamento agendamento={agendamento} token={token} />}
       {reagendando && (
         <SeletorHorario
           token={token}
