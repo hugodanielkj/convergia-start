@@ -8,3 +8,6 @@ allowBuilds:
   unrs-resolver: false
   '@prisma/engines': true
   prisma: true
+# O Prisma 7 fixa effect 3.20.0, com alerta de ReDoS (GHSA-7589-6fvf-x4pw). Tirar quando o Prisma atualizar.
+overrides:
+  effect: 3.22.4
