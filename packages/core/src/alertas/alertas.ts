@@ -9,6 +9,7 @@ export const TIPOS_ALERTA = [
   'prazo_atrasado',
   'mensagem_falhou',
   'link_solicitado',
+  'pedido_reagendamento',
 ] as const;
 export type TipoAlerta = (typeof TIPOS_ALERTA)[number];
 
@@ -23,6 +24,7 @@ const TEXTO: Readonly<Record<TipoAlerta, string>> = {
   prazo_atrasado: 'está com o prazo de liberação atrasado.',
   mensagem_falhou: 'não recebeu uma mensagem: falhou no WhatsApp e no e-mail.',
   link_solicitado: 'pediu um link novo (o anterior expirou).',
+  pedido_reagendamento: 'pediu para reagendar um compromisso.',
 };
 
 export function textoDoAlerta(tipo: TipoAlerta, empresa: string, detalhe?: string | null): string {

@@ -63,13 +63,14 @@ const salvar = (app: FastifyInstance, tipo: string, texto: string) =>
   app.inject({ method: 'PUT', url: `/templates/${tipo}`, payload: { texto } });
 
 describe('RN-55 templates editáveis', () => {
-  it('sem edição, lista os 4 com o texto padrão da spec', async () => {
+  it('sem edição, lista os 5 com o texto padrão (o 5º é o horário alterado, S8-4)', async () => {
     const t = await listar(appAdmin);
     expect(t.map((x) => x.tipo)).toEqual([
       'convite',
       'confirmacao_prazo',
       'lembrete_pendencia',
       'lembrete_compromisso',
+      'horario_alterado',
     ]);
     expect(t.every((x) => !x.personalizado)).toBe(true);
     expect(t[0]?.texto).toBe(TEMPLATES_PADRAO.convite);

@@ -137,3 +137,24 @@
     flex: none;
   }
 }
+
+/* Pedido de reagendamento (S8-4): rótulo, motivo e botões empilhados no celular. */
+.pedido {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pedido label {
+  font-weight: 600;
+}
+
+.pedido textarea {
+  width: 100%;
+  min-height: 6rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+}

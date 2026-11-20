@@ -122,7 +122,7 @@ describe('RN-35 agendamentos e reagendar', () => {
   it('lê os agendamentos do cliente com o que ele pode fazer', async () => {
     expect(await api(200, { agendamentos: [agendamento] }).api.listarAgendamentos('t')).toEqual({
       tipo: 'ok',
-      agendamentos: [agendamento],
+      agendamentos: [{ ...agendamento, pedidoEnviado: false }],
     });
   });
 
@@ -161,5 +161,29 @@ describe('RN-35 agendamentos e reagendar', () => {
         'UTC',
       ),
     ).toMatchObject({ tipo: 'falha' });
+  });
+});
+
+describe('RN-35 pedido de reagendamento (S8-4)', () => {
+  it('manda o motivo no caminho do agendamento', async () => {
+    const a = api(200, { pedido: true });
+    expect(await a.api.pedirReagendamento('tok', 'a1', 'Vou viajar')).toEqual({ tipo: 'ok' });
+    expect(a.url()).toBe('/api/publico/onboardings/tok/agendamentos/a1/pedir-reagendamento');
+    expect(a.fetcher.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({ motivo: 'Vou viajar' }));
+  });
+
+  it('quem ainda pode reagendar recebe o texto da API; link vencido e falha', async () => {
+    const negado = api(422, { mensagem: 'Você ainda pode reagendar por aqui.' });
+    expect(await negado.api.pedirReagendamento('tok', 'a1', 'x')).toEqual({
+      tipo: 'negado',
+      mensagem: 'Você ainda pode reagendar por aqui.',
+    });
+    expect(await api(410).api.pedirReagendamento('tok', 'a1', 'x')).toEqual({ tipo: 'expirado' });
+    expect((await api(500).api.pedirReagendamento('tok', 'a1', 'x')).tipo).toBe('falha');
+  });
+
+  it('sem o campo, o agendamento vem como "pedido não enviado"', async () => {
+    const r = await api(200, { agendamentos: [agendamento] }).api.listarAgendamentos('tok');
+    expect(r.tipo === 'ok' && r.agendamentos[0]?.pedidoEnviado).toBe(false);
   });
 });

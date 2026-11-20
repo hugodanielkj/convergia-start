@@ -4,10 +4,8 @@ import { useEffect, useState } from 'react';
 import type { AgendamentoDoCliente } from './api';
 import { formatarDiaEHora, fusoDoNavegador } from './formatar';
 import estilos from './reuniao.module.css';
+import { PedirReagendamento } from './PedirReagendamento';
 import { SeletorHorario } from './SeletorHorario';
-
-const MENSAGEM_SEM_REAGENDAR =
-  'Precisa remarcar? Os reagendamentos por aqui já acabaram ou o prazo passou. Entre em contato com a agência.';
 
 /** A reunião marcada, no fuso do cliente, com a opção de reagendar enquanto puder (RN-35). */
 export function AgendamentoAtual({
@@ -56,7 +54,7 @@ export function AgendamentoAtual({
           </span>
         </div>
       )}
-      {!agendamento.podeReagendar && <p className={estilos.ajuda}>{MENSAGEM_SEM_REAGENDAR}</p>}
+      {!agendamento.podeReagendar && <PedirReagendamento agendamento={agendamento} token={token} />}
 
       {reagendando && (
         <SeletorHorario
