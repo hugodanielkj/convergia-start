@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { exigirSessao } from '../../../_lib/sessao';
 import { URL_API } from '../../../_lib/url-api';
+import type { Responsavel } from '../../clientes/SeletorResponsavel';
 import { DetalheOnboarding } from './DetalheOnboarding';
 import type { PrazoDoDetalhe } from './PrazoDoOnboarding';
 import type { Detalhe, ItemAuditoria } from './tipos';
@@ -17,10 +19,14 @@ export default async function PaginaDetalhe({ params }: { params: Promise<{ id: 
       headers: { cookie },
       cache: 'no-store',
     });
-  const [detalhe, auditoria, prazo] = await Promise.all([
+  const usuario = await exigirSessao();
+  const [detalhe, auditoria, prazo, equipe] = await Promise.all([
     buscar('/detalhe'),
     buscar('/auditoria'),
     buscar('/prazo'),
+    usuario.papel === 'admin'
+      ? fetch(`${URL_API}/equipe/responsaveis`, { headers: { cookie }, cache: 'no-store' })
+      : null,
   ]);
   if (detalhe.status === 404 || detalhe.status === 403) notFound();
   if (!detalhe.ok || !auditoria.ok) {
@@ -36,6 +42,9 @@ export default async function PaginaDetalhe({ params }: { params: Promise<{ id: 
       detalhe={(await detalhe.json()) as Detalhe}
       linhaDoTempo={itens}
       prazo={prazoDoDetalhe}
+      responsaveis={
+        equipe?.ok ? ((await equipe.json()) as { responsaveis: Responsavel[] }).responsaveis : null
+      }
     />
   );
 }

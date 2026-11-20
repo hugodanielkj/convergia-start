@@ -6,6 +6,8 @@ import { AcoesRapidas } from './AcoesRapidas';
 import estilos from './detalhe.module.css';
 import { LinhaDoTempo } from './LinhaDoTempo';
 import { PrazoDoOnboarding, type PrazoDoDetalhe } from './PrazoDoOnboarding';
+import type { Responsavel } from '../../clientes/SeletorResponsavel';
+import { TrocarResponsavel } from './TrocarResponsavel';
 import { descreverNotificacao, textoDaResposta, type Detalhe, type ItemAuditoria } from './tipos';
 
 const ROTULO_AGENDAMENTO: Readonly<Record<string, string>> = {
@@ -21,10 +23,13 @@ export function DetalheOnboarding({
   detalhe,
   linhaDoTempo,
   prazo,
+  responsaveis,
 }: {
   detalhe: Detalhe;
   linhaDoTempo: ItemAuditoria[];
   prazo: PrazoDoDetalhe;
+  /** Equipe ativa, só para o Admin (RN-08); `null` esconde a troca. */
+  responsaveis: readonly Responsavel[] | null;
 }) {
   const { cliente, formulario, acessos, agendamentos } = detalhe;
   const contato = [cliente.nomeContato, cliente.whatsapp, cliente.email]
@@ -47,6 +52,13 @@ export function DetalheOnboarding({
           Responsável: {detalhe.responsavel.nome} · Criado em {formatarDataHora(detalhe.criadoEm)}
           {detalhe.link && <> · Link válido até {formatarDataHora(detalhe.link.expiraEm)}</>}
         </p>
+        {responsaveis && responsaveis.length > 1 && (
+          <TrocarResponsavel
+            onboardingId={detalhe.id}
+            atual={detalhe.responsavel.id}
+            responsaveis={responsaveis}
+          />
+        )}
         <Link href={`/onboardings/${detalhe.id}/personalizar`} className={estilos.personalizar}>
           Personalizar perguntas e acessos
         </Link>

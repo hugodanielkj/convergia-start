@@ -7,6 +7,8 @@ export interface Valores {
   readonly whatsapp: string;
   readonly email: string;
   readonly enviarConviteDepois: boolean;
+  /** RN-08: só o Admin vê o seletor; vazio = o Admin fica como responsável. */
+  readonly responsavelId: string;
 }
 
 export type EstadoCadastro =
@@ -51,6 +53,7 @@ export function lerValores(dados: FormData): Valores {
     whatsapp: texto(dados, 'whatsapp'),
     email: texto(dados, 'email'),
     enviarConviteDepois: texto(dados, 'enviarConviteDepois') === 'on',
+    responsavelId: texto(dados, 'responsavelId'),
   };
 }
 
@@ -60,9 +63,11 @@ export function lerValores(dados: FormData): Valores {
  */
 export async function processarCadastro(dados: FormData, api: ClienteApi): Promise<EstadoCadastro> {
   const valores = lerValores(dados);
+  const { responsavelId, ...resto } = valores;
   try {
     const resultado = await api.cadastrar({
-      ...valores,
+      ...resto,
+      ...(responsavelId === '' ? {} : { responsavelId }),
       confirmarDuplicidade: texto(dados, 'confirmarDuplicidade') === 'true',
     });
     switch (resultado.tipo) {

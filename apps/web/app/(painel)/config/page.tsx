@@ -5,6 +5,7 @@ import estilos from './config.module.css';
 export const metadata: Metadata = { title: 'Configurações · Convergia Start' };
 
 const SECOES = [
+  { href: '/config/equipe', titulo: 'Equipe', texto: 'Quem entra no sistema e com qual papel.' },
   {
     href: '/config/agenda',
     titulo: 'Agenda',

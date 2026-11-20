@@ -31,6 +31,7 @@ const valores = {
   whatsapp: '(31) 99999-8888',
   email: '',
   enviarConviteDepois: false,
+  responsavelId: '',
 };
 
 describe('lerValores', () => {
@@ -44,7 +45,14 @@ describe('lerValores', () => {
       whatsapp: '',
       email: '',
       enviarConviteDepois: false,
+      responsavelId: '',
     });
+  });
+
+  it('RN-08: lê o responsável escolhido pelo Admin', () => {
+    const dados = new FormData();
+    dados.set('responsavelId', 'u-2');
+    expect(lerValores(dados).responsavelId).toBe('u-2');
   });
 
   it('RN-09: lê a marcação "Enviar convite depois"', () => {
@@ -78,7 +86,25 @@ describe('RN-04, RN-05, RN-07 cadastro pela tela', () => {
       link,
       convite: { enviaEm: '2026-11-16T12:00:00.000Z' },
     });
-    expect(cadastrar).toHaveBeenCalledWith({ ...valores, confirmarDuplicidade: false });
+    const { nomeEmpresa, nomeContato, whatsapp, email, enviarConviteDepois } = valores;
+    expect(cadastrar).toHaveBeenCalledWith({
+      nomeEmpresa,
+      nomeContato,
+      whatsapp,
+      email,
+      enviarConviteDepois,
+      confirmarDuplicidade: false,
+    });
+  });
+
+  it('RN-08: envia o responsável só quando o Admin escolhe', async () => {
+    const cadastrar = vi.fn<ClienteApi['cadastrar']>(() =>
+      Promise.resolve<ResultadoCadastro>({ tipo: 'falha', mensagem: 'x' }),
+    );
+    const dados = formulario({ nomeEmpresa: 'Padaria', nomeContato: 'Maria', email: 'a@b.com' });
+    dados.set('responsavelId', 'u-2');
+    await processarCadastro(dados, apiFalsa({ cadastrar }));
+    expect(cadastrar).toHaveBeenCalledWith(expect.objectContaining({ responsavelId: 'u-2' }));
   });
 
   it('marca cada campo com a primeira mensagem de erro', async () => {

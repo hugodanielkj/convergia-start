@@ -142,6 +142,11 @@
   font-size: 0.85rem;
 }
 
+/* No cabeçalho, ocupa a linha inteira abaixo do responsável (RN-08). */
+.trocar {
+  flex-basis: 100%;
+}
+
 .confirmacao {
   display: grid;
   gap: 0.6rem;
@@ -167,6 +172,7 @@
 
 .confirmacao textarea,
 .confirmacao input,
+.confirmacao select,
 .filtro select {
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--borda);

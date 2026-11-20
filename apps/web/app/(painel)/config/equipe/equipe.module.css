@@ -1,0 +1,169 @@
+/* Mobile-first: cartões empilhados; a partir do tablet, a lista vira duas colunas. */
+.pagina {
+  display: grid;
+  gap: 1rem;
+  max-width: 60rem;
+}
+
+.pagina h1,
+.pagina h2 {
+  margin: 0;
+}
+
+.pagina h2 {
+  font-size: 1.05rem;
+}
+
+.lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+}
+
+.cartao[data-ativo='false'] {
+  opacity: 0.75;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+}
+
+.etiqueta {
+  padding: 0.1rem 0.6rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula);
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.email {
+  overflow-wrap: anywhere;
+}
+
+.dica {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.875rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select {
+  width: 100%;
+  font-weight: 400;
+}
+
+.papeis {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.papeis legend {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--alvo-toque);
+}
+
+.painel {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--borda);
+}
+
+.painel p {
+  margin: 0;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.acoes button {
+  flex: 1 1 8rem;
+}
+
+.principal,
+.secundario,
+.perigo {
+  padding: 0 1rem;
+  border-radius: var(--raio);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.principal {
+  border: 0;
+  background: var(--destaque);
+  color: var(--sobre-destaque);
+}
+
+.secundario {
+  border: 1px solid var(--borda);
+  background: transparent;
+  color: var(--texto);
+}
+
+.perigo {
+  border: 1px solid var(--erro);
+  background: transparent;
+  color: var(--erro);
+}
+
+.principal:disabled,
+.secundario:disabled,
+.perigo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ok {
+  margin: 0;
+  color: var(--sucesso);
+}
+
+.erro {
+  margin: 0;
+  color: var(--erro);
+}
+
+@media (min-width: 40rem) {
+  .lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .acoes button {
+    flex: 0 0 auto;
+  }
+}

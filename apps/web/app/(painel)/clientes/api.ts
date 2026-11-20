@@ -39,6 +39,8 @@ export interface DadosCadastro {
   readonly confirmarDuplicidade: boolean;
   /** RN-09: marcado, o convite não sai no cadastro. */
   readonly enviarConviteDepois: boolean;
+  /** RN-08: escolhido pelo Admin; ausente = o Admin. */
+  readonly responsavelId?: string;
 }
 
 export type ResultadoCadastro =
