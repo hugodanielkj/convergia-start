@@ -4,41 +4,139 @@
   gap: 0.75rem;
 }
 
+/* Fuso recolhido: quase ninguém troca, então não disputa atenção com os horários (RN-32). */
 .fuso {
-  display: grid;
-  gap: 0.25rem;
-  width: 100%;
-  max-width: 24rem;
+  color: var(--suave);
+  font-size: 0.875rem;
+}
+
+.fuso summary {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.fuso strong {
+  color: var(--texto);
+}
+
+.trocar {
+  color: var(--destaque);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.fuso[open] .trocar {
+  display: none;
 }
 
 .fuso label {
-  font-size: 0.875rem;
+  display: block;
+  margin: 0.25rem 0;
   font-weight: 600;
 }
 
 .fuso select {
-  padding: 0.5rem 0.625rem;
+  max-width: 24rem;
+}
+
+/* Faixa de dias (decisão 2026-11-19-a-tela-cliente-visual): sem rolagem lateral, quebra em linhas. */
+.faixa {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.75rem, 1fr));
+  gap: 0.5rem;
+}
+
+.diaBotao {
+  display: grid;
+  justify-items: center;
+  gap: 0.05rem;
+  padding: 0.45rem 0.25rem;
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   background: var(--fundo);
-  color: inherit;
-  font: inherit;
+  color: var(--texto);
+  line-height: 1.1;
+}
+
+.diaBotao[aria-pressed='true'] {
+  border-color: var(--destaque);
+  background: var(--destaque);
+  color: var(--sobre-destaque);
+}
+
+.semana,
+.mes {
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.numero {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+}
+
+.maisDias {
+  justify-self: start;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--destaque);
+  font-weight: 700;
 }
 
 .dia {
+  display: grid;
+  gap: 0.75rem;
   margin: 0;
-  padding: 0.5rem 0.75rem 0.75rem;
+  padding: 0.75rem;
   border: 1px solid var(--borda);
   border-radius: var(--raio);
+  background: var(--fundo);
 }
 
 .dia legend {
   padding: 0 0.25rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Só a primeira letra: "terça-feira, 17 de novembro" não vira "De Novembro". */
 .dia legend::first-letter {
+  text-transform: uppercase;
+}
+
+.periodo {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.nomePeriodo {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vazio {
+  margin: 0;
+  padding: 1rem;
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio);
+  color: var(--suave);
+  text-align: center;
+}
+
+.selecionado {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+}
+
+.selecionado::first-letter {
   text-transform: uppercase;
 }
 
@@ -53,8 +151,8 @@
   min-height: var(--alvo-toque);
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--destaque);
-  border-radius: var(--raio);
-  background: transparent;
+  border-radius: var(--raio-pilula);
+  background: var(--superficie);
   color: var(--destaque);
   font: inherit;
   font-weight: 600;
@@ -157,4 +255,41 @@
   background: var(--fundo);
   color: inherit;
   font: inherit;
+}
+
+/* Horário marcado: data em destaque, como um bilhete (reunião e captação). */
+.marcado {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--sucesso) 35%, var(--borda));
+  border-radius: var(--raio);
+  background: color-mix(in srgb, var(--sucesso) 6%, var(--superficie));
+}
+
+.data {
+  display: grid;
+  justify-items: center;
+  width: 4rem;
+  padding: 0.4rem 0;
+  border-radius: var(--raio);
+  background: var(--superficie);
+  box-shadow: inset 0 0 0 1px var(--borda);
+  line-height: 1.1;
+}
+
+.data .numero {
+  font-size: 1.75rem;
+}
+
+.quando {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.quando p {
+  margin: 0;
 }

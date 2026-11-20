@@ -121,5 +121,5 @@ O PO faz as duas trilhas. Detalhes em `sprints/sprint-08.md`.
 
 | Trilha | História                                                                        | Pastas                           |
 | ------ | ------------------------------------------------------------------------------- | -------------------------------- |
-| A      | [~] S9-1 Tela do cliente mais visual (decisão 2026-11-19-a-tela-cliente-visual) | `app/o/[token]`, `apps/web/e2e/` |
+| A      | [x] S9-1 Tela do cliente mais visual (decisão 2026-11-19-a-tela-cliente-visual) | `app/o/[token]`, `apps/web/e2e/` |
 | B      | [ ] S7-4 Homologação final com cliente piloto e correções                       | conforme o bug                   |

@@ -42,3 +42,48 @@ export function fusosDisponiveis(fusoDoCliente: string): string[] {
     typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
   return [...new Set([fusoDoCliente, 'America/Sao_Paulo', ...todos])];
 }
+
+export interface PartesDoDia {
+  /** "ter" */
+  semana: string;
+  /** "17" */
+  dia: string;
+  /** "nov" */
+  mes: string;
+}
+
+const partes = (formato: Intl.DateTimeFormat, data: Date): PartesDoDia => {
+  const lista = formato.formatToParts(data);
+  const valor = (tipo: Intl.DateTimeFormatPartTypes) =>
+    (lista.find((p) => p.type === tipo)?.value ?? '').replace('.', '');
+  return { semana: valor('weekday'), dia: valor('day'), mes: valor('month') };
+};
+
+const opcoesCurtas = (timeZone: string): Intl.DateTimeFormatOptions => ({
+  timeZone,
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+});
+
+/** `2026-11-17` em pedaços curtos para os botões de dia: "ter", "17", "nov". */
+export function partesDoDia(data: string): PartesDoDia {
+  return partes(
+    new Intl.DateTimeFormat('pt-BR', opcoesCurtas('UTC')),
+    new Date(`${data}T12:00:00Z`),
+  );
+}
+
+/** Os mesmos pedaços para um instante, no fuso do cliente (cartão do horário marcado). */
+export function partesDoInstante(instante: string, fuso: string): PartesDoDia {
+  return partes(new Intl.DateTimeFormat('pt-BR', opcoesCurtas(fuso)), new Date(instante));
+}
+
+export type Periodo = 'Manhã' | 'Tarde' | 'Noite';
+
+/** Período do dia de um horário `HH:mm`, para agrupar os horários como em agendas conhecidas. */
+export function periodoDaHora(hora: string): Periodo {
+  const h = Number(hora.slice(0, 2));
+  if (h < 12) return 'Manhã';
+  return h < 18 ? 'Tarde' : 'Noite';
+}

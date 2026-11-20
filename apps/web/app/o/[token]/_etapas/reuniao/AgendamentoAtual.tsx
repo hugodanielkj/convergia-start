@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import type { AgendamentoDoCliente } from './api';
-import { formatarDiaEHora, fusoDoNavegador } from './formatar';
+import { fusoDoNavegador } from './formatar';
+import { HorarioMarcado } from './HorarioMarcado';
 import estilos from './reuniao.module.css';
 import { PedirReagendamento } from './PedirReagendamento';
 import { SeletorHorario } from './SeletorHorario';
@@ -24,19 +25,14 @@ export function AgendamentoAtual({
 
   return (
     <div className={estilos.agendado}>
-      <p>
-        Sua reunião online está marcada para{' '}
-        <strong>
-          <time dateTime={agendamento.inicio}>
-            {fuso === null ? '…' : formatarDiaEHora(agendamento.inicio, fuso)}
-          </time>
-        </strong>
-        {fuso !== null && <span className={estilos.ajuda}> ({fuso.replaceAll('_', ' ')})</span>}.
-      </p>
-      <p className={estilos.ajuda}>
-        {/* Sem Google Meet (decisão 2026-11-15-a-sem-google-calendar): o link vem da agência. */}A
-        agência vai te enviar o link da videochamada.
-      </p>
+      <HorarioMarcado
+        rotulo="Sua reunião online está marcada para"
+        instante={agendamento.inicio}
+        fuso={fuso}
+      >
+        {/* Sem Google Meet (decisão 2026-11-15-a-sem-google-calendar): o link vem da agência. */}
+        <p className={estilos.ajuda}>A agência vai te enviar o link da videochamada.</p>
+      </HorarioMarcado>
 
       {!reagendando && agendamento.podeReagendar && (
         <div className={estilos.acoes}>
