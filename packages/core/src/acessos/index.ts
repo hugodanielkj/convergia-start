@@ -39,6 +39,8 @@ export function validarMarcacao(
 
 interface Instrucao {
   readonly nome: string;
+  /** Texto exibido antes do passo a passo (ex.: pedido de login no grupo e aviso). */
+  readonly antes?: readonly string[];
   readonly passos: readonly string[];
 }
 
@@ -59,6 +61,10 @@ export function instrucoesDe(
     case 'instagram':
       return {
         nome: 'Instagram',
+        antes: [
+          'Passo 1: envie o @ e a senha do Instagram no grupo do WhatsApp.',
+          'Se você tem acesso ao Meta Business Suite, faça o passo a passo abaixo. Se não tem, avise no grupo.',
+        ],
         passos: [
           'Abra o Meta Business Suite (business.facebook.com) e entre com a conta da sua empresa.',
           'Vá em Configurações > Pessoas e adicione um novo parceiro ou pessoa.',

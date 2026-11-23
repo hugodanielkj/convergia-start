@@ -79,6 +79,11 @@ export function AcessosCliente({ token, inicial }: { token: string; inicial: Est
           ) : null}
           {a.status !== 'concedido' ? (
             <>
+              {a.antes?.map((t) => (
+                <p key={t}>
+                  <strong>{t}</strong>
+                </p>
+              ))}
               <ol className={estilos.passos}>
                 {a.passos.map((p) => (
                   <li key={p}>{p}</li>

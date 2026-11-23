@@ -79,6 +79,7 @@ interface Visao {
     status: string;
     motivo: string | null;
     informado: boolean;
+    antes: string[];
     passos: string[];
     identificador: string | null;
   }[];
@@ -140,7 +141,9 @@ describe('S3-1 etapa de acessos do cliente (RN-22, RN-27, D-06)', () => {
       expect(p.status).toBe('pendente');
       expect(p.passos.length).toBeGreaterThan(1);
     }
-    expect(JSON.stringify(v).toLowerCase()).not.toContain('senha');
+    // Exceção do PO (2026-11-23): só o aviso `antes` do Instagram cita a senha, pelo grupo do WhatsApp.
+    expect(JSON.stringify(v.plataformas.map((p) => p.passos)).toLowerCase()).not.toContain('senha');
+    expect(v.plataformas.find((p) => p.plataforma === 'facebook')?.antes).toEqual([]);
   });
 
   it('mostra o identificador da agência quando o admin o configura (RN-22)', async () => {

@@ -5,6 +5,7 @@ export interface AcessoVisao {
   status: 'pendente' | 'concedido' | 'invalido';
   motivo: string | null;
   informado: boolean;
+  antes?: string[];
   passos: string[];
   identificador: string | null;
 }

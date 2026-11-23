@@ -30,6 +30,7 @@ export interface AcessoVisao {
   readonly status: StatusAcesso;
   readonly motivo: string | null;
   readonly informado: boolean;
+  readonly antes: readonly string[];
   readonly passos: readonly string[];
   readonly identificador: string | null;
 }
@@ -137,7 +138,7 @@ async function montarEstado(
   const plataformas = escolhidas.map((plataforma): AcessoVisao => {
     const linha = linhas.find((l) => l.plataforma === plataforma);
     const identificador = ids[plataforma]?.trim() || null;
-    const { nome, passos } = instrucoesDe(plataforma, identificador);
+    const { nome, passos, antes = [] } = instrucoesDe(plataforma, identificador);
     return {
       plataforma,
       nome,
@@ -145,6 +146,7 @@ async function montarEstado(
       status: linha?.status ?? 'pendente',
       motivo: linha?.motivo ?? null,
       informado: (linha?.informadoEm ?? null) !== null,
+      antes,
       passos,
       identificador,
     };
