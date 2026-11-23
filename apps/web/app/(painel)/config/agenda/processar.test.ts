@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AgendaApi, ResultadoGravacao } from './api';
-import { processarBloqueio, processarJanela, processarRemocao } from './processar';
+import {
+  processarBloqueio,
+  processarExcecao,
+  processarJanela,
+  processarRemocao,
+} from './processar';
 
 const ok: ResultadoGravacao = { tipo: 'ok' };
 
@@ -9,6 +14,8 @@ function apiFalsa(parcial: Partial<AgendaApi>): AgendaApi {
     listarJanelas: vi.fn(),
     listarBloqueios: vi.fn(),
     listarFeriados: vi.fn(),
+    listarExcecoes: vi.fn(),
+    definirExcecao: vi.fn(() => Promise.resolve(ok)),
     criarJanela: vi.fn(() => Promise.resolve(ok)),
     removerJanela: vi.fn(() => Promise.resolve(ok)),
     criarBloqueio: vi.fn(() => Promise.resolve(ok)),
@@ -181,5 +188,62 @@ describe('remover janela ou bloqueio', () => {
     expect(await processarRemocao(formulario({ id: 'b1', alvo: 'bloqueio' }), caiu)).toMatchObject({
       tipo: 'erro',
     });
+  });
+});
+
+describe('RN-30 horário de um dia pelo calendário', () => {
+  const base = { tipo: 'reuniao', data: '2026-11-27' };
+
+  it('envia um horário por linha do formulário', async () => {
+    const definirExcecao = vi.fn<AgendaApi['definirExcecao']>(() => Promise.resolve(ok));
+    const estado = await processarExcecao(
+      formulario({
+        ...base,
+        horaInicio: ['09:00', '14:00'],
+        horaFim: ['10:00', '17:00'],
+        duracaoMinutos: ['', '30'],
+      }),
+      apiFalsa({ definirExcecao }),
+    );
+    expect(estado).toEqual({ tipo: 'salva', padrao: false });
+    expect(definirExcecao).toHaveBeenCalledWith({
+      ...base,
+      janelas: [
+        { horaInicio: '09:00', horaFim: '10:00' },
+        { horaInicio: '14:00', horaFim: '17:00', duracaoMinutos: 30 },
+      ],
+    });
+  });
+
+  it('"voltar ao padrão" manda a lista vazia', async () => {
+    const definirExcecao = vi.fn<AgendaApi['definirExcecao']>(() => Promise.resolve(ok));
+    const estado = await processarExcecao(
+      formulario({ ...base, acao: 'padrao', horaInicio: '09:00', horaFim: '10:00' }),
+      apiFalsa({ definirExcecao }),
+    );
+    expect(estado).toEqual({ tipo: 'salva', padrao: true });
+    expect(definirExcecao).toHaveBeenCalledWith({ ...base, janelas: [] });
+  });
+
+  it('sem nenhum horário e sem pedir o padrão, avisa em vez de apagar', async () => {
+    const definirExcecao = vi.fn<AgendaApi['definirExcecao']>(() => Promise.resolve(ok));
+    const estado = await processarExcecao(formulario(base), apiFalsa({ definirExcecao }));
+    expect(estado.tipo).toBe('erro');
+    expect(definirExcecao).not.toHaveBeenCalled();
+  });
+
+  it('traduz a recusa da API e a falha de rede', async () => {
+    const recusa = await processarExcecao(
+      formulario({ ...base, horaInicio: '17:00', horaFim: '14:00' }),
+      apiFalsa({
+        definirExcecao: () => Promise.resolve({ tipo: 'recusado', codigo: 'intervalo_invalido' }),
+      }),
+    );
+    expect(recusa).toEqual({ tipo: 'erro', mensagem: 'O fim precisa ser depois do início.' });
+    const queda = await processarExcecao(
+      formulario({ ...base, horaInicio: '09:00', horaFim: '10:00' }),
+      apiFalsa({ definirExcecao: () => Promise.reject(new Error('x')) }),
+    );
+    expect(queda.tipo).toBe('erro');
   });
 });

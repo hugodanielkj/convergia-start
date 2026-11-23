@@ -17,11 +17,20 @@ const esquemaBloqueio = z.object({
   dataFim: z.string(),
   motivo: z.string(),
 });
+const esquemaExcecao = z.object({
+  id: z.string(),
+  tipo: z.enum(['reuniao', 'captacao']),
+  data: z.string(),
+  horaInicio: z.string(),
+  horaFim: z.string(),
+  duracaoMinutos: z.number().nullable(),
+});
 const esquemaFeriado = z.object({ data: z.string(), nome: z.string() });
 const esquemaCodigo = z.object({ codigo: z.string() });
 
 export type JanelaVisao = z.infer<typeof esquemaJanela>;
 export type BloqueioVisao = z.infer<typeof esquemaBloqueio>;
+export type ExcecaoVisao = z.infer<typeof esquemaExcecao>;
 export type FeriadoVisao = z.infer<typeof esquemaFeriado>;
 
 export interface DadosJanela {
@@ -38,6 +47,23 @@ export interface DadosBloqueio {
   readonly motivo: string;
 }
 
+export interface DadosExcecao {
+  readonly tipo: 'reuniao' | 'captacao';
+  readonly data: string;
+  /** Lista vazia apaga a exceção: o dia volta ao horário padrão. */
+  readonly janelas: readonly {
+    readonly horaInicio: string;
+    readonly horaFim: string;
+    readonly duracaoMinutos?: number;
+  }[];
+}
+
+export interface ExcecoesDoPeriodo {
+  /** Hoje no fuso da agência (`YYYY-MM-DD`). */
+  readonly hoje: string;
+  readonly excecoes: ExcecaoVisao[];
+}
+
 /** Resultado de uma gravação: deu certo, os dados foram recusados (com o código) ou falhou. */
 export type ResultadoGravacao =
   | { readonly tipo: 'ok' }
@@ -47,7 +73,9 @@ export type ResultadoGravacao =
 export interface AgendaApi {
   listarJanelas(): Promise<JanelaVisao[]>;
   listarBloqueios(): Promise<BloqueioVisao[]>;
-  listarFeriados(): Promise<FeriadoVisao[]>;
+  listarFeriados(ano?: number): Promise<FeriadoVisao[]>;
+  listarExcecoes(de: string, ate: string): Promise<ExcecoesDoPeriodo>;
+  definirExcecao(dados: DadosExcecao): Promise<ResultadoGravacao>;
   criarJanela(dados: DadosJanela): Promise<ResultadoGravacao>;
   removerJanela(id: string): Promise<ResultadoGravacao>;
   criarBloqueio(dados: DadosBloqueio): Promise<ResultadoGravacao>;
@@ -91,7 +119,7 @@ export function criarAgendaApi({ baseUrl, fetcher, cabecalhos = {} }: OpcoesAgen
 
   /** Traduz o status de uma gravação (POST ou DELETE) no que a tela precisa saber. */
   function resultado(status: number, json: unknown): ResultadoGravacao {
-    if (status === 201 || status === 204) return { tipo: 'ok' };
+    if (status === 200 || status === 201 || status === 204) return { tipo: 'ok' };
     if (status === 401 || status === 403) return { tipo: 'falha', mensagem: SEM_PERMISSAO };
     if (status === 404)
       return { tipo: 'falha', mensagem: 'Este item não existe mais. Atualize a página.' };
@@ -115,8 +143,24 @@ export function criarAgendaApi({ baseUrl, fetcher, cabecalhos = {} }: OpcoesAgen
       ).disponibilidades,
     listarBloqueios: async () =>
       (await ler('/agenda/bloqueios', z.object({ bloqueios: z.array(esquemaBloqueio) }))).bloqueios,
-    listarFeriados: async () =>
-      (await ler('/agenda/feriados', z.object({ feriados: z.array(esquemaFeriado) }))).feriados,
+    listarFeriados: async (ano) =>
+      (
+        await ler(
+          `/agenda/feriados${ano === undefined ? '' : `?ano=${String(ano)}`}`,
+          z.object({ feriados: z.array(esquemaFeriado) }),
+        )
+      ).feriados,
+    async listarExcecoes(de, ate) {
+      const { hoje, excecoes } = await ler(
+        `/agenda/excecoes?de=${de}&ate=${ate}`,
+        z.object({ hoje: z.string(), excecoes: z.array(esquemaExcecao) }),
+      );
+      return { hoje, excecoes };
+    },
+    async definirExcecao(dados) {
+      const { status, json } = await chamar('PUT', '/agenda/excecoes', dados);
+      return resultado(status, json);
+    },
     async criarJanela(dados) {
       const { status, json } = await chamar('POST', '/agenda/disponibilidades', dados);
       return resultado(status, json);

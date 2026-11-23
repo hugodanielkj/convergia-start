@@ -1,4 +1,4 @@
-import type { AgendaApi, DadosJanela, ResultadoGravacao } from './api';
+import type { AgendaApi, DadosExcecao, DadosJanela, ResultadoGravacao } from './api';
 import { mensagemDeErro, rotuloDia } from './mensagens';
 
 export interface ValoresJanela {
@@ -86,6 +86,52 @@ export async function processarJanela(dados: FormData, api: AgendaApi): Promise<
     return { tipo: 'erro', valores, mensagem: FALHA_DE_REDE };
   }
   return { tipo: 'salva', quantidade: salvas };
+}
+
+export type EstadoExcecao =
+  | { readonly tipo: 'inicial' }
+  | { readonly tipo: 'salva'; readonly padrao: boolean }
+  | { readonly tipo: 'erro'; readonly mensagem: string };
+
+/**
+ * Horário de um tipo num dia específico (calendário). O formulário manda uma linha por horário
+ * (`horaInicio`, `horaFim`, `duracaoMinutos` repetidos); `acao=padrao` apaga a exceção.
+ */
+export async function processarExcecao(dados: FormData, api: AgendaApi): Promise<EstadoExcecao> {
+  const tipo = texto(dados, 'tipo');
+  const data = texto(dados, 'data');
+  if (tipo !== 'reuniao' && tipo !== 'captacao') {
+    return { tipo: 'erro', mensagem: 'Escolha reunião ou captação.' };
+  }
+  const padrao = texto(dados, 'acao') === 'padrao';
+  const inicios = dados.getAll('horaInicio').map(String);
+  const fins = dados.getAll('horaFim').map(String);
+  const duracoes = dados
+    .getAll('duracaoMinutos')
+    .map((d) => (typeof d === 'string' ? d.trim() : ''));
+
+  const janelas: DadosExcecao['janelas'] = padrao
+    ? []
+    : inicios.map((horaInicio, i) => {
+        const duracao =
+          duracoes[i] === undefined || duracoes[i] === '' ? undefined : Number(duracoes[i]);
+        return {
+          horaInicio,
+          horaFim: fins[i] ?? '',
+          ...(duracao === undefined ? {} : { duracaoMinutos: duracao }),
+        };
+      });
+  if (!padrao && janelas.length === 0) {
+    return { tipo: 'erro', mensagem: 'Adicione ao menos um horário ou volte ao padrão.' };
+  }
+  try {
+    const resultado = await api.definirExcecao({ tipo, data, janelas });
+    return resultado.tipo === 'ok'
+      ? { tipo: 'salva', padrao }
+      : { tipo: 'erro', mensagem: mensagemDaGravacao(resultado) };
+  } catch {
+    return { tipo: 'erro', mensagem: FALHA_DE_REDE };
+  }
 }
 
 export async function processarBloqueio(dados: FormData, api: AgendaApi): Promise<EstadoBloqueio> {

@@ -38,8 +38,9 @@ const ERROS: Readonly<Record<string, string>> = {
   hora_invalida: 'Informe a hora no formato 09:00.',
   intervalo_invalido: 'O fim precisa ser depois do início.',
   duracao_invalida: 'A duração precisa ser em minutos e caber dentro da janela.',
-  sobreposicao: 'Já existe uma janela neste dia e tipo que se sobrepõe a este horário.',
+  sobreposicao: 'Os horários se sobrepõem. Ajuste para que um termine antes de o outro começar.',
   data_invalida: 'Informe datas válidas.',
+  data_passada: 'Não dá para mudar o horário de um dia que já passou.',
   motivo_obrigatorio: 'Informe o motivo do bloqueio.',
   motivo_invalido: 'O motivo é longo demais.',
 };

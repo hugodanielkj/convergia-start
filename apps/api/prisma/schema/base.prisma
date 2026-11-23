@@ -45,6 +45,7 @@ model Agencia {
   config              ConfigAgencia?
   configAcessos       ConfigAcessos?
   disponibilidades    Disponibilidade[]
+  disponibilidadesDia DisponibilidadeDia[]
   escolhasAcessos     EscolhaAcessos[]
   etapasOnboarding    EtapaOnboarding[]
   formulariosCliente  VersaoFormularioCliente[]
