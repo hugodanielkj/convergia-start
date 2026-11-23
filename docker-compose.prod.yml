@@ -1,0 +1,63 @@
+# Produção em um servidor só (notebook/VM). Uso:
+#   docker compose -f docker-compose.prod.yml --env-file .env.producao up -d --build
+# Segredos ficam em `.env.producao` (não versionado; modelo em `producao.env.exemplo`).
+# Nada é publicado na rede: o mundo entra só pelo túnel da Cloudflare.
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: convergia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD em .env.producao}
+      POSTGRES_DB: convergia
+    # Só o próprio servidor enxerga (127.0.0.1): migrações, seed e backup.
+    ports: ['127.0.0.1:55432:5432']
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U convergia']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+
+  api:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
+    env_file: .env.producao
+    environment:
+      NODE_ENV: production
+      API_PORT: 3333
+      DATABASE_URL: postgresql://convergia:${POSTGRES_PASSWORD}@postgres:5432/convergia
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # O Next grava o destino do rewrite /api/* na hora da build.
+        API_URL: http://api:3333
+    restart: unless-stopped
+    depends_on: [api]
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?defina TUNNEL_TOKEN em .env.producao}
+    depends_on: [web]
+
+volumes:
+  postgres-data:
+  redis-data:

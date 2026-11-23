@@ -6,6 +6,9 @@ WORKDIR /repo
 
 FROM base AS build
 COPY . .
+# Endereço interno da API, gravado no rewrite /api/* durante a build.
+ARG API_URL=http://localhost:3333
+ENV API_URL=$API_URL
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm --filter @convergia/web... build
 
