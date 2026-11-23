@@ -81,7 +81,14 @@ describe('RN-22 e RN-29 instruções', () => {
     }
   });
 
-  it('nunca pede senha', () => {
+  it('só o Instagram pede @ e senha pelo grupo, antes do passo a passo', () => {
+    const antes = instrucoesDe('instagram', null).antes?.join(' ') ?? '';
+    expect(antes).toContain('senha do Instagram no grupo');
+    expect(antes).toContain('avise no grupo');
+    expect(instrucoesDe('facebook', null).antes).toBeUndefined();
+  });
+
+  it('os passos não pedem senha', () => {
     for (const p of PLATAFORMAS_ACESSO) {
       const texto = instrucoesDe(p, null).passos.join(' ').toLowerCase();
       expect(texto).not.toMatch(/(informe|envie|compartilhe|digite) (a |sua )?senha/);
