@@ -48,6 +48,9 @@ services:
         # O Next grava o destino do rewrite /api/* na hora da build.
         API_URL: http://api:3333
     restart: unless-stopped
+    environment:
+      # Páginas do servidor também chamam a API em tempo de execução.
+      API_URL: http://api:3333
     depends_on: [api]
 
   cloudflared:
