@@ -89,3 +89,20 @@ model Agendamento {
   @@index([calendarioSituacao, calendarioProximaTentativaEm])
   @@map("agendamentos")
 }
+
+// Horário combinado só para uma data (calendário da agenda): no dia, substitui as janelas semanais
+// do mesmo tipo. Um dia pode ter mais de uma linha. Sem linhas, vale o horário padrão (RN-30).
+model DisponibilidadeDia {
+  id             String          @id @default(uuid(7))
+  agenciaId      String
+  agencia        Agencia         @relation(fields: [agenciaId], references: [id], onDelete: Cascade)
+  tipo           TipoAtendimento
+  data           DateTime        @db.Date // dia no fuso da agência
+  horaInicio     String // "HH:mm"
+  horaFim        String // "HH:mm"
+  duracaoMinutos Int?
+  criadoEm       DateTime        @default(now())
+
+  @@index([agenciaId, tipo, data])
+  @@map("disponibilidades_dia")
+}

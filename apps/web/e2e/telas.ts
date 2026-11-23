@@ -40,6 +40,14 @@ export const TELAS: readonly Tela[] = [
   { nome: 'configurações', caminho: () => '/config' },
   { nome: 'config: acessos', caminho: () => '/config/acessos' },
   { nome: 'config: agenda', caminho: () => '/config/agenda' },
+  {
+    nome: 'config: agenda (mês, dia aberto)',
+    caminho: () => {
+      const dia = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      return `/config/agenda?visao=mes&data=${dia}&dia=${dia}`;
+    },
+    abrir: abrirSecoes,
+  },
   { nome: 'config: formulário', caminho: () => '/config/formulario' },
   { nome: 'config: mensagens', caminho: () => '/config/templates' },
   { nome: 'config: lembretes', caminho: () => '/config/lembretes' },

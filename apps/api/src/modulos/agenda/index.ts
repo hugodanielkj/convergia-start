@@ -1,4 +1,4 @@
-import { dataValida, feriadosNacionais, periodoValido } from '@convergia/core/agenda';
+import { dataLocal, dataValida, feriadosNacionais, periodoValido } from '@convergia/core/agenda';
 import { fusoValido } from '@convergia/core/base';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ import { registrarRotasAgendamento } from './rotas-agendamento.js';
 import { ligarSincronizacaoDoCalendario } from './worker-calendario.js';
 import { reservarSlot } from './reservar.js';
 import { carregarContexto, listarSlots } from './slots-publicos.js';
+import { definirExcecaoDoDia, listarExcecoes } from './excecoes.js';
 import { criarBloqueio, listarBloqueios, removerBloqueio } from './bloqueios.js';
 import {
   criarDisponibilidade,
@@ -38,6 +39,25 @@ const corpoBloqueio = z.object({
   dataInicio: z.string().max(10),
   dataFim: z.string().max(10),
   motivo: z.string().max(1000),
+});
+
+const corpoExcecao = z.object({
+  tipo: z.enum(['reuniao', 'captacao']),
+  data: z.string().max(10),
+  janelas: z
+    .array(
+      z.object({
+        horaInicio: z.string().max(10),
+        horaFim: z.string().max(10),
+        duracaoMinutos: z.number().nullish(),
+      }),
+    )
+    .max(12),
+});
+
+const consultaExcecoes = z.object({
+  de: z.string().max(10).refine(dataValida, 'Data inválida').optional(),
+  ate: z.string().max(10).refine(dataValida, 'Data inválida').optional(),
 });
 
 const tipoDeAtendimento = z.enum(['reuniao', 'captacao']);
@@ -141,6 +161,40 @@ export default function agenda(app: FastifyInstance): Promise<void> {
     const { id } = idDaRota.parse(request.params);
     await removerBloqueio(prismaDaRequisicao(app, request), usuarioDaRequisicao(request), id);
     return reply.status(204).send();
+  });
+
+  // Calendário (exceções por dia): `hoje` e `fuso` vêm da agência para a tela não adivinhar o dia.
+  app.get('/agenda/excecoes', { preHandler: exigirUsuario }, async (request) => {
+    const { de, ate } = consultaExcecoes.parse(request.query);
+    const { fusoHorario } = await app.deps.prisma.agencia.findUniqueOrThrow({
+      where: { id: usuarioDaRequisicao(request).agenciaId },
+      select: { fusoHorario: true },
+    });
+    const hoje = dataLocal(app.deps.relogio.agora(), fusoHorario);
+    return {
+      hoje,
+      fuso: fusoHorario,
+      excecoes: await listarExcecoes(prismaDaRequisicao(app, request), de ?? hoje, ate),
+    };
+  });
+
+  app.put('/agenda/excecoes', { preHandler: exigirAdmin }, async (request, reply) => {
+    const corpo = corpoExcecao.parse(request.body);
+    const { fusoHorario } = await app.deps.prisma.agencia.findUniqueOrThrow({
+      where: { id: usuarioDaRequisicao(request).agenciaId },
+      select: { fusoHorario: true },
+    });
+    const resultado = await definirExcecaoDoDia(
+      prismaDaRequisicao(app, request),
+      usuarioDaRequisicao(request),
+      fusoHorario,
+      app.deps.relogio.agora(),
+      corpo,
+    );
+    if (resultado.tipo === 'invalida') {
+      return reply.status(422).send({ erro: 'EXCECAO_INVALIDA', codigo: resultado.codigo });
+    }
+    return reply.status(200).send({ excecoes: resultado.excecoes });
   });
 
   app.get('/agenda/feriados', { preHandler: exigirUsuario }, async (request) => {

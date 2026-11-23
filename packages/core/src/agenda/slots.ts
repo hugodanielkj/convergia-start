@@ -10,10 +10,24 @@ export interface Slot {
   readonly fim: Date;
 }
 
+/** Horário combinado só para uma data: no dia, substitui a janela semanal do mesmo tipo. */
+export interface ExcecaoDia {
+  /** `YYYY-MM-DD`, no fuso da agência. */
+  readonly data: string;
+  readonly horaInicio: string;
+  readonly horaFim: string;
+  readonly duracaoMinutos?: number | undefined;
+}
+
 export interface EntradaSlots {
   /** Janelas do tipo e do profissional que interessam (reunião ou captação, RN-30, RN-42). */
   readonly janelas: readonly JanelaDisponibilidade[];
   readonly bloqueios: readonly Bloqueio[];
+  /**
+   * Exceções do mesmo tipo. Num dia que tem exceção, só valem as exceções: as janelas semanais
+   * daquele dia são ignoradas (ex.: sexta com 14h às 17h em vez do padrão 13h às 17h).
+   */
+  readonly excecoes?: readonly ExcecaoDia[];
   /** Agendamentos que já ocupam horário (RN-33). */
   readonly ocupados: readonly Slot[];
   readonly agora: Date;
@@ -63,6 +77,17 @@ function horaTexto(minutos: number): string {
   return `${hh}:${mm}`;
 }
 
+/** Janelas que valem numa data: as exceções do dia, se houver; senão as semanais do dia da semana. */
+export function janelasDoDia(
+  dia: string,
+  janelas: readonly JanelaDisponibilidade[],
+  excecoes: readonly ExcecaoDia[],
+): JanelaDisponibilidade[] {
+  const doDia = excecoes.filter((e) => e.data === dia);
+  if (doDia.length > 0) return doDia.map((e) => ({ ...e, diaSemana: diaDaSemana(dia) }));
+  return janelas.filter((j) => j.diaSemana === diaDaSemana(dia));
+}
+
 /**
  * Slots livres no período (RN-30 a RN-33). Para cada dia sem bloqueio nem feriado nacional, corta
  * cada janela em horários da duração configurada, tira os que começam antes da antecedência mínima
@@ -86,8 +111,7 @@ export function gerarSlots(entrada: EntradaSlots): Slot[] {
   for (const dia of diasDoPeriodo(entrada.de, entrada.ate)) {
     if (diaBloqueado(dia, entrada.bloqueios) || feriadoNacional(dia) !== undefined) continue;
 
-    for (const janela of entrada.janelas) {
-      if (janela.diaSemana !== diaDaSemana(dia)) continue;
+    for (const janela of janelasDoDia(dia, entrada.janelas, entrada.excecoes ?? [])) {
       const duracao = janela.duracaoMinutos ?? duracaoPadraoMinutos;
       const inicioJanela = minutosDoDia(janela.horaInicio);
       const fimJanela = minutosDoDia(janela.horaFim);

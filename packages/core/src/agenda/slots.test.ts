@@ -290,3 +290,48 @@ describe('RN-32 horários no fuso do cliente', () => {
     expect(agruparPorDia([], SP)).toEqual([]);
   });
 });
+
+describe('exceção de um dia (substitui a janela semanal)', () => {
+  const umDia = { antecedenciaMinimaHoras: 0, de: '2026-11-17', ate: '2026-11-17' };
+
+  it('no dia com exceção vale só o horário da exceção', () => {
+    expect(
+      inicios({
+        ...umDia,
+        excecoes: [{ data: '2026-11-17', horaInicio: '10:00', horaFim: '11:00' }],
+      }),
+    ).toEqual(['2026-11-17T13:00:00.000Z']);
+  });
+
+  it('exceção de outra data não muda o dia', () => {
+    expect(
+      inicios({
+        ...umDia,
+        excecoes: [{ data: '2026-11-18', horaInicio: '10:00', horaFim: '11:00' }],
+      }),
+    ).toHaveLength(3);
+  });
+
+  it('exceção vale mesmo num dia sem janela semanal e usa a duração própria', () => {
+    expect(
+      inicios({
+        antecedenciaMinimaHoras: 0,
+        de: '2026-11-21',
+        ate: '2026-11-21',
+        excecoes: [
+          { data: '2026-11-21', horaInicio: '09:00', horaFim: '10:00', duracaoMinutos: 30 },
+        ],
+      }),
+    ).toEqual(['2026-11-21T12:00:00.000Z', '2026-11-21T12:30:00.000Z']);
+  });
+
+  it('bloqueio e feriado continuam valendo sobre a exceção', () => {
+    expect(
+      inicios({
+        ...umDia,
+        bloqueios: [{ dataInicio: '2026-11-17', dataFim: '2026-11-17', motivo: 'folga' }],
+        excecoes: [{ data: '2026-11-17', horaInicio: '10:00', horaFim: '11:00' }],
+      }),
+    ).toEqual([]);
+  });
+});

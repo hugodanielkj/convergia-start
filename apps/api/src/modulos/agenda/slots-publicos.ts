@@ -88,9 +88,10 @@ export async function slotsLivres(
   onboardingId?: string,
 ) {
   const { prisma, fusoAgencia } = contexto;
-  const [janelas, bloqueiosDb] = await Promise.all([
+  const [janelas, bloqueiosDb, excecoesDb] = await Promise.all([
     prisma.disponibilidade.findMany({ where: { tipo } }),
     prisma.bloqueio.findMany(),
+    prisma.disponibilidadeDia.findMany({ where: { tipo } }),
   ]);
   const bloqueios: Bloqueio[] = bloqueiosDb.map((b) => ({
     dataInicio: textoDaData(b.dataInicio),
@@ -120,6 +121,12 @@ export async function slotsLivres(
       ...(j.duracaoMinutos === null ? {} : { duracaoMinutos: j.duracaoMinutos }),
     })),
     bloqueios,
+    excecoes: excecoesDb.map((e) => ({
+      data: textoDaData(e.data),
+      horaInicio: e.horaInicio,
+      horaFim: e.horaFim,
+      ...(e.duracaoMinutos === null ? {} : { duracaoMinutos: e.duracaoMinutos }),
+    })),
     ocupados,
     agora,
     antecedenciaMinimaHoras: contexto.antecedenciaMinimaHoras,

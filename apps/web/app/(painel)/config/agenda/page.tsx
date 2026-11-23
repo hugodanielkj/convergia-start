@@ -1,4 +1,6 @@
 import { exigirSessao } from '../../../_lib/sessao';
+import { Calendario } from './Calendario';
+import { lerParametros, periodoVisivel } from './contas-calendario';
 import { BotaoRemover } from './BotaoRemover';
 import { FormularioBloqueio } from './FormularioBloqueio';
 import { FormularioJanela } from './FormularioJanela';
@@ -9,14 +11,28 @@ import estilos from './agenda.module.css';
 // A agenda muda a cada cadastro e depende do usuário logado: nunca é gerada em tempo de build.
 export const dynamic = 'force-dynamic';
 
-export default async function PaginaAgenda() {
+interface Props {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function PaginaAgenda({ searchParams }: Props) {
   const usuario = await exigirSessao();
   const api = await agendaApiDoServidor();
-  const [janelas, bloqueios, feriados] = await Promise.all([
+  // O "hoje" vem da agência (fuso dela), não do relógio do servidor ou do navegador.
+  const { hoje } = await api.listarExcecoes('2000-01-01', '2000-01-01');
+  const { visao, data, dia } = lerParametros(await searchParams, hoje);
+  const { de, ate } = periodoVisivel(visao, data);
+  const [janelas, bloqueios, feriados, { excecoes }, feriadosDoPeriodo] = await Promise.all([
     api.listarJanelas(),
     api.listarBloqueios(),
     api.listarFeriados(),
+    api.listarExcecoes(de, ate),
+    // O mês pode atravessar a virada do ano; os feriados da API vêm por ano.
+    de.slice(0, 4) === ate.slice(0, 4)
+      ? Promise.resolve([])
+      : api.listarFeriados(Number(ate.slice(0, 4))),
   ]);
+  const feriadosVisiveis = [...feriados, ...feriadosDoPeriodo];
   const podeEditar = usuario.papel === 'admin';
 
   return (
@@ -28,8 +44,23 @@ export default async function PaginaAgenda() {
         {!podeEditar && ' Só o Admin pode alterar.'}
       </p>
 
-      <section aria-labelledby="titulo-janelas" className={estilos.secao}>
-        <h2 id="titulo-janelas">Horários de atendimento</h2>
+      <Calendario
+        visao={visao}
+        data={data}
+        dia={dia}
+        hoje={hoje}
+        podeEditar={podeEditar}
+        janelas={janelas}
+        excecoes={excecoes}
+        bloqueios={bloqueios}
+        feriados={feriadosVisiveis}
+      />
+
+      <details className={estilos.secao}>
+        <summary className={estilos.resumoBotao}>Horário padrão de atendimento</summary>
+        <p className={estilos.ajuda}>
+          Vale toda semana. Para mudar só um dia, toque nele no calendário.
+        </p>
         {janelas.length === 0 ? (
           <p className={estilos.vazio}>
             Nenhum horário cadastrado. Sem eles, o cliente não vê horários para agendar.
@@ -55,7 +86,7 @@ export default async function PaginaAgenda() {
           </ul>
         )}
         {podeEditar && <FormularioJanela />}
-      </section>
+      </details>
 
       <section aria-labelledby="titulo-bloqueios" className={estilos.secao}>
         <h2 id="titulo-bloqueios">Bloqueios</h2>

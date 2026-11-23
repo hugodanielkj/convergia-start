@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import {
   processarBloqueio,
+  processarExcecao,
+  type EstadoExcecao,
   processarJanela,
   processarRemocao,
   type EstadoBloqueio,
@@ -38,5 +40,14 @@ export async function removerItemAction(
 ): Promise<EstadoRemocao> {
   const estado = await processarRemocao(dados, await agendaApiDoServidor());
   if (estado.tipo === 'inicial') revalidatePath(CAMINHO);
+  return estado;
+}
+
+export async function salvarExcecaoAction(
+  _anterior: EstadoExcecao,
+  dados: FormData,
+): Promise<EstadoExcecao> {
+  const estado = await processarExcecao(dados, await agendaApiDoServidor());
+  if (estado.tipo === 'salva') revalidatePath(CAMINHO);
   return estado;
 }
